@@ -118,11 +118,11 @@ def counters(client, transport):
     }
 
 
-def mission(cfg, seed, client, transport, interval, collect=False):
+def mission(cfg, seed, client, transport, interval, collect=False, scheme="mica"):
     """Run one mission, rejecting backend failures before continuing a trajectory."""
     before = counters(client, transport)
     started = time.monotonic()
-    sim = Simulation(cfg, "mica", seed)
+    sim = Simulation(cfg, scheme, seed)
     sim._start()
     losses = np.zeros((cfg.n_agents, len(PARAMETERS)))
     samples = 0

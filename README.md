@@ -86,13 +86,15 @@ Run these commands from the repository root with the environment activated.
 | --- | --- |
 | Baseline smoke run | `python -m experiments.run_all --only default --seeds 2` |
 | Communication ablations | `python -m experiments.run_robustness --only ablation --seeds 2` |
+| Three-model team benchmark | `python -m experiments.run_team_benchmark --seeds 12` |
 | Classical teammate calibration | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM teammate calibration | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
 
-The LLM calibration command requires both model tags to be installed in Ollama.
-It fits on separate training seeds, freezes the parameters, and compares the
-original and calibrated softmax **within each model**. Each team has three LLM
-agents and three classical planners. Backend fallbacks stop the experiment.
+The team benchmark requires `qwen3:8b`, `llama3.1:8b`, and `gemma3:12b` to be
+installed in Ollama. Each model is evaluated in a separate team of three LLM
+agents and three classical planners, using the same seeds across communication
+policies. Backend fallbacks stop the experiment. Optional calibration protocols
+are documented separately.
 
 For WSL calling Windows Ollama, see the [LLM experiment protocol](docs/llm_behavior_calibration.md),
 including its existing-Python bridge. The general client uses `MICA_OLLAMA_URL`
@@ -112,26 +114,30 @@ seed sets; separate simulated slots from inference wall time.
 
 ## Measured Results
 
-> **Current finding:** softmax calibration saves communication in the tested LLM
-> teams, but does not establish an overall efficiency gain. It remains opt-in.
+The three-model benchmark reports absolute mission metrics for periodic semantic
+reporting (`sem`), MICA (`mica`), and ideal delivery (`genie`). Completion slots
+measure simulated task duration; uplink symbols measure actual communication
+use. Ideal delivery is a reference without a comparable wireless cost.
 
-The following changes are relative to the original softmax with the **same
-model**, using 12 paired seeds per scenario. Higher completion slots mean slower
-missions. All 96 evaluation missions completed with zero backend fallbacks.
+Default scenario, 12 seeds per model and policy (`8000..8011`):
 
-| Model | Scenario | Mean uplink symbols | Mean completion slots |
-| --- | --- | ---: | ---: |
-| Qwen3 8B | Default | −23.6% | +23.2% |
-| Qwen3 8B | Clustered | −28.5% | +19.2% |
-| Llama 3.1 8B | Default | −35.5% | +33.0% |
-| Llama 3.1 8B | Clustered | −40.7% | +10.6% |
+| Model | Communication policy | Mean completion slots | Mean uplink symbols | Completion rate |
+| --- | --- | ---: | ---: | ---: |
+| Qwen3 8B | Periodic semantic | 81.33 | 42,307.75 | 100% |
+| Qwen3 8B | MICA | 88.50 | 15,336.75 | 100% |
+| Qwen3 8B | Ideal reference | 72.08 | N/A | 100% |
+| Llama 3.1 8B | Periodic semantic | 101.17 | 53,726.33 | 100% |
+| Llama 3.1 8B | MICA | 80.08 | 13,819.92 | 100% |
+| Llama 3.1 8B | Ideal reference | 82.08 | N/A | 100% |
+| Gemma 3 12B | Periodic semantic | 100.67 | 54,086.17 | 100% |
+| Gemma 3 12B | MICA | 69.42 | 12,422.75 | 100% |
+| Gemma 3 12B | Ideal reference | 69.92 | N/A | 100% |
 
-These are exploratory means, not four statistically established slowdowns.
-The Llama default slot interval excludes zero; the other three include zero.
-Read the [full LLM report](docs/llm_behavior_calibration_results.md) for paired
-intervals, prediction diagnostics, cache accounting, and limitations. The
-[classical-planner report](docs/behavior_calibration_results.md) covers the
-separate classical experiments. Cached execution does not measure online speedup.
+All 108 missions completed with zero model-backend fallbacks. Each team has
+three agents using the selected LLM and three classical planners. Results are
+exploratory means; simulated slots do not measure online inference latency.
+See [team benchmark](docs/team_benchmark.md) for the protocol and result tables.
+Cached execution does not measure online inference speedup.
 
 ## Project Structure
 
@@ -155,6 +161,7 @@ Keep reusable methods in `src/mica_comm/` and campaign orchestration in
 | [Architecture](docs/architecture.md) | Simulation loop, modules, and extension points |
 | [Experiment Workflow](docs/experiments.md) | Sweeps, policy IDs, fair comparisons, and outputs |
 | [Model Backends](docs/model_backends.md) | Ollama, model aliases, and response caches |
+| [Team Benchmark](docs/team_benchmark.md) | Three LLM models, communication policies, and absolute results |
 | [Behavior Calibration](docs/behavior_calibration.md) | Receiver softmax fitting and assumptions |
 | [LLM Calibration](docs/llm_behavior_calibration.md) | Held-out evaluation and Windows/WSL inference |
 | [Contributing](CONTRIBUTING.md) | Development conventions and checks |

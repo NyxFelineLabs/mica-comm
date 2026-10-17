@@ -24,12 +24,13 @@ def setup_client(tmp_path, monkeypatch, answer):
     return client, transport, bodies
 
 
-def test_instrumentation_preserves_mission(tmp_path, monkeypatch):
+@pytest.mark.parametrize("scheme", ["sem", "mica", "genie"])
+def test_instrumentation_preserves_mission(tmp_path, monkeypatch, scheme):
     client, transport, bodies = setup_client(tmp_path, monkeypatch, "A")
     cfg = Config(llm_agents=(0, 2, 4), llm_model="test-model", max_steps=12)
-    expected = run_episode(cfg, "mica", 5)
+    expected = run_episode(cfg, scheme, 5)
     expected.pop("curve")
-    measured = mission(cfg, 5, client, transport, interval=5, collect=True)
+    measured = mission(cfg, 5, client, transport, interval=5, collect=True, scheme=scheme)
     assert {k: measured[k] for k in expected} == expected
     assert measured["samples_per_agent"] == 3
     assert measured["inference"]["cache_misses"] == 0

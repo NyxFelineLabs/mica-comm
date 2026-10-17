@@ -26,6 +26,7 @@ python -m experiments.run_all --only default --seeds 2
 | `experiments.validate_outcomes` | Select operating points and validate on held-out seeds |
 | `experiments.run_behavior_calibration` | Fit teammate softmax parameters and evaluate held-out missions |
 | `experiments.run_llm_calibration` | Validate frozen softmax calibration with live LLM teams |
+| `experiments.run_team_benchmark` | Compare periodic reporting, MICA, and ideal delivery with three LLM models |
 
 Inspect each runner's `--help` before a long run. Start with a small seed count,
 then increase it for statistical comparisons. `experiments.plot` handles baseline

@@ -84,12 +84,14 @@ print(result["completion_time"], result["symbols"])
 | --- | --- |
 | 基线小规模检查 | `python -m experiments.run_all --only default --seeds 2` |
 | 通信模块消融 | `python -m experiments.run_robustness --only ablation --seeds 2` |
+| 三模型团队主实验 | `python -m experiments.run_team_benchmark --seeds 12` |
 | 传统规划器的队友行为校准 | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM 团队的队友行为校准 | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
 
-LLM 校准实验要求 Ollama 已安装上述两个模型。脚本使用独立训练种子拟合参数，
-冻结后在测试种子上比较**同一个模型下的原版与校准版 softmax**。
-每个团队由 3 个 LLM 智能体和 3 个传统规划器组成；出现模型调用回退时，实验会停止。
+三模型主实验要求 Ollama 已安装 `qwen3:8b`、`llama3.1:8b` 和 `gemma3:12b`。
+每个模型分别组成一个含 3 个 LLM 智能体与 3 个传统规划器的团队，
+使用相同种子评估不同通信策略。出现模型调用回退时，实验会停止。
+可选校准实验的详细协议单独记录在文档中。
 
 WSL 调用 Windows Ollama 的方法见 [LLM 实验协议](docs/llm_behavior_calibration.md)，
 其中包含使用已有 Windows Python 的桥接方式。通用客户端通过 `MICA_OLLAMA_URL`
@@ -108,23 +110,27 @@ figures/    生成的分析图表
 
 ## 实验结果
 
-> **当前结论：** softmax 校准在已测试的 LLM 团队中减少了通信量，
-> 但尚未证明整体效率提升，因此默认不启用。
+三模型主实验直接报告周期语义上报（`sem`）、MICA（`mica`）和理想投递参考（`genie`）
+的任务指标。完成时隙衡量仿真任务时长，上行符号数衡量实际通信用量。
+理想投递不经过等价的无线传输，其通信成本不与另外两种策略直接比较。
 
-下表相对**同一模型的原版 softmax**计算，每个场景使用 12 对测试种子。
-完成时隙增加表示任务变慢。96 次评估任务全部完成，模型调用回退为零。
+默认场景，每种模型与策略使用 12 个种子（`8000..8011`）：
 
-| 模型 | 场景 | 平均上行符号数 | 平均完成时隙 |
-| --- | --- | ---: | ---: |
-| Qwen3 8B | 默认分布 | −23.6% | +23.2% |
-| Qwen3 8B | 聚集分布 | −28.5% | +19.2% |
-| Llama 3.1 8B | 默认分布 | −35.5% | +33.0% |
-| Llama 3.1 8B | 聚集分布 | −40.7% | +10.6% |
+| 模型 | 通信策略 | 平均完成时隙 | 平均上行符号数 | 完成率 |
+| --- | --- | ---: | ---: | ---: |
+| Qwen3 8B | 周期语义上报 | 81.33 | 42,307.75 | 100% |
+| Qwen3 8B | MICA | 88.50 | 15,336.75 | 100% |
+| Qwen3 8B | 理想投递参考 | 72.08 | 不适用 | 100% |
+| Llama 3.1 8B | 周期语义上报 | 101.17 | 53,726.33 | 100% |
+| Llama 3.1 8B | MICA | 80.08 | 13,819.92 | 100% |
+| Llama 3.1 8B | 理想投递参考 | 82.08 | 不适用 | 100% |
+| Gemma 3 12B | 周期语义上报 | 100.67 | 54,086.17 | 100% |
+| Gemma 3 12B | MICA | 69.42 | 12,422.75 | 100% |
+| Gemma 3 12B | 理想投递参考 | 69.92 | 不适用 | 100% |
 
-这些是探索性实验的均值，不能解释为四组均已在统计上证实变慢。
-Llama 默认场景的时隙差区间不包含零，其余三组包含零。
-配对置信区间、预测诊断、缓存统计与局限见 [LLM 完整报告](docs/llm_behavior_calibration_results.md)；
-传统规划器实验见 [独立实验报告](docs/behavior_calibration_results.md)。
+108 次任务全部完成，模型后端回退为零。每个团队包含 3 个使用所选 LLM 的智能体
+和 3 个传统规划器。上述结果为探索性实验均值，仿真时隙不代表在线推理耗时。
+实验协议与结果表格见 [三模型团队实验](docs/team_benchmark.md)。
 缓存回放耗时不能作为在线推理加速的证据。
 
 ## 项目结构
@@ -151,6 +157,7 @@ mica-comm/
 | [项目架构](docs/architecture.md) | 仿真流程、模块划分与扩展入口 |
 | [实验工作流](docs/experiments.md) | 参数扫描、策略 ID、公平对比与输出约定 |
 | [模型后端](docs/model_backends.md) | Ollama、模型别名与响应缓存 |
+| [三模型团队实验](docs/team_benchmark.md) | 三种 LLM、通信策略与任务指标 |
 | [行为模型校准](docs/behavior_calibration.md) | 队友 softmax 参数拟合与假设 |
 | [LLM 校准协议](docs/llm_behavior_calibration.md) | 独立测试集评估与 Windows/WSL 推理 |
 | [贡献指南](CONTRIBUTING.md) | 开发约定与检查命令 |
