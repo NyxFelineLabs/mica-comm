@@ -84,6 +84,18 @@ The runner fits parameters on separate training seeds, freezes them, and evaluat
 temperature-only, persistence-only, and combined variants. See
 [Behavior calibration](docs/behavior_calibration.md) for the protocol and limitations.
 
+To test the same softmax change with installed Qwen3 and Llama 3.1 models:
+
+```bash
+.venv/bin/python -m experiments.run_llm_calibration
+```
+
+See [LLM behavior calibration](docs/llm_behavior_calibration.md) for the held-out
+protocol, inference settings, and Windows Ollama access from WSL.
+The [measured LLM results](docs/llm_behavior_calibration_results.md) show lower
+communication use but worse mean completion slots in all four comparisons;
+calibration remains opt-in.
+
 ## Optional Ollama backend
 
 LLM agents call a locally managed Ollama server. Assign installed model tags to

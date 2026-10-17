@@ -139,3 +139,8 @@ The new calibration remains opt-in; default MICA is unchanged. Interpretation
 must distinguish actual symbol use from configured bandwidth, and simulated
 completion slots from execution latency. These results do not demonstrate an
 advantage for heterogeneous LLM teams or at equal actual communication cost.
+
+For a separate live-model evaluation, see
+[LLM team calibration results](llm_behavior_calibration_results.md). Its observed
+communication savings come with worse mean completion slots in all four
+model/scenario comparisons.
