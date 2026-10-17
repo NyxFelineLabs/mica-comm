@@ -57,6 +57,9 @@ class Config:
     confirm_value: float = 5.0  # value of a survivor confirmation
     intent_value: float = 0.5  # value of a fully changed intent
     tom_temperature: float = 0.1  # softmax temperature of the teammate model
+    # Optional receiver-specific behavior calibration; empty tuples keep the baseline.
+    tom_temperatures: Tuple[float, ...] = ()
+    tom_persistence: Tuple[float, ...] = ()  # logit bonus for the publicly announced target
     filter_eps: float = 0.02  # semantic source filter threshold (expected survivors)
     tom_oracle: bool = False  # (analysis) teammate model sees teammates' private evidence
     log_private: bool = False  # (analysis) log the size of agents' private evidence

@@ -24,6 +24,7 @@ python -m experiments.run_all --only default --seeds 2
 | `experiments.analyze_theory` | Budget thresholds, duality bounds, and rate efficiency |
 | `experiments.diagnose_value` | Task-value estimates and decision effects |
 | `experiments.validate_outcomes` | Select operating points and validate on held-out seeds |
+| `experiments.run_behavior_calibration` | Fit teammate softmax parameters and evaluate held-out missions |
 
 Inspect each runner's `--help` before a long run. Start with a small seed count,
 then increase it for statistical comparisons. `experiments.plot` handles baseline

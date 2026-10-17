@@ -31,6 +31,16 @@ class TeamModel:
     def __init__(self, sim, sender, temperature: float):
         cfg = sim.cfg
         self.cfg, self.sim, self.sender, self.temp = cfg, sim, sender, temperature
+        for name in ("tom_temperatures", "tom_persistence"):
+            values = getattr(cfg, name)
+            if values and len(values) != cfg.n_agents:
+                raise ValueError(f"{name} must be empty or contain one value per agent")
+            if not all(np.isfinite(v) for v in values):
+                raise ValueError(f"{name} must contain finite values")
+        if not np.isfinite(temperature) or temperature <= 0:
+            raise ValueError("temperature must be finite and positive")
+        if any(v <= 0 for v in cfg.tom_temperatures):
+            raise ValueError("tom_temperatures must be positive")
         self.X, self.Y = sender._X, sender._Y
         n = cfg.grid
         self.live = ~sim.declared.reshape(sim.Lc.shape)
@@ -104,7 +114,15 @@ class TeamModel:
         m = s.max()
         if m <= 0:
             return 0.0
-        w = np.exp((s - m) / (self.temp * m))
+        temperature = self.cfg.tom_temperatures[j] if self.cfg.tom_temperatures else self.temp
+        logits = (s - m) / (temperature * m)
+        persistence = self.cfg.tom_persistence[j] if self.cfg.tom_persistence else 0.0
+        target = self.sim.team_intent.get(j)
+        if persistence and target is not None:
+            # The receiver's private target is never available to this prediction.
+            logits.reshape(-1)[target] += persistence
+            logits -= logits.max()
+        w = np.exp(logits)
         return float((w * self.u_true[j]).sum() / w.sum())
 
     def evidence_voi(self, delta_llrs, new_positions):

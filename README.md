@@ -74,6 +74,16 @@ See [Experiment workflow](docs/experiments.md) for sweeps, validation, and outpu
 conventions. Increase the seed count after verifying a small run. Compare
 policies using identical seed sets and configurations.
 
+To evaluate receiver-specific softmax calibration against the unchanged default:
+
+```bash
+.venv/bin/python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4
+```
+
+The runner fits parameters on separate training seeds, freezes them, and evaluates
+temperature-only, persistence-only, and combined variants. See
+[Behavior calibration](docs/behavior_calibration.md) for the protocol and limitations.
+
 ## Optional Ollama backend
 
 LLM agents call a locally managed Ollama server. Assign installed model tags to
