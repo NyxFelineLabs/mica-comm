@@ -434,7 +434,7 @@ class RealisticSimulation(Simulation):
         else:
             results = self._uplink_fifo(t, links)
         self.skip_tx = set()
-        # edge fusion, broadcast, motion: as in mosaic_comm.simulator
+        # edge fusion, broadcast, motion: as in mica_comm.simulator
         for a, res in results:
             for pkt in res.delivered:
                 self.deliver(a, pkt, t)

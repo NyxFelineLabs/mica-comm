@@ -1,4 +1,4 @@
-﻿"""Agents whose intention selection is performed by an open-source LLM.
+"""Agents whose intention selection is performed by an open-source LLM.
 
 The LLM receives a structured, text-rendered summary of the agent's belief
 (candidate targets with survivor mass and distance) and of the common knowledge
@@ -26,14 +26,14 @@ from .belief import box_sum
 from .paths import CACHE_DIR
 
 OLLAMA_URL = os.environ.get(
-    "MOSAIC_OLLAMA_URL", os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+    "MICA_OLLAMA_URL", os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
 )
 # Public names used by experiments.  Override these when using a different
 # Ollama registry or a locally fine-tuned model.
 MODEL_ALIASES = {
-    "small_reasoner": os.environ.get("MOSAIC_MODEL_SMALL", "qwen2.5:3b"),
-    "small_reasoner_alt": os.environ.get("MOSAIC_MODEL_SMALL_ALT", "llama3.2:3b"),
-    "large_reasoner": os.environ.get("MOSAIC_MODEL_LARGE", "qwen2.5:7b"),
+    "small_reasoner": os.environ.get("MICA_MODEL_SMALL", "qwen2.5:3b"),
+    "small_reasoner_alt": os.environ.get("MICA_MODEL_SMALL_ALT", "llama3.2:3b"),
+    "large_reasoner": os.environ.get("MICA_MODEL_LARGE", "qwen2.5:7b"),
 }
 Transport = Callable[[dict], dict]
 

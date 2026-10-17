@@ -8,8 +8,8 @@ import json
 import time
 from multiprocessing import Pool
 
-from mosaic_comm import Config, run_episode
-from mosaic_comm.paths import RESULTS_DIR
+from mica_comm import Config, run_episode
+from mica_comm.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "robustness_joint.json"
 

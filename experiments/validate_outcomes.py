@@ -16,8 +16,8 @@ from multiprocessing import Pool
 import numpy as np
 
 from experiments.plot_robustness import arr, load, table
-from mosaic_comm import Config, run_episode
-from mosaic_comm.paths import RESULTS_DIR
+from mica_comm import Config, run_episode
+from mica_comm.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "robustness_validation.json"
 B = Config()

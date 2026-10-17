@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from mosaic_comm import Config, Simulation
-from mosaic_comm.voi import TeamModel
+from mica_comm import Config, Simulation
+from mica_comm.voi import TeamModel
 
 
 def model(cfg):

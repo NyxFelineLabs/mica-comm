@@ -68,7 +68,7 @@ class Config:
     # --- LLM agents (heterogeneous teams) ------------------------------------
     llm_agents: Tuple[int, ...] = ()  # indices of agents driven by the LLM
     # A stable project alias.  The Ollama tag is selected through environment
-    # variables in ``mosaic_comm.llm_agent`` so experiments stay portable.
+    # variables in ``mica_comm.llm_agent`` so experiments stay portable.
     llm_model: str = "small_reasoner"
     llm_replan_every: int = 5  # slots between LLM deliberations
     llm_candidates: int = 5  # candidate targets shown to the LLM

@@ -23,8 +23,8 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from mosaic_comm import Config, Simulation
-from mosaic_comm.paths import RESULTS_DIR
+from mica_comm import Config, Simulation
+from mica_comm.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "theory.json"
 
@@ -44,7 +44,7 @@ def pick(groups, lam):
 
 
 def lagrangian(groups, budget, price):
-    """lagrangian_select of mosaic_comm.schemes, returning also the multiplier and x_lambda"""
+    """lagrangian_select of mica_comm.schemes, returning also the multiplier and x_lambda"""
     chosen, used = pick(groups, price)
     if used <= budget:
         return chosen, price, chosen, used, False

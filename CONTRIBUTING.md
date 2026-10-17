@@ -19,7 +19,7 @@ python -m pytest -q
 ## Code changes
 
 - Keep simulation behavior deterministic for a fixed seed.
-- Put reusable simulation behavior under `src/mosaic_comm`.
+- Put reusable simulation behavior under `src/mica_comm`.
 - Put campaign orchestration and plotting under `experiments/`.
 - Keep generated results, figures, and LLM caches out of commits.
 - Add a focused regression test when changing a shared simulator contract.

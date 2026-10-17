@@ -3,9 +3,9 @@ the default Config, and the new options must behave as specified."""
 
 import pytest
 
-from mosaic_comm import Config, run_episode, run_realistic
-from mosaic_comm.realistic import hull_size, waterfill
-from mosaic_comm.schemes import Option
+from mica_comm import Config, run_episode, run_realistic
+from mica_comm.realistic import hull_size, waterfill
+from mica_comm.schemes import Option
 
 KEYS = ("completion_time", "symbols", "bits", "delivered_bits", "dl_symbols", "found")
 SCHEMES = (
@@ -68,7 +68,7 @@ def test_noise_changes_decisions_and_is_logged():
 
 @pytest.mark.parametrize("scheme", ("mica", "sem_ra"))
 def test_shared_budget_respected(scheme):
-    from mosaic_comm.realistic import RealisticSimulation
+    from mica_comm.realistic import RealisticSimulation
 
     cfg = Config(shared_budget=150, symbols_per_slot=150)
     sim = RealisticSimulation(cfg, scheme, 0)

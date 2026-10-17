@@ -28,9 +28,9 @@ def _path_from_env(name: str, default: Path) -> Path:
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-RESULTS_DIR = _path_from_env("MOSAIC_RESULTS_DIR", PROJECT_ROOT / "results")
-FIGURES_DIR = _path_from_env("MOSAIC_FIGURES_DIR", PROJECT_ROOT / "figures")
-CACHE_DIR = _path_from_env("MOSAIC_CACHE_DIR", RESULTS_DIR / "llm_cache")
+RESULTS_DIR = _path_from_env("MICA_RESULTS_DIR", PROJECT_ROOT / "results")
+FIGURES_DIR = _path_from_env("MICA_FIGURES_DIR", PROJECT_ROOT / "figures")
+CACHE_DIR = _path_from_env("MICA_CACHE_DIR", RESULTS_DIR / "llm_cache")
 
 
 def ensure_output_dirs() -> None:

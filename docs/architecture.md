@@ -1,8 +1,8 @@
 # Architecture
 
-MOSAIC-Comm has one simulation path and a thin experiment layer. It implements
-MICA (Multiagent Information Coordination Architecture), which coordinates
-message selection, task-value estimation, and transmission-rate allocation.
+MICA (Multiagent Information Coordination Architecture) has one simulation path
+and a thin experiment layer. It coordinates message selection, task-value
+estimation, and transmission-rate allocation.
 
 ```text
 Config
@@ -35,9 +35,9 @@ The default policy ID is `mica`, implemented by `MicaScheduler`.
 `ResourceAwareMicaScheduler` adds packet overhead, imperfect values, and shared
 budgets. Policy factories are registered in `SCHEMES` and `REALISTIC_SCHEMES`.
 
-Experiment output paths are centralized in `mosaic_comm.paths`. `results/` and
-`figures/` can be redirected with `MOSAIC_RESULTS_DIR` and `MOSAIC_FIGURES_DIR`;
-the LLM cache uses `MOSAIC_CACHE_DIR`.
+Experiment output paths are centralized in `mica_comm.paths`. `results/` and
+`figures/` can be redirected with `MICA_RESULTS_DIR` and `MICA_FIGURES_DIR`;
+the LLM cache uses `MICA_CACHE_DIR`.
 
 ## Extension points
 

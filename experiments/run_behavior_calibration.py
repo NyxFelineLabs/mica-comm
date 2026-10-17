@@ -14,9 +14,9 @@ from pathlib import Path
 
 import numpy as np
 
-from mosaic_comm import Config, Simulation, run_episode
-from mosaic_comm.paths import RESULTS_DIR
-from mosaic_comm.voi import TeamModel
+from mica_comm import Config, Simulation, run_episode
+from mica_comm.paths import RESULTS_DIR
+from mica_comm.voi import TeamModel
 
 TEMPERATURES = (0.02, 0.04, 0.07, 0.1, 0.2, 0.4, 0.8)
 PERSISTENCE = (0.0, 1.0, 2.0, 4.0, 8.0)

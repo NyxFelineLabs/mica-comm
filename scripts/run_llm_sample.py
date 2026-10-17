@@ -3,8 +3,8 @@
 import argparse
 import json
 
-from mosaic_comm import Config, llm_agent, run_episode
-from mosaic_comm.paths import RESULTS_DIR
+from mica_comm import Config, llm_agent, run_episode
+from mica_comm.paths import RESULTS_DIR
 
 RUNS = RESULTS_DIR
 

@@ -16,10 +16,10 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from mosaic_comm import Config, Simulation
-from mosaic_comm.paths import RESULTS_DIR
-from mosaic_comm.schemes import MicaScheduler
-from mosaic_comm.voi import TeamModel
+from mica_comm import Config, Simulation
+from mica_comm.paths import RESULTS_DIR
+from mica_comm.schemes import MicaScheduler
+from mica_comm.voi import TeamModel
 
 OUT = RESULTS_DIR / "robustness_scheduler.json"
 

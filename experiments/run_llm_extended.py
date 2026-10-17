@@ -13,8 +13,8 @@ import json
 import os
 import time
 
-from mosaic_comm import Config, llm_agent, run_episode
-from mosaic_comm.paths import CACHE_DIR, RESULTS_DIR
+from mica_comm import Config, llm_agent, run_episode
+from mica_comm.paths import CACHE_DIR, RESULTS_DIR
 
 ROOT = RESULTS_DIR
 OUT = ROOT / "llm_extended.jsonl"

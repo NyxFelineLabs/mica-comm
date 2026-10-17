@@ -5,8 +5,8 @@ import json
 import pytest
 
 from experiments.run_llm_calibration import OllamaTransport, check_manifest, mission
-from mosaic_comm import Config, llm_agent, run_episode
-from mosaic_comm.llm_agent import LLMClient
+from mica_comm import Config, llm_agent, run_episode
+from mica_comm.llm_agent import LLMClient
 
 
 def setup_client(tmp_path, monkeypatch, answer):

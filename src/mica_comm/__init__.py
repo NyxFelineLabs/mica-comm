@@ -6,7 +6,7 @@ __all__ = ["Config", "Simulation", "run_episode", "RealisticSimulation", "run_re
 
 
 def __getattr__(name):
-    """Load simulation modules lazily so ``python -m mosaic_comm.simulator`` is quiet."""
+    """Load simulation modules lazily so ``python -m mica_comm.simulator`` is quiet."""
     if name in {"Simulation", "run_episode"}:
         from .simulator import Simulation, run_episode
 

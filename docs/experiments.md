@@ -5,7 +5,7 @@ The deterministic simulator does not need an LLM or a network connection.
 ```bash
 python -m pip install -e ".[dev]"
 python -m pytest -q
-python -m mosaic_comm.simulator --scheme mica --seed 0
+python -m mica_comm.simulator --scheme mica --seed 0
 python -m experiments.run_all --only default --seeds 2
 ```
 
@@ -56,7 +56,7 @@ measure different things; cached replay does not measure online inference speed.
 ## Output conventions
 
 Outputs and figures are local, ignored by Git, and can be redirected with
-`MOSAIC_RESULTS_DIR` and `MOSAIC_FIGURES_DIR`. Robustness data files use the prefix
+`MICA_RESULTS_DIR` and `MICA_FIGURES_DIR`. Robustness data files use the prefix
 `robustness_`; their aggregate summary is `summary_robustness.json`.
 
 The naming update changes policy IDs, class imports, experiment module names,
@@ -66,7 +66,7 @@ Keep previous runs in a separate directory and give new campaigns their own
 output directory, for example:
 
 ```bash
-export MOSAIC_RESULTS_DIR="$PWD/results/mica-evaluation"
-export MOSAIC_FIGURES_DIR="$PWD/figures/mica-evaluation"
+export MICA_RESULTS_DIR="$PWD/results/mica-evaluation"
+export MICA_FIGURES_DIR="$PWD/figures/mica-evaluation"
 python -m experiments.run_robustness --only ablation --seeds 2
 ```

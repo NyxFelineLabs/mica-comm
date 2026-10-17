@@ -24,11 +24,11 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from mosaic_comm import Config, Simulation
-from mosaic_comm.belief import sigmoid
-from mosaic_comm.messages import Packet, evidence_sizes, intent_bits
-from mosaic_comm.paths import RESULTS_DIR
-from mosaic_comm.voi import TeamModel
+from mica_comm import Config, Simulation
+from mica_comm.belief import sigmoid
+from mica_comm.messages import Packet, evidence_sizes, intent_bits
+from mica_comm.paths import RESULTS_DIR
+from mica_comm.voi import TeamModel
 
 OUT = RESULTS_DIR / "robustness_value_fidelity.json"
 

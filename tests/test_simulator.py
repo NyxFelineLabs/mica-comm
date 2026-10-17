@@ -3,11 +3,11 @@
 import numpy as np
 import pytest
 
-from mosaic_comm import Config, Simulation, run_episode
-from mosaic_comm.belief import Obs, SensorModel, box_sum, logit
-from mosaic_comm.channel import Channel
-from mosaic_comm.messages import evidence_bits, evidence_sizes
-from mosaic_comm.schemes import SCHEMES, Group, Option, lagrangian_select
+from mica_comm import Config, Simulation, run_episode
+from mica_comm.belief import Obs, SensorModel, box_sum, logit
+from mica_comm.channel import Channel
+from mica_comm.messages import evidence_bits, evidence_sizes
+from mica_comm.schemes import SCHEMES, Group, Option, lagrangian_select
 
 
 def test_unknown_scheme_error_lists_available_choices():

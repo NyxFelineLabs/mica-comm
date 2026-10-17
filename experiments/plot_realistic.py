@@ -18,7 +18,7 @@ import numpy as np  # noqa: E402
 from experiments.plot import FIG  # noqa: E402  (shared style, read-only)
 from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT  # noqa: E402
 from experiments.validate_realistic import load_jsonl, main_frozen, reference  # noqa: E402
-from mosaic_comm.paths import RESULTS_DIR
+from mica_comm.paths import RESULTS_DIR
 
 RES = RESULTS_DIR
 W1, W2 = 3.45, 7.0

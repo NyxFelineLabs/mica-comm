@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from mosaic_comm.paths import FIGURES_DIR, RESULTS_DIR
+from mica_comm.paths import FIGURES_DIR, RESULTS_DIR
 
 RES = RESULTS_DIR
 FIG = FIGURES_DIR
