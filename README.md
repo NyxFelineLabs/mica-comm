@@ -87,6 +87,7 @@ Run these commands from the repository root with the environment activated.
 | Baseline smoke run | `python -m experiments.run_all --only default --seeds 2` |
 | Communication ablations | `python -m experiments.run_robustness --only ablation --seeds 2` |
 | Three-model team benchmark | `python -m experiments.run_team_benchmark --seeds 12` |
+| Rebuild benchmark figures | `python -m experiments.plot_team_benchmark --input docs/data/team_benchmark` |
 | Classical teammate calibration | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM teammate calibration | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
 
@@ -111,6 +112,8 @@ figures/    Generated analysis figures
 Use `MICA_RESULTS_DIR`, `MICA_FIGURES_DIR`, and `MICA_CACHE_DIR` to redirect the
 standard output locations. Compare policies with the same configurations and
 seed sets; separate simulated slots from inference wall time.
+The compact outcome snapshot in `docs/data/` and selected figures in
+`docs/assets/` are tracked so the documented plots can be rebuilt offline.
 
 ## Measured Results
 
@@ -139,6 +142,14 @@ exploratory means; simulated slots do not measure online inference latency.
 See [team benchmark](docs/team_benchmark.md) for the protocol and result tables.
 Cached execution does not measure online inference speedup.
 
+![Measured mission outcomes](docs/assets/mission_outcomes.png)
+
+Points show individual missions; large markers and error bars show means and
+95% bootstrap intervals over twelve seeds. The three backends test model-family
+diversity; they are not fixed low/medium/high capability tiers. See
+[model selection](docs/model_selection.md) and the [figure workflow](docs/figures.md)
+for paired comparisons, limitations, editable exports and public source data.
+
 ## Project Structure
 
 ```text
@@ -162,6 +173,8 @@ Keep reusable methods in `src/mica_comm/` and campaign orchestration in
 | [Experiment Workflow](docs/experiments.md) | Sweeps, policy IDs, fair comparisons, and outputs |
 | [Model Backends](docs/model_backends.md) | Ollama, model aliases, and response caches |
 | [Team Benchmark](docs/team_benchmark.md) | Three LLM models, communication policies, and absolute results |
+| [Scientific Figures](docs/figures.md) | Shared plotting style, source data, vector exports, and QA |
+| [Model Selection](docs/model_selection.md) | Paired model evidence and recommended experiment design |
 | [Behavior Calibration](docs/behavior_calibration.md) | Receiver softmax fitting and assumptions |
 | [LLM Calibration](docs/llm_behavior_calibration.md) | Held-out evaluation and Windows/WSL inference |
 | [Contributing](CONTRIBUTING.md) | Development conventions and checks |

@@ -12,25 +12,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
+from experiments.figure_style import STYLE, W1, W2, export_figure, publication_style
 from mica_comm.paths import FIGURES_DIR, RESULTS_DIR
 
 RES = RESULTS_DIR
 FIG = FIGURES_DIR
-FIG.mkdir(parents=True, exist_ok=True)
-
-# Categorical slots in fixed order (validated palette); genie is a neutral reference.
-STYLE = {
-    "mica": dict(color="#2a78d6", marker="o", label="MICA"),
-    "sem": dict(color="#eb6834", marker="s", label="Semantic, periodic"),
-    "raw": dict(color="#1baf7a", marker="^", label="Raw sensor data"),
-    "nl": dict(color="#eda100", marker="D", label="Natural language"),
-    "report": dict(color="#e87ba4", marker="v", label="Report only"),
-    "mica_novoi": dict(color="#008300", marker="P", label="MICA w/o VoI"),
-    "mica_tv": dict(color="#4a3aa7", marker="X", label="MICA, belief-div. VoI"),
-    "genie": dict(
-        color="#7a7974", marker="", label="Ideal-communication reference (genie)", linestyle="--"
-    ),
-}
 NAMES = {
     "report": "Report only",
     "raw": "Raw sensor data",
@@ -43,34 +29,6 @@ NAMES = {
     "genie": "Ideal-comm. reference (genie)",
 }
 MAIN = ["report", "raw", "nl", "sem", "mica", "genie"]
-
-plt.rcParams.update(
-    {
-        "font.family": "serif",
-        "font.size": 8,
-        "axes.titlesize": 8,
-        "axes.labelsize": 8,
-        "legend.fontsize": 6.5,
-        "xtick.labelsize": 7,
-        "ytick.labelsize": 7,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.edgecolor": "#52514e",
-        "axes.linewidth": 0.6,
-        "xtick.color": "#52514e",
-        "ytick.color": "#52514e",
-        "axes.grid": True,
-        "grid.color": "#e4e3de",
-        "grid.linewidth": 0.5,
-        "lines.linewidth": 1.4,
-        "lines.markersize": 4,
-        "savefig.bbox": "tight",
-        "savefig.pad_inches": 0.05,
-        "pdf.fonttype": 42,
-    }
-)
-W1 = 3.45  # IEEE single column (in)
-W2 = 7.0  # IEEE double column (in)
 
 
 def load(name):
@@ -124,7 +82,7 @@ def sweep_plot(name, xlabel, fname, xlog=False, xticks=None):
         ax.set_xticklabels([str(x) for x in xticks])
     ax.set_ylim(bottom=0)
     ax.legend(ncol=2, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22))
-    fig.savefig(os.path.join(FIG, fname))
+    export_figure(fig, os.path.join(FIG, fname))
     plt.close(fig)
     return {s: {p: summarize(by(rows, s, p)) for p in params} for s in MAIN}
 
@@ -149,7 +107,7 @@ def sweep_bits_plot(name, xlabel, fname, xlog=False, xticks=None):
         ax.set_xticks(xticks)
         ax.set_xticklabels([str(x) for x in xticks])
     ax.legend(ncol=2, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2))
-    fig.savefig(os.path.join(FIG, fname))
+    export_figure(fig, os.path.join(FIG, fname))
     plt.close(fig)
 
 
@@ -178,7 +136,7 @@ def sweep_pair_plot(name, xlabel, fname):
     for ax in axes:
         ax.set_xlabel(xlabel)
     axes[0].legend(ncol=3, frameon=False, loc="upper center", bbox_to_anchor=(1.1, -0.24))
-    fig.savefig(os.path.join(FIG, fname))
+    export_figure(fig, os.path.join(FIG, fname))
     plt.close(fig)
 
 
@@ -196,7 +154,7 @@ def curve_plot():
     ax.set_xlim(0, T)
     ax.set_ylim(0, 8.2)
     ax.legend(frameon=False, loc="lower right")
-    fig.savefig(os.path.join(FIG, "fig_curve.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_curve.pdf"))
     plt.close(fig)
 
 
@@ -226,7 +184,7 @@ def pareto_plot():
                 textcoords="offset points",
                 xytext=off,
                 fontsize=5.5,
-                color="#2a78d6",
+                color="#0F4D92",
                 ha="right",
             )
     _, xt, yt = front(tv, "mica_tv")
@@ -246,7 +204,7 @@ def pareto_plot():
     ax.set_xlabel("Channel uses per mission ($\\times 10^3$, log scale)")
     ax.set_ylabel("Completion time (slots)")
     ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.2))
-    fig.savefig(os.path.join(FIG, "fig_pareto.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_pareto.pdf"))
     plt.close(fig)
     return {
         "tom": {e: summarize(by(rows, "mica", e)) for e in etas},
@@ -258,7 +216,7 @@ def traj_plot():
     with open(os.path.join(RES, "trajectories.json")) as f:
         tr = json.load(f)
     fig, axes = plt.subplots(1, 2, figsize=(W1, 1.85), sharey=True)
-    agent_colors = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"]
+    agent_colors = ["#0F4D92", "#767676", "#42949E", "#9A4D8E", "#B64342", "#8BCF8B"]
     for ax, s in zip(axes, ["sem", "mica"]):
         d = tr[s]
         for k, path in enumerate(d["trajectories"]):
@@ -274,7 +232,7 @@ def traj_plot():
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_title(f"{NAMES[s].split(' (')[0]}: {d['completion_time']} slots", fontsize=7)
-    fig.savefig(os.path.join(FIG, "fig_traj.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_traj.pdf"))
     plt.close(fig)
 
 
@@ -429,6 +387,7 @@ def llm_table():
     return out
 
 
+@publication_style()
 def main():
     os.makedirs(FIG, exist_ok=True)
     summary = {"default": default_table()}

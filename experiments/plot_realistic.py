@@ -15,13 +15,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from experiments.plot import FIG  # noqa: E402  (shared style, read-only)
+from experiments.figure_style import W1, W2, export_figure, publication_style  # noqa: E402
 from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT  # noqa: E402
 from experiments.validate_realistic import load_jsonl, main_frozen, reference  # noqa: E402
+from mica_comm.paths import FIGURES_DIR as FIG
 from mica_comm.paths import RESULTS_DIR
 
 RES = RESULTS_DIR
-W1, W2 = 3.45, 7.0
 NB = 4000
 MACROS = {}
 
@@ -186,7 +186,7 @@ def noise():
         f.write("\n".join(lines) + "\n")
     # figure
     fig, ax = plt.subplots(figsize=(W1, 2.9))
-    cols = ["#2a78d6", "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#eb6834"]
+    cols = ["#0F4D92", "#42949E", "#9A4D8E", "#B64342", "#9A4D8E", "#767676"]
     mks = ["o", "s", "D", "^", "v", "P"]
     xs = np.arange(len(ARM_ORDER))
     for st, col, mk in zip(EVALUATION_SETTINGS, cols, mks):
@@ -213,7 +213,7 @@ def noise():
                 markerfacecolor=col if m else "white",
                 markeredgewidth=1.0,
             )
-    ax.axhline(1.0, color="#7a7974", linestyle="--", linewidth=0.8)
+    ax.axhline(1.0, color="#B64342", linestyle="--", linewidth=0.8)
     ax.set_yscale("log")
     ax.set_xticks(xs)
     ticks = [
@@ -230,7 +230,7 @@ def noise():
     ax.set_xlabel("Value estimate (accuracy decreases to the right)")
     ax.legend(frameon=False, fontsize=5.8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.22))
     fig.tight_layout()
-    fig.savefig(os.path.join(FIG, "fig_noise.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_noise.pdf"))
     plt.close(fig)
     return res, rho
 
@@ -409,7 +409,7 @@ def shared():
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
-            color="#2a78d6",
+            color="#0F4D92",
             marker="o",
             markersize=3,
             label="MICA, price-coordinated (each $\\eta$)",
@@ -425,14 +425,14 @@ def shared():
             [b for _, b in per],
             linestyle="none",
             marker=".",
-            color="#eb6834",
+            color="#767676",
             alpha=0.35,
             markersize=3,
         )
         ax.plot(
             [a for a, _ in env],
             [b for _, b in env],
-            color="#eb6834",
+            color="#767676",
             marker="s",
             markersize=3,
             label="Periodic family, best envelope (fair grants)",
@@ -443,14 +443,14 @@ def shared():
                 [sem[0][0]],
                 [sem[0][1]],
                 marker="D",
-                color="#eda100",
+                color="#9A4D8E",
                 linestyle="none",
                 label="Semantic periodic, every slot",
             )
         metric, target = reference(st)
         ax.axhline(
             target,
-            color="#7a7974",
+            color="#B64342",
             linestyle=":",
             linewidth=0.8,
             label="Target $1.25\\,T_{\\mathrm{g}}$",
@@ -467,7 +467,7 @@ def shared():
         h, lb, frameon=False, fontsize=6.5, ncol=4, loc="lower center", bbox_to_anchor=(0.5, 0.0)
     )
     fig.tight_layout(rect=(0, 0.1, 1, 1))
-    fig.savefig(os.path.join(FIG, "fig_shared.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_shared.pdf"))
     plt.close(fig)
     shared_column(rows)
     return res
@@ -498,7 +498,7 @@ def shared_column(rows):
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
-            color="#2a78d6",
+            color="#0F4D92",
             marker="o",
             markersize=2.5,
             linewidth=1.0,
@@ -507,7 +507,7 @@ def shared_column(rows):
         ax.plot(
             [a for a, _ in env],
             [b for _, b in env],
-            color="#eb6834",
+            color="#767676",
             marker="s",
             markersize=2.5,
             linewidth=1.0,
@@ -515,7 +515,7 @@ def shared_column(rows):
         )
         ax.axhline(
             reference(st)[1],
-            color="#7a7974",
+            color="#B64342",
             linestyle=":",
             linewidth=0.8,
             label="Target $1.25\\,T_{\\mathrm{g}}$",
@@ -533,7 +533,7 @@ def shared_column(rows):
         h, lb, frameon=False, fontsize=5.8, ncol=3, loc="lower center", bbox_to_anchor=(0.5, 0.0)
     )
     fig.tight_layout(rect=(0, 0.1, 1, 1), w_pad=0.4)
-    fig.savefig(os.path.join(FIG, "fig_shared_col.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_shared_col.pdf"))
     plt.close(fig)
 
 
@@ -656,7 +656,9 @@ def llm():
 
 
 # ------------------------------------------------------------------------------
+@publication_style()
 def main():
+    FIG.mkdir(parents=True, exist_ok=True)
     summary = {}
     theory()
     for name, fn in (("noise", noise), ("overhead", overhead), ("shared", shared), ("llm", llm)):

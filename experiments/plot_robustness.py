@@ -12,20 +12,21 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from experiments.plot import FIG, RES, STYLE, fmt  # noqa: E402  (shared style)
+from experiments.figure_style import STYLE, W1, W2, export_figure, publication_style  # noqa: E402
+from experiments.plot import fmt  # noqa: E402
+from mica_comm.paths import FIGURES_DIR as FIG  # noqa: E402
+from mica_comm.paths import RESULTS_DIR as RES  # noqa: E402
 
-W1 = 3.45  # IEEE single column (in)
-W2 = 7.0  # IEEE double column (in)
 RNG = np.random.default_rng(0)
 NBOOT = 4000
 
 RULES = {
-    "mica": dict(color="#2a78d6", marker="o", label="MICA, theory-of-mind value"),
-    "mica_tv": dict(color="#4a3aa7", marker="X", label="Belief-divergence value"),
-    "mica_bits": dict(color="#008300", marker="P", label="Throughput value (bits)"),
-    "mica_aoi": dict(color="#e34948", marker="v", label="Age-of-information value"),
+    "mica": dict(color="#0F4D92", marker="o", label="MICA, theory-of-mind value"),
+    "mica_tv": dict(color="#9A4D8E", marker="X", label="Belief-divergence value"),
+    "mica_bits": dict(color="#42949E", marker="P", label="Throughput value (bits)"),
+    "mica_aoi": dict(color="#B64342", marker="v", label="Age-of-information value"),
     "sem_agg": dict(
-        color="#eb6834", marker="s", label="Periodic aggregated, interval $k$", linestyle="--"
+        color="#767676", marker="s", label="Periodic aggregated, interval $k$", linestyle="--"
     ),
 }
 RULE_NAMES = {
@@ -98,7 +99,7 @@ def frontier():
                 [arr(rs, "completion_time").mean()],
                 linestyle="none",
                 marker="D",
-                color="#eda100",
+                color="#9A4D8E",
                 label="Periodic semantic (default setting)",
             )
         ax.set_xscale("log")
@@ -108,7 +109,7 @@ def frontier():
         stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.05, -0.28))
-    fig.savefig(os.path.join(FIG, "fig_frontier.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_frontier.pdf"))
     plt.close(fig)
     return stats
 
@@ -241,7 +242,7 @@ def where_tom():
         stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(1.05, -0.28))
-    fig.savefig(os.path.join(FIG, "fig_where_tom.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_where_tom.pdf"))
     plt.close(fig)
     lines = []
     for W, name in (("K10", "$K=10$"), ("clustered", "Clustered")):
@@ -357,7 +358,7 @@ def downlink():
         ax.set_ylim(0, 120)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.05, -0.28))
-    fig.savefig(os.path.join(FIG, "fig_downlink.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_downlink.pdf"))
     plt.close(fig)
     # paired differences sem - mica at each setting
     for v in ("loss0.0", "loss0.1", "loss0.3", "loss0.5", "delay1", "delay3", "delay5", "delay10"):
@@ -391,7 +392,7 @@ def fbl():
         ax.set_ylim(bottom=0)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(1.05, -0.28))
-    fig.savefig(os.path.join(FIG, "fig_fbl.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_fbl.pdf"))
     plt.close(fig)
     for g in (0.0, 2.0):
         for v in snrs:
@@ -563,7 +564,7 @@ def rescue():
     styles["mica_bits"] = dict(RULES["mica_bits"], label="MICA transport, throughput value")
     styles["mica_aoi"] = dict(RULES["mica_aoi"], label="MICA transport, AoI value")
     styles["sem_ra"] = dict(
-        color="#eb6834", marker="s", label="Periodic, rate-aware ($k$ swept)", linestyle="none"
+        color="#767676", marker="s", label="Periodic, rate-aware ($k$ swept)", linestyle="none"
     )
     ftab = table(load("filtered_periodic"))
     for ax, (st, title) in zip(
@@ -586,7 +587,7 @@ def rescue():
         ax.plot(
             [x for x, _ in env],
             [y for _, y in env],
-            color="#4a3aa7",
+            color="#9A4D8E",
             marker="X",
             linestyle="-",
             label="Periodic, suppressing (best envelope)",
@@ -597,13 +598,13 @@ def rescue():
             [100 * arr(v, "saved_fraction").mean() for _, v in fp],
             linestyle="none",
             marker="D",
-            color="#eda100",
+            color="#9A4D8E",
             label="Periodic, rate-aware + filter ($k$ swept)",
         )
         for r, mk, col in (
-            ("sem", "P", "#4a3aa7"),
-            ("raw", "^", "#1baf7a"),
-            ("report", "v", "#e87ba4"),
+            ("sem", "P", "#9A4D8E"),
+            ("raw", "^", "#42949E"),
+            ("report", "v", "#B64342"),
         ):
             rs = tab[(r, f"{st}/ref")]
             ax.plot(
@@ -617,7 +618,7 @@ def rescue():
         g = tab[("genie", f"{st}/ref")]
         ax.axhline(
             100 * arr(g, "saved_fraction").mean(),
-            color="#7a7974",
+            color="#B64342",
             linestyle="--",
             linewidth=1.0,
             label="Ideal-communication reference (genie)",
@@ -655,7 +656,7 @@ def rescue():
     axes[0].legend(
         frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.65, -0.28), fontsize=6.5
     )
-    fig.savefig(os.path.join(FIG, "fig_rescue.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_rescue.pdf"))
     plt.close(fig)
     return out
 
@@ -736,8 +737,8 @@ def efficiency_outputs(summary):
             st["label"] = lab[r]
             ax.plot(xs[o], ys[o], **st)
         for name, t2, pp, mk, col, lb in (
-            ("sem_ra", ratab, pre, "s", "#eb6834", "Periodic, rate-aware ($k$ swept)"),
-            ("sem_raf", ft, fpre, "D", "#eda100", "Periodic, rate-aware + filter ($k$ swept)"),
+            ("sem_ra", ratab, pre, "s", "#767676", "Periodic, rate-aware ($k$ swept)"),
+            ("sem_raf", ft, fpre, "D", "#9A4D8E", "Periodic, rate-aware + filter ($k$ swept)"),
         ):
             pts = _curve(t2, name, pp)
             xs = np.array([arr(v, "symbols").mean() / 1e3 for _, v in pts])
@@ -750,7 +751,7 @@ def efficiency_outputs(summary):
         ax.plot(
             [x for x, _ in env],
             [y for _, y in env],
-            color="#4a3aa7",
+            color="#9A4D8E",
             marker="X",
             linestyle="-",
             label="Periodic, suppressing (best envelope over $k$, $\\theta$)",
@@ -762,13 +763,13 @@ def efficiency_outputs(summary):
     g = table(load("genie_ref"))[("genie", "W100")]
     ax0.axhline(
         arr(g, "completion_time").mean(),
-        color="#7a7974",
+        color="#B64342",
         linestyle="--",
         linewidth=1.0,
         label="Ideal-communication reference (genie)",
     )
     ax0.legend(frameon=False, ncol=1, loc="upper center", bbox_to_anchor=(0.5, -0.30), fontsize=6.0)
-    fig.savefig(os.path.join(FIG, "fig_efficiency.pdf"))
+    export_figure(fig, os.path.join(FIG, "fig_efficiency.pdf"))
     plt.close(fig)
 
     # ---- efficiency table
@@ -1031,7 +1032,9 @@ def merge_value_tables():
         f.write("\n".join(out) + "\n")
 
 
+@publication_style()
 def main():
+    FIG.mkdir(parents=True, exist_ok=True)
     summary = {}
     for name, fn in (
         ("frontier", frontier),

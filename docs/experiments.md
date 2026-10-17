@@ -33,6 +33,11 @@ then increase it for statistical comparisons. `experiments.plot` handles baselin
 outputs; `experiments.plot_robustness` and `experiments.plot_realistic` consume
 their respective experiment groups. Run the required groups before those plots.
 
+`experiments.plot_team_benchmark` renders the three-model study and validates
+matched seeds and configurations before analysis. It accepts either local raw
+records or the compact public snapshot. See [scientific figures](figures.md)
+for editable PDF/SVG exports, PNG previews and optional upstream audits.
+
 For baseline figures, generate every baseline sweep first:
 
 ```bash

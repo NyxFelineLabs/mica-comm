@@ -134,6 +134,11 @@ earlier softmax-calibration studies, which remain documented separately.
 
 ## Reproduce
 
+For within-seed model comparisons and backend composition advice, see
+[model selection](model_selection.md). The present means do not establish a
+stable model ranking. The [figure workflow](figures.md) rebuilds task/resource
+plots and paired model contrasts from local raw data or the public source CSV.
+
 ```bash
 python -m experiments.run_team_benchmark --seeds 12 \
   --windows-python /mnt/c/Users/Administrator/AppData/Local/Programs/Python/Python311/python.exe

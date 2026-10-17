@@ -85,6 +85,7 @@ print(result["completion_time"], result["symbols"])
 | 基线小规模检查 | `python -m experiments.run_all --only default --seeds 2` |
 | 通信模块消融 | `python -m experiments.run_robustness --only ablation --seeds 2` |
 | 三模型团队主实验 | `python -m experiments.run_team_benchmark --seeds 12` |
+| 重新生成主实验图表 | `python -m experiments.plot_team_benchmark --input docs/data/team_benchmark` |
 | 传统规划器的队友行为校准 | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM 团队的队友行为校准 | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
 
@@ -107,6 +108,8 @@ figures/    生成的分析图表
 
 可以用 `MICA_RESULTS_DIR`、`MICA_FIGURES_DIR` 和 `MICA_CACHE_DIR` 重定向标准输出目录。
 比较策略时须使用相同配置与种子集合，并区分仿真时隙和实际推理耗时。
+`docs/data/` 中的精简任务结果和 `docs/assets/` 中选定的图表会纳入 Git，
+用于离线复绘文档中的实验结果。
 
 ## 实验结果
 
@@ -133,6 +136,13 @@ figures/    生成的分析图表
 实验协议与结果表格见 [三模型团队实验](docs/team_benchmark.md)。
 缓存回放耗时不能作为在线推理加速的证据。
 
+![任务与通信开销实测结果](docs/assets/mission_outcomes.png)
+
+浅色点为逐任务观测，大标记和误差线为 12 个种子的均值与 95% bootstrap 区间。
+三个后端用于验证模型家族差异，不预设低、中、高能力等级。
+模型间的配对比较及后续搭配建议见 [模型选择](docs/model_selection.md)，
+可编辑图表、公开源数据和复绘方法见 [科研绘图](docs/figures.md)。
+
 ## 项目结构
 
 ```text
@@ -158,6 +168,8 @@ mica-comm/
 | [实验工作流](docs/experiments.md) | 参数扫描、策略 ID、公平对比与输出约定 |
 | [模型后端](docs/model_backends.md) | Ollama、模型别名与响应缓存 |
 | [三模型团队实验](docs/team_benchmark.md) | 三种 LLM、通信策略与任务指标 |
+| [科研绘图](docs/figures.md) | 统一样式、图表源数据、矢量导出与排版检查 |
+| [模型选择](docs/model_selection.md) | 模型配对统计与后续实验搭配建议 |
 | [行为模型校准](docs/behavior_calibration.md) | 队友 softmax 参数拟合与假设 |
 | [LLM 校准协议](docs/llm_behavior_calibration.md) | 独立测试集评估与 Windows/WSL 推理 |
 | [贡献指南](CONTRIBUTING.md) | 开发约定与检查命令 |
