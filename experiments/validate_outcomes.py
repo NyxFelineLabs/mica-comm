@@ -1,13 +1,13 @@
-﻿"""Direct validation of the headline efficiency claims at realizable operating points.
+"""Validate task outcomes and communication costs at realizable operating points.
 
-For every headline setting, the operating points are selected on the evaluation seeds
-0-99: for GOSC, the price with the fewest channel uses whose mean outcome meets the
+For every evaluation setting, the operating points are selected on the evaluation seeds
+0-99: for AdaptiveScheduler, the price with the fewest channel uses whose mean outcome meets the
 target; for the periodic family (rate-aware, rate-aware + filter, suppression, all
 intervals/thresholds), the configuration with the fewest channel uses meeting the
 target.  The selected points are frozen and re-run on fresh seeds 3000-3099; the
 achieved outcome and channel uses are reported side by side, without interpolation.
 
-    python -m experiments.validate_headline
+    python -m experiments.validate_outcomes
 """
 
 import json
@@ -15,14 +15,14 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from experiments.plot_revision import arr, load, table
+from experiments.plot_robustness import arr, load, table
 from mosaic_comm import Config, run_episode
 from mosaic_comm.paths import RESULTS_DIR
 
-OUT = RESULTS_DIR / "rev_validation.json"
+OUT = RESULTS_DIR / "robustness_validation.json"
 B = Config()
 RB = B.with_(task="rescue", deadline_min=60, deadline_max=180)
-SETTINGS = {  # name: (base config, task metric, target factor, source files for GOSC)
+SETTINGS = {  # name: (base config, task metric, target factor, source files for AdaptiveScheduler)
     "search-W100": (B, "completion_time", 1.25),
     "search-K10": (B.with_(n_agents=10), "completion_time", 1.25),
     "search-clustered": (B.with_(victim_layout="clustered"), "completion_time", 1.25),
@@ -33,7 +33,7 @@ SETTINGS = {  # name: (base config, task metric, target factor, source files for
 
 
 def candidates(name):
-    """(label, scheme, config) of every GOSC and periodic operating point, with its
+    """(label, scheme, config) of every AdaptiveScheduler and periodic operating point, with its
     evaluation-seed rows."""
     base, metric, _ = SETTINGS[name]
     task, st = name.split("-", 1)
@@ -41,9 +41,9 @@ def candidates(name):
     if task == "search":
         src = table(load("frontier")) if st in ("W100", "W50") else table(load("where_tom"))
         for (s, p), rs in src.items():
-            if s == "gosc" and p.startswith(st + "/eta"):
+            if s == "adaptive" and p.startswith(st + "/eta"):
                 e = float(p.split("eta")[1])
-                out.append(("gosc", p, "gosc", base.with_(energy_price=e), rs))
+                out.append(("adaptive", p, "adaptive", base.with_(energy_price=e), rs))
         ra = table(load("rate_aware"))
         for (s, p), rs in ra.items():
             if p.startswith(st + "/k"):
@@ -54,9 +54,15 @@ def candidates(name):
     else:
         rs_tab = table(load("rescue"))
         for (s, p), rs in rs_tab.items():
-            if s == "gosc" and p.startswith(st + "/eta"):
+            if s == "adaptive" and p.startswith(st + "/eta"):
                 out.append(
-                    ("gosc", p, "gosc", base.with_(energy_price=float(p.split("eta")[1])), rs)
+                    (
+                        "adaptive",
+                        p,
+                        "adaptive",
+                        base.with_(energy_price=float(p.split("eta")[1])),
+                        rs,
+                    )
                 )
             if s == "sem_ra" and p.startswith(st + "/k"):
                 out.append(
@@ -99,7 +105,7 @@ def select(name):
     target = reference(name)
     ok = (lambda m: m <= target) if metric == "completion_time" else (lambda m: m >= target)
     chosen = {}
-    for fam in ("gosc", "periodic"):
+    for fam in ("adaptive", "periodic"):
         pts = [
             (arr(rs, "symbols").mean(), lab, sch, cfg)
             for f, lab, sch, cfg, rs in candidates(name)
@@ -144,9 +150,9 @@ def main():
                 "metric_per_seed": m.tolist(),
                 "ksym_per_seed": (y / 1e3).tolist(),
             }
-        if row.get("gosc") and row.get("periodic"):
+        if row.get("adaptive") and row.get("periodic"):
             a = np.array(row["periodic"]["ksym_per_seed"])
-            g = np.array(row["gosc"]["ksym_per_seed"])
+            g = np.array(row["adaptive"]["ksym_per_seed"])
             rng = np.random.default_rng(0)
             idx = rng.integers(0, len(a), (4000, len(a)))
             rat = a[idx].mean(1) / g[idx].mean(1)
@@ -169,7 +175,7 @@ def main():
                     else v
                 )
                 for k, v in row.items()
-                if k in ("gosc", "periodic")
+                if k in ("adaptive", "periodic")
             },
             "ratio",
             row.get("ratio"),

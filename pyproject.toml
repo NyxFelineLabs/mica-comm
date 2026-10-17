@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mosaic-comm"
 version = "0.1.0"
-description = "A compact simulator for resource efficient semantic communication in heterogeneous agent teams"
+description = "An experiment platform for communication and collaboration in heterogeneous agent teams"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }

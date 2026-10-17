@@ -1,6 +1,6 @@
-﻿"""Figures, tables and statistics for the revision experiments.
+"""Figures, tables and statistics for the robustness experiments.
 
-python -m experiments.plot_revision
+python -m experiments.plot_robustness
 """
 
 import json
@@ -20,25 +20,25 @@ RNG = np.random.default_rng(0)
 NBOOT = 4000
 
 RULES = {
-    "gosc": dict(color="#2a78d6", marker="o", label="Theory-of-mind VoI (GOSC)"),
-    "gosc_tv": dict(color="#4a3aa7", marker="X", label="Belief-divergence value"),
-    "gosc_bits": dict(color="#008300", marker="P", label="Throughput value (bits)"),
-    "gosc_aoi": dict(color="#e34948", marker="v", label="Age-of-information value"),
+    "adaptive": dict(color="#2a78d6", marker="o", label="Adaptive, theory-of-mind value"),
+    "adaptive_tv": dict(color="#4a3aa7", marker="X", label="Belief-divergence value"),
+    "adaptive_bits": dict(color="#008300", marker="P", label="Throughput value (bits)"),
+    "adaptive_aoi": dict(color="#e34948", marker="v", label="Age-of-information value"),
     "sem_agg": dict(
         color="#eb6834", marker="s", label="Periodic aggregated, interval $k$", linestyle="--"
     ),
 }
 RULE_NAMES = {
-    "gosc": "Theory-of-mind VoI (GOSC)",
-    "gosc_tv": "Belief divergence",
-    "gosc_bits": "Throughput (bits)",
-    "gosc_aoi": "Age of information",
+    "adaptive": "Adaptive, theory-of-mind value",
+    "adaptive_tv": "Belief divergence",
+    "adaptive_bits": "Throughput (bits)",
+    "adaptive_aoi": "Age of information",
     "sem_agg": "Periodic aggregated",
 }
 
 
 def load(name):
-    with open(os.path.join(RES, f"rev_{name}.json")) as f:
+    with open(os.path.join(RES, f"robustness_{name}.json")) as f:
         return json.load(f)["rows"]
 
 
@@ -105,7 +105,7 @@ def frontier():
         ax.set_title(f"$W={W[1:]}$ channel uses per slot")
         ax.set_xlabel("Channel uses per mission ($\\times 10^3$, log scale)")
         stats[W] = matched(curves, W)
-        stats[W]["periodic"] = best_periodic_vs_gosc(tab, W)
+        stats[W]["periodic"] = best_periodic_vs_adaptive(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.05, -0.28))
     fig.savefig(os.path.join(FIG, "fig_frontier.pdf"))
@@ -134,15 +134,15 @@ def _interp_T(pts, budget, idx):
 
 def matched(curves, W):
     """Completion time of each rule at common channel-use budgets, with paired
-    (same seed resample) bootstrap CIs of the difference to GOSC."""
+    (same seed resample) bootstrap CIs of the difference to AdaptiveScheduler."""
     res = {}
-    n = len(curves[(W, "gosc")][0][1])
+    n = len(curves[(W, "adaptive")][0][1])
     budgets = (5e3, 1e4, 2e4)
     for B in budgets:
         row = {}
-        base_pt = _interp_T(curves[(W, "gosc")], B, np.arange(n))
+        base_pt = _interp_T(curves[(W, "adaptive")], B, np.arange(n))
         for s in RULES:
-            if s == "gosc" or (W, s) not in curves:
+            if s == "adaptive" or (W, s) not in curves:
                 continue
             pt = _interp_T(curves[(W, s)], B, np.arange(n))
             if pt is None or base_pt is None:
@@ -152,7 +152,7 @@ def matched(curves, W):
             rng = np.random.default_rng(0)
             for _ in range(10000):
                 idx = rng.integers(0, n, n)
-                a, b = _interp_T(curves[(W, s)], B, idx), _interp_T(curves[(W, "gosc")], B, idx)
+                a, b = _interp_T(curves[(W, s)], B, idx), _interp_T(curves[(W, "adaptive")], B, idx)
                 if a is not None and b is not None:
                     diffs.append(a - b)
             lo, hi = np.percentile(diffs, [2.5, 97.5])
@@ -160,7 +160,7 @@ def matched(curves, W):
             blo, bhi = np.percentile(diffs, [100 * 0.025 / 15, 100 - 100 * 0.025 / 15])
             row[s] = {
                 "T": pt,
-                "gosc_T": base_pt,
+                "adaptive_T": base_pt,
                 "diff": pt - base_pt,
                 "lo": float(lo),
                 "hi": float(hi),
@@ -172,21 +172,21 @@ def matched(curves, W):
     return res
 
 
-def best_periodic_vs_gosc(tab, prefix):
-    """Best reporting interval of the periodic aggregated baseline vs GOSC at eta=0:
+def best_periodic_vs_adaptive(tab, prefix):
+    """Best reporting interval of the periodic aggregated baseline vs AdaptiveScheduler at eta=0:
     paired difference in completion time and ratio of channel uses."""
     ks = [k for k in (1, 2, 4, 8, 16) if ("sem_agg", f"{prefix}/k{k}") in tab]
     best = min(ks, key=lambda k: arr(tab[("sem_agg", f"{prefix}/k{k}")], "completion_time").mean())
-    a, g = tab[("sem_agg", f"{prefix}/k{best}")], tab[("gosc", f"{prefix}/eta0.0")]
+    a, g = tab[("sem_agg", f"{prefix}/k{best}")], tab[("adaptive", f"{prefix}/eta0.0")]
     out = {
         "k": best,
         "diff": paired(arr(a, "completion_time"), arr(g, "completion_time")),
         "sym_ratio": float(arr(a, "symbols").mean() / arr(g, "symbols").mean()),
         "periodic_T": float(arr(a, "completion_time").mean()),
-        "gosc_T": float(arr(g, "completion_time").mean()),
+        "adaptive_T": float(arr(g, "completion_time").mean()),
     }
-    if ("gosc_bits", f"{prefix}/eta0.0") in tab:
-        bb = tab[("gosc_bits", f"{prefix}/eta0.0")]
+    if ("adaptive_bits", f"{prefix}/eta0.0") in tab:
+        bb = tab[("adaptive_bits", f"{prefix}/eta0.0")]
         out["diff_vs_bits"] = paired(arr(a, "completion_time"), arr(bb, "completion_time"))
     return out
 
@@ -197,11 +197,11 @@ def frontier_table(stats):
         for B, row in stats[W].items():
             if B == "periodic":
                 continue
-            g = next((v["gosc_T"] for v in row.values() if v), None)
+            g = next((v["adaptive_T"] for v in row.values() if v), None)
             if g is None:
                 continue
             cells = []
-            for s in ("gosc_tv", "gosc_bits", "gosc_aoi"):
+            for s in ("adaptive_tv", "adaptive_bits", "adaptive_aoi"):
                 v = row.get(s)
                 cells.append(
                     "--" if not v else f"{v['diff']:+.1f} [{v['lo']:+.1f}, {v['hi']:+.1f}]"
@@ -227,7 +227,7 @@ def where_tom():
     stats = {}
     for ax, W, title in zip(axes, ("K10", "clustered"), ("$K=10$ agents", "Clustered survivors")):
         for s, st in RULES.items():
-            if s == "gosc_tv" or (W, s) not in curves:
+            if s == "adaptive_tv" or (W, s) not in curves:
                 continue
             pts = curves[(W, s)]
             xs = [arr(rs, "symbols").mean() / 1e3 for _, rs in pts]
@@ -238,7 +238,7 @@ def where_tom():
         ax.set_title(title)
         ax.set_xlabel("Channel uses per mission ($\\times 10^3$, log scale)")
         stats[W] = matched(curves, W)
-        stats[W]["periodic"] = best_periodic_vs_gosc(tab, W)
+        stats[W]["periodic"] = best_periodic_vs_adaptive(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(1.05, -0.28))
     fig.savefig(os.path.join(FIG, "fig_where_tom.pdf"))
@@ -248,11 +248,11 @@ def where_tom():
         for B, row in stats[W].items():
             if B == "periodic":
                 continue
-            g = next((v["gosc_T"] for v in row.values() if v), None)
+            g = next((v["adaptive_T"] for v in row.values() if v), None)
             if g is None:
                 continue
             cells = []
-            for sch in ("gosc_bits", "gosc_aoi"):
+            for sch in ("adaptive_bits", "adaptive_aoi"):
                 v = row.get(sch)
                 cells.append(
                     "--" if not v else f"{v['diff']:+.1f} [{v['lo']:+.1f}, {v['hi']:+.1f}]"
@@ -271,27 +271,27 @@ def where_tom():
 def ablation():
     tab = table(load("ablation"))
     names = {
-        "gosc": "GOSC (ToM VoI + filter)",
-        "gosc_nofilter": "ToM VoI, no filter",
-        "gosc_bits": "Throughput value + filter",
-        "gosc_novoi": "Throughput value, no filter",
-        "gosc_nouep": "ToM VoI + filter, conventional link adaptation",
+        "adaptive": "Adaptive (ToM VoI + filter)",
+        "adaptive_nofilter": "ToM VoI, no filter",
+        "adaptive_bits": "Throughput value + filter",
+        "adaptive_novoi": "Throughput value, no filter",
+        "adaptive_nouep": "ToM VoI + filter, conventional link adaptation",
     }
     lines, out = [], {}
     for W in ("W100", "W50"):
-        base = tab[("gosc", W)]
+        base = tab[("adaptive", W)]
         for s in names:
             rs = tab[(s, W)]
             m, h = ci(arr(rs, "completion_time"))
             sym = arr(rs, "symbols").mean() / 1e3
-            if s == "gosc":
+            if s == "adaptive":
                 dcell = "--"
             else:
                 d = paired(arr(rs, "completion_time"), arr(base, "completion_time"))
                 dcell = fmt_ci(*d)
             out[f"{W}/{s}"] = {"T": m, "T_ci": h, "ksym": sym}
-            lab = W[1:] if s == "gosc" else ""
-            nm = r"\textbf{" + names[s] + "}" if s == "gosc" else names[s]
+            lab = W[1:] if s == "adaptive" else ""
+            nm = r"\textbf{" + names[s] + "}" if s == "adaptive" else names[s]
             lines.append(f"{lab} & {nm} & {fmt(m)} $\\pm$ {fmt(h)} & {fmt(sym, 1)} & {dcell} \\\\")
         if W == "W100":
             lines.append(r"\midrule")
@@ -305,7 +305,7 @@ def private():
     lines, out = [], {}
     names = {"default": "Default", "W50": "$W=50$", "snr-5": r"$\bar\gamma_{\mathrm{ref}}=-5$\,dB"}
     for sc in ("default", "W50", "snr-5"):
-        sh, orc = tab[("gosc", f"{sc}/shared")], tab[("gosc", f"{sc}/oracle")]
+        sh, orc = tab[("adaptive", f"{sc}/shared")], tab[("adaptive", f"{sc}/oracle")]
         ptv = arr(sh, "private_tv").mean()
         ms, hs = ci(arr(sh, "completion_time"))
         mo, ho = ci(arr(orc, "completion_time"))
@@ -335,7 +335,7 @@ def downlink():
         (axes[0], "loss", (0.0, 0.1, 0.3, 0.5), "Broadcast loss probability $p_{\\mathrm{DL}}$"),
         (axes[1], "delay", (0, 1, 3, 5, 10), "Broadcast delay $d_{\\mathrm{DL}}$ (slots)"),
     ):
-        for s in ("sem", "gosc", "genie"):
+        for s in ("sem", "adaptive", "genie"):
             st = dict(STYLE[s])
 
             def key(v):
@@ -359,10 +359,10 @@ def downlink():
     axes[0].legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.05, -0.28))
     fig.savefig(os.path.join(FIG, "fig_downlink.pdf"))
     plt.close(fig)
-    # paired differences sem - gosc at each setting
+    # paired differences sem - adaptive at each setting
     for v in ("loss0.0", "loss0.1", "loss0.3", "loss0.5", "delay1", "delay3", "delay5", "delay10"):
         out[f"diff/{v}"] = paired(
-            arr(tab[("sem", v)], "completion_time"), arr(tab[("gosc", v)], "completion_time")
+            arr(tab[("sem", v)], "completion_time"), arr(tab[("adaptive", v)], "completion_time")
         )
     return out
 
@@ -373,7 +373,7 @@ def fbl():
     fig, axes = plt.subplots(1, 2, figsize=(W2, 1.85), sharey=True)
     out = {}
     for ax, g in zip(axes, (0.0, 2.0)):
-        for s in ("raw", "nl", "sem", "gosc"):
+        for s in ("raw", "nl", "sem", "adaptive"):
             st = dict(STYLE[s])
             mu, hw = zip(*(ci(arr(tab[(s, f"gap{g}/snr{v}")], "completion_time")) for v in snrs))
             mu, hw = np.array(mu), np.array(hw)
@@ -397,7 +397,7 @@ def fbl():
         for v in snrs:
             out[f"diff/gap{g}/snr{v}"] = paired(
                 arr(tab[("sem", f"gap{g}/snr{v}")], "completion_time"),
-                arr(tab[("gosc", f"gap{g}/snr{v}")], "completion_time"),
+                arr(tab[("adaptive", f"gap{g}/snr{v}")], "completion_time"),
             )
     return out
 
@@ -411,13 +411,13 @@ def main_paired():
     for r in rows:
         tab.setdefault(r["scheme"], {})[r["seed"]] = r
     tab = {s: [v[k] for k in sorted(v)] for s, v in tab.items()}
-    g = arr(tab["gosc"], "completion_time")
-    return {s: paired(arr(rs, "completion_time"), g) for s, rs in tab.items() if s != "gosc"}
+    g = arr(tab["adaptive"], "completion_time")
+    return {s: paired(arr(rs, "completion_time"), g) for s, rs in tab.items() if s != "adaptive"}
 
 
 def rate_aware():
     """Strong external baseline: rate-aware periodic aggregated scheduler (best
-    interval k per setting) vs GOSC at eta=0 and at the default price."""
+    interval k per setting) vs AdaptiveScheduler at eta=0 and at the default price."""
     ra = table(load("rate_aware"))
     fr = table(load("frontier"))
     wt = table(load("where_tom"))
@@ -444,15 +444,15 @@ def rate_aware():
             },
         }
         for eta in ("0.0", "1e-05"):
-            g = src[st][("gosc", f"{st}/eta{eta}")]
-            row[f"gosc_eta{eta}"] = {
+            g = src[st][("adaptive", f"{st}/eta{eta}")]
+            row[f"adaptive_eta{eta}"] = {
                 "T": float(arr(g, "completion_time").mean()),
                 "ksym": float(arr(g, "symbols").mean() / 1e3),
                 "diff": paired(arr(b, "completion_time"), arr(g, "completion_time")),
                 "sym_ratio": float(arr(b, "symbols").mean() / arr(g, "symbols").mean()),
             }
         out[st] = row
-        g0, g1 = row["gosc_eta0.0"], row["gosc_eta1e-05"]
+        g0, g1 = row["adaptive_eta0.0"], row["adaptive_eta1e-05"]
         lines.append(
             f"{names[st]} & {best} & {fmt(row['T'])} & {fmt(row['ksym'], 1)} & "
             f"{fmt_ci(*g0['diff'])} & {g0['sym_ratio']:.2f} & {fmt_ci(*g1['diff'])} & {g1['sym_ratio']:.2f} \\\\"
@@ -511,7 +511,7 @@ def efficiency(
     metric,
     target,
     higher,
-    rules=("gosc", "gosc_bits", "gosc_aoi", "periodic"),
+    rules=("adaptive", "adaptive_bits", "adaptive_aoi", "periodic"),
     nboot=2000,
 ):
     """Channel uses needed by each rule to reach `target`, and the ratio of the best
@@ -559,9 +559,11 @@ def rescue():
     fig, axes = plt.subplots(1, 3, figsize=(W2, 1.85), sharey=True)
     out = {}
     styles = dict(RULES)
-    styles["gosc"] = dict(RULES["gosc"], label="GOSC, theory-of-mind value")
-    styles["gosc_bits"] = dict(RULES["gosc_bits"], label="GOSC transport, throughput value")
-    styles["gosc_aoi"] = dict(RULES["gosc_aoi"], label="GOSC transport, AoI value")
+    styles["adaptive"] = dict(RULES["adaptive"], label="Adaptive, theory-of-mind value")
+    styles["adaptive_bits"] = dict(
+        RULES["adaptive_bits"], label="Adaptive transport, throughput value"
+    )
+    styles["adaptive_aoi"] = dict(RULES["adaptive_aoi"], label="Adaptive transport, AoI value")
     styles["sem_ra"] = dict(
         color="#eb6834", marker="s", label="Periodic, rate-aware ($k$ swept)", linestyle="none"
     )
@@ -570,7 +572,7 @@ def rescue():
         axes,
         (("W100", "$W=100$"), ("W50", "$W=50$"), ("snr-5", "$\\bar\\gamma_{\\mathrm{ref}}=-5$ dB")),
     ):
-        for r in ("gosc", "gosc_bits", "gosc_aoi", "sem_ra"):
+        for r in ("adaptive", "adaptive_bits", "adaptive_aoi", "sem_ra"):
             pts = _curve(tab, r, st)
             xs = [arr(rs, "symbols").mean() / 1e3 for _, rs in pts]
             ys = [100 * arr(rs, "saved_fraction").mean() for _, rs in pts]
@@ -642,7 +644,7 @@ def rescue():
                     "T": float(arr(rs, "completion_time").mean()),
                     "ksym": float(arr(rs, "symbols").mean() / 1e3),
                 }
-                for r in ("gosc", "gosc_bits", "gosc_aoi", "sem_ra")
+                for r in ("adaptive", "adaptive_bits", "adaptive_aoi", "sem_ra")
                 for p, rs in _curve(tab, r, st)
             },
         }
@@ -722,12 +724,12 @@ def efficiency_outputs(summary):
         ),
     )
     lab = {
-        "gosc": "GOSC, theory-of-mind value",
-        "gosc_bits": "GOSC transport, throughput value",
-        "gosc_aoi": "GOSC transport, AoI value",
+        "adaptive": "Adaptive, theory-of-mind value",
+        "adaptive_bits": "Adaptive transport, throughput value",
+        "adaptive_aoi": "Adaptive transport, AoI value",
     }
     for ax, tab, ratab, pre, fpre, metric, ylab, title, scale in panels:
-        for r in ("gosc", "gosc_bits", "gosc_aoi"):
+        for r in ("adaptive", "adaptive_bits", "adaptive_aoi"):
             pts = _curve(tab, r, pre)
             xs = np.array([arr(v, "symbols").mean() / 1e3 for _, v in pts])
             ys = np.array([scale * arr(v, metric).mean() for _, v in pts])
@@ -814,8 +816,8 @@ def efficiency_outputs(summary):
             tgt = f"$T\\le{1 + int(m.split('_')[1]) / 100:.2f}\\,T_{{\\mathrm{{g}}}}$"
             stab = table(load("frontier")) if W in ("W100", "W50") else table(load("where_tom"))
             lines.append(
-                f"{name} & {tgt} & {need(e, 'periodic')} & {need(e, 'gosc')} & {cellc(e, 'gosc', stab, W)} & "
-                f"{cellc(e, 'gosc_bits', stab, W)} \\\\"
+                f"{name} & {tgt} & {need(e, 'periodic')} & {need(e, 'adaptive')} & {cellc(e, 'adaptive', stab, W)} & "
+                f"{cellc(e, 'adaptive_bits', stab, W)} \\\\"
             )
     lines.append("\\midrule")
     for st, name in (
@@ -828,14 +830,14 @@ def efficiency_outputs(summary):
             frac = tg.split("_")[1]
             tgt = f"$S\\ge{int(frac) / 100:.2f}\\,S_{{\\mathrm{{g}}}}$"
             lines.append(
-                f"{name} & {tgt} & {need(e, 'periodic')} & {need(e, 'gosc')} & {cellc(e, 'gosc', rs, st)} & "
-                f"{cellc(e, 'gosc_bits', rs, st)} \\\\"
+                f"{name} & {tgt} & {need(e, 'periodic')} & {need(e, 'adaptive')} & {cellc(e, 'adaptive', rs, st)} & "
+                f"{cellc(e, 'adaptive_bits', rs, st)} \\\\"
             )
     with open(os.path.join(FIG, "table_efficiency.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
 
     # ---- value-fidelity table
-    rows = json.load(open(os.path.join(RES, "rev_value_fidelity.json")))
+    rows = json.load(open(os.path.join(RES, "robustness_value_fidelity.json")))
     rng = np.random.default_rng(0)
 
     def rk(x):
@@ -861,7 +863,7 @@ def efficiency_outputs(summary):
     }
     E = [r for r in rows if r["kind"] == "E"]
     EI = [r for r in rows if r["kind"] == "EI"]
-    cl = json.load(open(os.path.join(RES, "rev_fidelity_analysis.json")))["corr_cluster"]
+    cl = json.load(open(os.path.join(RES, "robustness_fidelity_analysis.json")))["corr_cluster"]
 
     def f3(v):
         return f"{v[0]:+.2f} [{v[1]:+.2f}, {v[2]:+.2f}]"
@@ -888,8 +890,8 @@ def joint_summary():
     tab = table(load("joint"))
     out = {}
     for p in sorted({k[1] for k in tab}):
-        g = tab[("gosc", p)]
-        for sch in ("gosc_joint", "gosc_joint_nb"):
+        g = tab[("adaptive", p)]
+        for sch in ("adaptive_joint", "adaptive_joint_nb"):
             j = tab[(sch, p)]
             out[f"{sch}/{p}"] = {
                 "dT": paired(arr(j, "completion_time"), arr(g, "completion_time")),
@@ -901,7 +903,7 @@ def joint_summary():
 def validation_table():
     """Fresh-seed validation of frozen operating points, with paired outcome differences
     and each method's margin to the common target (bootstrap over the fresh seeds)."""
-    v = json.load(open(os.path.join(RES, "rev_validation.json")))
+    v = json.load(open(os.path.join(RES, "robustness_validation.json")))
     names = {
         "search-W100": "Search",
         "search-K10": "Search, $K{=}10$",
@@ -916,7 +918,7 @@ def validation_table():
         r = v[k]
         time = r["metric"] == "completion_time"
         sc = 1.0 if time else 100.0
-        g = np.array(r["gosc"]["metric_per_seed"]) * sc
+        g = np.array(r["adaptive"]["metric_per_seed"]) * sc
         a = np.array(r["periodic"]["metric_per_seed"]) * sc
         tgt = r["target"] * sc
         idx = rng.integers(0, len(g), (4000, len(g)))
@@ -928,19 +930,19 @@ def validation_table():
         # margin: positive = target met with room (time: target - T; saved: S - target)
         mg = ci((tgt - g) if time else (g - tgt))
         ma = ci((tgt - a) if time else (a - tgt))
-        d = ci(g - a)  # GOSC minus periodic outcome, paired
+        d = ci(g - a)  # AdaptiveScheduler minus periodic outcome, paired
         out[k] = {
-            "margin_gosc": mg,
+            "margin_adaptive": mg,
             "margin_periodic": ma,
             "diff": d,
             "ratio": r["ratio"],
-            "gosc_point": r["gosc"]["point"],
+            "adaptive_point": r["adaptive"]["point"],
             "periodic_point": r["periodic"]["point"],
             "periodic_scheme": r["periodic"]["scheme"],
             "target": tgt,
-            "gosc_outcome": float(g.mean()),
+            "adaptive_outcome": float(g.mean()),
             "periodic_outcome": float(a.mean()),
-            "gosc_ksym": r["gosc"]["fresh_ksym"],
+            "adaptive_ksym": r["adaptive"]["fresh_ksym"],
             "periodic_ksym": r["periodic"]["fresh_ksym"],
         }
 
@@ -949,7 +951,7 @@ def validation_table():
 
         lines.append(
             f"{nm} & {tgt:.1f} & {g.mean():.1f} & {format_interval(mg)} & "
-            f"{r['gosc']['fresh_ksym']:.1f} & {a.mean():.1f} & {format_interval(ma)} & "
+            f"{r['adaptive']['fresh_ksym']:.1f} & {a.mean():.1f} & {format_interval(ma)} & "
             f"{r['periodic']['fresh_ksym']:.1f} & {format_interval(d)} & "
             f"{r['ratio'][0]:.2f} [{r['ratio'][1]:.2f}, {r['ratio'][2]:.2f}] \\\\"
         )
@@ -957,7 +959,7 @@ def validation_table():
             lines.append("\\midrule")
     with open(os.path.join(FIG, "table_validation.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
-    # frozen configurations (appendix)
+    # fixed operating points for held-out evaluation
     conf = []
     for k, nm in names.items():
         r = v[k]
@@ -969,7 +971,7 @@ def validation_table():
             "3e-06": "3\\cdot10^{-6}",
             "0.001": "10^{-3}",
             "0.0": "0",
-        }[r["gosc"]["point"].split("eta")[1]]
+        }[r["adaptive"]["point"].split("eta")[1]]
         pp = r["periodic"]["point"].split("/", 1)[1]
         sch = {"sem_ra": "rate-aware", "sem_raf": "rate-aware + filter", "sem_ras": "suppressing"}[
             r["periodic"]["scheme"]
@@ -982,13 +984,13 @@ def validation_table():
 
 
 def sweep_paired():
-    """Paired sem - GOSC differences and channel-use ratios along the main sweeps."""
+    """Paired sem - AdaptiveScheduler differences and channel-use ratios along the main sweeps."""
     out = {}
     for name in ("snr", "budget", "agents"):
         with open(os.path.join(RES, f"{name}.json")) as f:
             tab = table(json.load(f)["rows"])
         for p in sorted({k[1] for k in tab}):
-            a, g = tab[("sem", p)], tab[("gosc", p)]
+            a, g = tab[("sem", p)], tab[("adaptive", p)]
             out[f"{name}/{p}"] = list(
                 paired(arr(a, "completion_time"), arr(g, "completion_time"))
             ) + [float(arr(a, "symbols").mean() / arr(g, "symbols").mean())]
@@ -1012,18 +1014,18 @@ def completion_rates():
 
 def merge_value_tables():
     """One matched-budget table over all settings (was two tables).
-    Columns: setting, budget, GOSC, belief divergence, throughput, AoI."""
+    Columns: setting, budget, AdaptiveScheduler, belief divergence, throughput, AoI."""
 
     def rows(fname):
         with open(os.path.join(FIG, fname)) as f:
             return [ln.rstrip() for ln in f if ln.strip() and not ln.startswith(r"\midrule")]
 
     out = []
-    for ln in rows("table_frontier.tex"):  # W & budget & GOSC & TV & bits & AoI
+    for ln in rows("table_frontier.tex"):  # W & budget & AdaptiveScheduler & TV & bits & AoI
         c = ln.split("&")
         out.append(f"$W={c[0].strip()}$ & " + "&".join(c[1:]))
     out.append(r"\midrule")
-    for ln in rows("table_where_tom.tex"):  # setting & budget & GOSC & bits & AoI
+    for ln in rows("table_where_tom.tex"):  # setting & budget & AdaptiveScheduler & bits & AoI
         c = [x.strip() for x in ln.split("&")]
         c[-1] = c[-1].replace(r"\\", "").strip()
         out.append(f"{c[0]} & {c[1]} & {c[2]} & n/e & {c[3]} & {c[4]} " + r"\\")
@@ -1058,16 +1060,18 @@ def main():
     summary["sweep_paired"] = sweep_paired()
     summary["joint"] = joint_summary()
     summary["validation"] = validation_table()
-    summary["fidelity_cluster"] = json.load(open(os.path.join(RES, "rev_fidelity_analysis.json")))
+    summary["fidelity_cluster"] = json.load(
+        open(os.path.join(RES, "robustness_fidelity_analysis.json"))
+    )
     summary["completion_rates"] = completion_rates()
     merge_value_tables()
-    sched = os.path.join(RES, "rev_scheduler.json")
+    sched = os.path.join(RES, "robustness_scheduler.json")
     if os.path.exists(sched):
         with open(sched) as f:
             summary["scheduler"] = json.load(f)
-    with open(os.path.join(RES, "summary_revision.json"), "w") as f:
+    with open(os.path.join(RES, "summary_robustness.json"), "w") as f:
         json.dump(summary, f, indent=1, default=float)
-    print("revision figures and tables written")
+    print("robustness figures and tables written")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-﻿"""Fresh-seed validation (seeds 3000-3099) of the realistic-resource experiments.
+"""Fresh-seed validation (seeds 3000-3099) of the realistic-resource experiments.
 
 Selection rule (the main evaluation's, fixed in advance): on the evaluation seeds 0-99, take
 for each family the operating point with the fewest mean uplink channel uses whose
@@ -6,7 +6,7 @@ mean outcome meets the target (1.25 x the ideal-communication completion time in
 search task, 0.90 x its saved fraction in the rescue task); freeze it and re-run it on
 the fresh seeds, with common random numbers across methods.
 
-  overhead  H = 16/32/64 bits: GOSC and the periodic family re-selected per H; H = 0
+  overhead  H = 16/32/64 bits: AdaptiveScheduler and the periodic family re-selected per H; H = 0
             re-runs the main-evaluation frozen points with the complete cost account;
             search default: conventional schemes too (cost table)
   noise     each value-estimation arm re-selected per setting (the periodic
@@ -23,7 +23,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from experiments.run_realistic import ARMS, HEADLINE, OUT, SETTINGS, SHARED
+from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT, SETTINGS, SHARED
 from mosaic_comm import run_realistic
 from mosaic_comm.paths import RESULTS_DIR
 
@@ -40,7 +40,7 @@ def load_jsonl(name):
 
 
 def main_rows(name):
-    with open(os.path.join(RES, f"rev_{name}.json")) as f:
+    with open(os.path.join(RES, f"robustness_{name}.json")) as f:
         return json.load(f)["rows"]
 
 
@@ -118,7 +118,7 @@ def fresh(pool, cfg, scheme):
 
 
 def main_frozen():
-    with open(os.path.join(RES, "rev_validation.json")) as f:
+    with open(os.path.join(RES, "robustness_validation.json")) as f:
         return json.load(f)
 
 
@@ -126,12 +126,12 @@ def overhead(pool):
     rows = load_jsonl("overhead")
     jv = main_frozen()
     res = {}
-    for st in HEADLINE:
+    for st in EVALUATION_SETTINGS:
         metric, target = reference(st)
         for H in (0, 16, 32, 64):
             base = SETTINGS[st].with_(overhead_bits=H)
             entry = {"target": target, "metric": metric}
-            for fam in ("gosc", "periodic"):
+            for fam in ("adaptive", "periodic"):
                 if H == 0:
                     sch, p = jv[st][fam]["scheme"], jv[st][fam]["point"].split("/", 1)[1]
                 else:
@@ -141,7 +141,7 @@ def overhead(pool):
                             for r in rows
                             if not (
                                 st.startswith("rescue")
-                                and r["family"] == "gosc"
+                                and r["family"] == "adaptive"
                                 and r["point"] in ("eta0.0003", "eta0.001")
                             )
                         ],
@@ -171,7 +171,7 @@ def overhead(pool):
                         if entry.get(f)
                         else None
                     )
-                    for f in ("gosc", "periodic")
+                    for f in ("adaptive", "periodic")
                 },
                 flush=True,
             )
@@ -184,12 +184,12 @@ def overhead(pool):
 def noise(pool):
     rows = load_jsonl("noise")
     res = {}
-    for st in HEADLINE:
+    for st in EVALUATION_SETTINGS:
         metric, target = reference(st)
         for arm, (scheme, kw) in ARMS.items():
             if arm == "exact" and not st.startswith("rescue"):
                 continue
-            b = select(rows, st, "gosc", metric, target, arm=arm)
+            b = select(rows, st, "adaptive", metric, target, arm=arm)
             if b is None:
                 res[f"{st}/{arm}"] = None
                 continue
@@ -220,7 +220,7 @@ def shared(pool):
         metric, target = reference(st)
         c = cfg.with_(shared_budget=bud, symbols_per_slot=bud)
         entry = {"target": target, "metric": metric}
-        for fam in ("gosc", "periodic"):
+        for fam in ("adaptive", "periodic"):
             b = select(rows, st, fam, metric, target)
             if b is None:
                 entry[fam] = None
@@ -237,7 +237,7 @@ def shared(pool):
                     if entry.get(f)
                     else None
                 )
-                for f in ("gosc", "periodic")
+                for f in ("adaptive", "periodic")
             },
             flush=True,
         )

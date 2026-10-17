@@ -1,9 +1,8 @@
-﻿"""Extended LLM experiments (search task, agents 0, 2, 4
-LLM-driven): a stronger 7B-class model (Qwen2.5-7B-Instruct) on 30 seeds (fixed in
-advance; about 6 min per mission on an 8 GB M1), and the Llama-3.2-3B team extended from
-30 to 50 seeds.  Missions are appended to
-results/llm_extended.jsonl; LLM responses are cached in results/llm_cache/ (shared
-with the main LLM experiments).
+"""Extend heterogeneous-team runs using additional model roles and seed ranges.
+
+Agents 0, 2, and 4 use the selected LLM; the remaining agents use the classical
+planner. Missions are appended to results/llm_extended.jsonl. Responses share
+the model-specific cache used by the other LLM experiments.
 
     python -m experiments.run_llm_extended --seeds 50 --teams mixed_alt
     python -m experiments.run_llm_extended --seeds 30 --teams mixed_large
@@ -41,12 +40,12 @@ def main():
             for line in f:
                 r = json.loads(line)
                 done.add((r["team"], r["scheme"], r["seed"]))
-    schemes = ["sem", "gosc"] + (["genie"] if args.genie else [])
+    schemes = ["sem", "adaptive"] + (["genie"] if args.genie else [])
     plan = []
     for i in range(args.seeds):  # interleaved: partial runs stay balanced
         plan += [("mixed_large", s, i) for s in schemes]
         if args.alt_from + i < args.seeds:
-            plan += [("mixed_alt", s, args.alt_from + i) for s in ("sem", "gosc", "genie")]
+            plan += [("mixed_alt", s, args.alt_from + i) for s in ("sem", "adaptive", "genie")]
     for team, scheme, seed in plan:
         if (team, scheme, seed) in done or team not in args.teams:
             continue

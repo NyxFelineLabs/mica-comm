@@ -1,4 +1,4 @@
-﻿"""Goal-oriented semantic communication for collaborating AI agents over 6G."""
+"""Communication and collaboration experiments for heterogeneous agent teams."""
 
 from .config import Config
 

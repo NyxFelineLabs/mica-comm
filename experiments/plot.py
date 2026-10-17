@@ -1,4 +1,4 @@
-﻿"""Turn results/*.json into the paper's figures and tables.
+"""Turn baseline experiment results into figures and summary tables.
 
 python -m experiments.plot
 """
@@ -20,13 +20,13 @@ FIG.mkdir(parents=True, exist_ok=True)
 
 # Categorical slots in fixed order (validated palette); genie is a neutral reference.
 STYLE = {
-    "gosc": dict(color="#2a78d6", marker="o", label="GOSC (proposed)"),
+    "adaptive": dict(color="#2a78d6", marker="o", label="Adaptive scheduling"),
     "sem": dict(color="#eb6834", marker="s", label="Semantic, periodic"),
     "raw": dict(color="#1baf7a", marker="^", label="Raw sensor data"),
     "nl": dict(color="#eda100", marker="D", label="Natural language"),
     "report": dict(color="#e87ba4", marker="v", label="Report only"),
-    "gosc_novoi": dict(color="#008300", marker="P", label="GOSC w/o VoI"),
-    "gosc_tv": dict(color="#4a3aa7", marker="X", label="GOSC, belief-div. VoI"),
+    "adaptive_novoi": dict(color="#008300", marker="P", label="Adaptive w/o VoI"),
+    "adaptive_tv": dict(color="#4a3aa7", marker="X", label="Adaptive, belief-div. VoI"),
     "genie": dict(
         color="#7a7974", marker="", label="Ideal-communication reference (genie)", linestyle="--"
     ),
@@ -36,13 +36,13 @@ NAMES = {
     "raw": "Raw sensor data",
     "nl": "Natural language (LLM-style)",
     "sem": "Semantic, periodic",
-    "gosc_nouep": "GOSC w/o UEP",
-    "gosc_novoi": "GOSC w/o VoI",
-    "gosc_tv": "GOSC w/ belief-divergence VoI",
-    "gosc": "GOSC (proposed)",
+    "adaptive_nouep": "Adaptive w/o UEP",
+    "adaptive_novoi": "Adaptive w/o VoI",
+    "adaptive_tv": "Adaptive w/ belief-divergence VoI",
+    "adaptive": "Adaptive scheduling",
     "genie": "Ideal-comm. reference (genie)",
 }
-MAIN = ["report", "raw", "nl", "sem", "gosc", "genie"]
+MAIN = ["report", "raw", "nl", "sem", "adaptive", "genie"]
 
 plt.rcParams.update(
     {
@@ -214,8 +214,8 @@ def pareto_plot():
             [np.mean([r["completion_time"] for r in by(data, scheme, e)]) for e in etas],
         )
 
-    etas, xs, ys = front(rows, "gosc")
-    ax.plot(xs, ys, **STYLE["gosc"])
+    etas, xs, ys = front(rows, "adaptive")
+    ax.plot(xs, ys, **STYLE["adaptive"])
     for e, x, y in zip(etas, xs, ys):
         if e in (0.0, 1e-5, 1e-4, 1e-3):
             lab = r"$\eta$=0" if e == 0 else rf"$\eta$={e:.0e}".replace("e-0", "e-")
@@ -229,9 +229,9 @@ def pareto_plot():
                 color="#2a78d6",
                 ha="right",
             )
-    _, xt, yt = front(tv, "gosc_tv")
-    ax.plot(xt, yt, **STYLE["gosc_tv"])
-    for s in ["sem", "raw", "nl", "report", "gosc_novoi"]:
+    _, xt, yt = front(tv, "adaptive_tv")
+    ax.plot(xt, yt, **STYLE["adaptive_tv"])
+    for s in ["sem", "raw", "nl", "report", "adaptive_novoi"]:
         st = dict(STYLE[s])
         r = by(dflt, s)
         ax.plot(
@@ -249,8 +249,8 @@ def pareto_plot():
     fig.savefig(os.path.join(FIG, "fig_pareto.pdf"))
     plt.close(fig)
     return {
-        "tom": {e: summarize(by(rows, "gosc", e)) for e in etas},
-        "tv": {e: summarize(by(tv, "gosc_tv", e)) for e in sorted({r["param"] for r in tv})},
+        "tom": {e: summarize(by(rows, "adaptive", e)) for e in etas},
+        "tv": {e: summarize(by(tv, "adaptive_tv", e)) for e in sorted({r["param"] for r in tv})},
     }
 
 
@@ -259,7 +259,7 @@ def traj_plot():
         tr = json.load(f)
     fig, axes = plt.subplots(1, 2, figsize=(W1, 1.85), sharey=True)
     agent_colors = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"]
-    for ax, s in zip(axes, ["sem", "gosc"]):
+    for ax, s in zip(axes, ["sem", "adaptive"]):
         d = tr[s]
         for k, path in enumerate(d["trajectories"]):
             p = np.array(path)
@@ -295,17 +295,17 @@ def paired_diff(rows, a, b, nboot=4000):
 
 def default_table():
     rows = load("default")
-    order = ["report", "raw", "nl", "sem", "gosc", "genie"]
+    order = ["report", "raw", "nl", "sem", "adaptive", "genie"]
     summ = {s: summarize(by(rows, s)) for s in order}
     for s in order:
-        summ[s]["diff_vs_gosc"] = None if s == "gosc" else paired_diff(rows, s, "gosc")
+        summ[s]["diff_vs_adaptive"] = None if s == "adaptive" else paired_diff(rows, s, "adaptive")
     lines = []
     for s in order:
         m = summ[s]
-        d = m["diff_vs_gosc"]
+        d = m["diff_vs_adaptive"]
         dcell = "--" if d is None else f"{d[0]:+.1f} [{d[1]:+.1f}, {d[2]:+.1f}]"
         name = NAMES[s]
-        if s == "gosc":
+        if s == "adaptive":
             name = r"\textbf{" + name + "}"
         if s == "genie":
             lines.append(r"\midrule")
@@ -348,15 +348,15 @@ def llm_table():
     out, lines = {}, []
     teams = [
         ("planner", "Planner only"),
-        ("mixed", "Mixed, Qwen2.5-3B"),
-        ("mixed_alt", "Mixed, Llama-3.2-3B"),
+        ("mixed", "Mixed, primary model"),
+        ("mixed_alt", "Mixed, alternative model"),
     ]
     for team, name in teams:
-        if (team, "gosc") not in T:
+        if (team, "adaptive") not in T:
             continue
-        ss = seeds((team, "sem"), (team, "gosc"), (team, "genie"))
+        ss = seeds((team, "sem"), (team, "adaptive"), (team, "genie"))
         first = True
-        for sch in ("sem", "gosc", "genie"):
+        for sch in ("sem", "adaptive", "genie"):
             r = [T[(team, sch)][k] for k in ss]
             m = summarize(r)
             if team != "planner":
@@ -367,18 +367,22 @@ def llm_table():
             out[f"{team}/{sch}"] = m
             label = f"{name} ({len(ss)})" if first else ""
             first = False
-            sname = {"sem": "Semantic, periodic", "gosc": r"\textbf{GOSC}", "genie": "Genie"}[sch]
+            sname = {
+                "sem": "Semantic, periodic",
+                "adaptive": r"\textbf{Adaptive}",
+                "genie": "Genie",
+            }[sch]
             ch = "--" if sch == "genie" else fmt(m["ksym"], 1)
             lines.append(f"{label} & {sname} & {fmt(m['T'])} $\\pm$ {fmt(m['T_ci'])} & {ch} \\\\")
         lines.append(r"\midrule")
-        out[f"{team}/sem_minus_gosc"] = boot(
+        out[f"{team}/sem_minus_adaptive"] = boot(
             [
-                T[(team, "sem")][k]["completion_time"] - T[(team, "gosc")][k]["completion_time"]
+                T[(team, "sem")][k]["completion_time"] - T[(team, "adaptive")][k]["completion_time"]
                 for k in ss
             ]
         )
         if team != "planner":
-            for sch in ("sem", "gosc", "genie"):
+            for sch in ("sem", "adaptive", "genie"):
                 cs = seeds((team, sch), ("planner", sch))
                 out[f"{team}_minus_planner/{sch}"] = boot(
                     [
@@ -387,8 +391,10 @@ def llm_table():
                         for k in cs
                     ]
                 )
-            cs = seeds((team, "sem"), (team, "gosc"), ("planner", "sem"), ("planner", "gosc"))
-            # difference in degradation: (mixed - planner | sem) - (mixed - planner | gosc)
+            cs = seeds(
+                (team, "sem"), (team, "adaptive"), ("planner", "sem"), ("planner", "adaptive")
+            )
+            # difference in degradation: (mixed - planner | sem) - (mixed - planner | adaptive)
             out[f"{team}/degradation_difference"] = boot(
                 [
                     (
@@ -396,27 +402,27 @@ def llm_table():
                         - T[("planner", "sem")][k]["completion_time"]
                     )
                     - (
-                        T[(team, "gosc")][k]["completion_time"]
-                        - T[("planner", "gosc")][k]["completion_time"]
+                        T[(team, "adaptive")][k]["completion_time"]
+                        - T[("planner", "adaptive")][k]["completion_time"]
                     )
                     for k in cs
                 ]
             )
     for team in ("planner", "mixed"):
-        if (team, "gosc_bits") in T:
-            cs = seeds((team, "gosc_bits"), (team, "gosc"))
-            out[f"{team}/bits_minus_gosc"] = boot(
+        if (team, "adaptive_bits") in T:
+            cs = seeds((team, "adaptive_bits"), (team, "adaptive"))
+            out[f"{team}/bits_minus_adaptive"] = boot(
                 [
-                    T[(team, "gosc_bits")][k]["completion_time"]
-                    - T[(team, "gosc")][k]["completion_time"]
+                    T[(team, "adaptive_bits")][k]["completion_time"]
+                    - T[(team, "adaptive")][k]["completion_time"]
                     for k in cs
                 ]
             )
             out[f"{team}/bits_ksym"] = float(
-                np.mean([T[(team, "gosc_bits")][k]["symbols"] for k in cs]) / 1e3
+                np.mean([T[(team, "adaptive_bits")][k]["symbols"] for k in cs]) / 1e3
             )
-            out[f"{team}/gosc_ksym_on_bits_seeds"] = float(
-                np.mean([T[(team, "gosc")][k]["symbols"] for k in cs]) / 1e3
+            out[f"{team}/adaptive_ksym_on_bits_seeds"] = float(
+                np.mean([T[(team, "adaptive")][k]["symbols"] for k in cs]) / 1e3
             )
     if lines and lines[-1] == r"\midrule":
         lines.pop()

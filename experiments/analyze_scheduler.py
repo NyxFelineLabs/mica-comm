@@ -1,7 +1,7 @@
-﻿"""Scheduler optimality gap and VoI additivity on logged GOSC decisions.
+"""Scheduler optimality gap and VoI additivity on logged AdaptiveScheduler decisions.
 
-For every scheduling instance of GOSC missions, compares the Lagrangian + greedy
-solution of the multiple-choice knapsack (Eq. 11) with the exact optimum found by
+For every scheduling instance of AdaptiveScheduler missions, compares the Lagrangian + greedy
+solution of the multiple-choice knapsack with the exact optimum found by
 enumeration, and, whenever an intent and an evidence message compete, compares the
 joint VoI of sending both with the sum of their individual VoIs.
 
@@ -18,10 +18,10 @@ import numpy as np
 
 from mosaic_comm import Config, Simulation
 from mosaic_comm.paths import RESULTS_DIR
-from mosaic_comm.schemes import GOSC
+from mosaic_comm.schemes import AdaptiveScheduler
 from mosaic_comm.voi import TeamModel
 
-OUT = RESULTS_DIR / "rev_scheduler.json"
+OUT = RESULTS_DIR / "robustness_scheduler.json"
 
 
 def exact(groups, budget, price):
@@ -36,11 +36,11 @@ def exact(groups, budget, price):
 def run(args):
     W, seed = args
     cfg = Config().with_(symbols_per_slot=W)
-    sim = Simulation(cfg, "gosc", seed)
+    sim = Simulation(cfg, "adaptive", seed)
     sched = sim.scheme
     sched.log = []
     additivity = []
-    orig = GOSC.build_groups
+    orig = AdaptiveScheduler.build_groups
 
     def build(agent, snr_mean, view):
         groups = orig(sched, agent, snr_mean, view)
@@ -91,7 +91,7 @@ def main():
             return np.argsort(np.argsort(x))
 
         spearman = float(np.corrcoef(rank(vj), rank(tot))[0, 1])
-        np.save(os.path.join(os.path.dirname(OUT), f"rev_additivity_W{W}.npy"), add)
+        np.save(os.path.join(os.path.dirname(OUT), f"robustness_additivity_W{W}.npy"), add)
         summary[f"W{W}"] = {
             "instances": int(gaps.size),
             "optimal_fraction": float(np.mean(gaps < 1e-9)),

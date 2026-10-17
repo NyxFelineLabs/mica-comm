@@ -1,4 +1,4 @@
-﻿"""Realistic radio resources and imperfect message values.
+"""Realistic radio resources and imperfect message values.
 
 Extends the simulator by subclassing, so that the default Config reproduces the base
 model exactly (tests/test_realistic.py):
@@ -8,7 +8,7 @@ model exactly (tests/test_realistic.py):
     uplink + downlink cost account (broadcast, HARQ feedback, grants);
   * a shared, network-wide uplink budget for which the agents compete.
 
-Shared mode (Config.shared_budget = B > 0): GOSC agents apply the decoupled rule at a
+Shared mode (Config.shared_budget = B > 0): adaptive agents apply the decoupled rule at a
 broadcast network price and request their selection; periodic/FIFO baselines send a
 buffer status report and receive max-min fair grants.  Requests are counted as uplink
 control bits (1 bit per channel use) and grants as downlink control bits.
@@ -21,9 +21,9 @@ import numpy as np
 
 from .messages import Packet, confirm_bits, evidence_sizes, intent_bits
 from .schemes import (
-    GOSC,
     PRIORITY,
     SCHEMES,
+    AdaptiveScheduler,
     Genie,
     Group,
     NaturalLanguage,
@@ -43,10 +43,10 @@ from .voi import TeamModel
 
 
 # --------------------------------------------------------------------------
-# GOSC with packet overhead and (optionally) imperfect message values
+# Adaptive scheduling with overhead and imperfect message values
 # --------------------------------------------------------------------------
-class RealisticGOSC(GOSC):
-    """GOSC with packet overhead, imperfect value estimates, and shared budgets."""
+class ResourceAwareScheduler(AdaptiveScheduler):
+    """Adaptive scheduling with packet overhead, imperfect values, and shared budgets."""
 
     def __init__(self, cfg, channel, **kw):
         super().__init__(cfg, channel, **kw)
@@ -105,8 +105,7 @@ class RealisticGOSC(GOSC):
         return opts
 
     def build_groups(self, agent, snr_mean, sim):
-        """GOSC.build_groups of gosc.schemes with (i) the overhead in the evidence-prefix fit
-        and (ii) value estimation errors on intents and evidence."""
+        """Build message options including headers and imperfect intent/evidence values."""
         c, H = self.cfg, self.H
         rates = c.rates if self.use_uep else (self.channel.fixed_rate(snr_mean),)
         acked_confirms = getattr(agent, "acked_confirms", set())
@@ -188,7 +187,7 @@ class RealisticGOSC(GOSC):
 
     # -- transmission --------------------------------------------------------
     def apply(self, agent, chosen, t, snr_inst, sim):
-        """Transmit the chosen options (GOSC.transmit of gosc.schemes after the selection)."""
+        """Transmit selected options and account for packet overhead and feedback."""
         res = TxResult([])
         for g, o in chosen:
             res.symbols += o.symbols
@@ -332,17 +331,23 @@ REALISTIC_SCHEMES = {
     "sem_ra": XSemRA,
     "sem_raf": XSemRAF,
     "sem_ras": XSemRAS,
-    "gosc": lambda cfg, ch: RealisticGOSC(cfg, ch),
-    "gosc_bits": lambda cfg, ch: RealisticGOSC(cfg, ch, voi_mode="bits", name="gosc_bits"),
-    "gosc_aoi": lambda cfg, ch: RealisticGOSC(cfg, ch, voi_mode="aoi", name="gosc_aoi"),
-    "gosc_nofilter": lambda cfg, ch: RealisticGOSC(cfg, ch, use_filter=False, name="gosc_nofilter"),
+    "adaptive": lambda cfg, ch: ResourceAwareScheduler(cfg, ch),
+    "adaptive_bits": lambda cfg, ch: ResourceAwareScheduler(
+        cfg, ch, voi_mode="bits", name="adaptive_bits"
+    ),
+    "adaptive_aoi": lambda cfg, ch: ResourceAwareScheduler(
+        cfg, ch, voi_mode="aoi", name="adaptive_aoi"
+    ),
+    "adaptive_nofilter": lambda cfg, ch: ResourceAwareScheduler(
+        cfg, ch, use_filter=False, name="adaptive_nofilter"
+    ),
     "genie": XGenie,
 }
 
 
 def hull_size(options, eta):
     """Number of options that maximize value - lambda * symbols (and are positive)
-    for some lambda >= eta, i.e. what a GOSC agent reports to the base station."""
+    for some lambda >= eta, i.e. what an adaptive agent reports to the base station."""
     lams = {eta}
     for i, o in enumerate(options):
         if o.symbols > 0:
@@ -411,23 +416,25 @@ class RealisticSimulation(Simulation):
     # ------------------------------------------------------------------
     def phase_communicate(self, t):
         cfg = self.cfg
-        if not cfg.shared_budget or not isinstance(self.scheme, (RealisticGOSC, FifoRealistic)):
+        if not cfg.shared_budget or not isinstance(
+            self.scheme, (ResourceAwareScheduler, FifoRealistic)
+        ):
             return super().phase_communicate(t)
         links = []
         for a in self.agents:
             snr_mean = self.channel.mean_snr(a.pos)
             snr_inst = snr_mean * self.chan_rng.exponential()
             links.append((a, snr_inst if cfg.csit else snr_mean, snr_inst))
-        if isinstance(self.scheme, RealisticGOSC):
+        if isinstance(self.scheme, ResourceAwareScheduler):
             results = (
-                self._uplink_gosc(t, links)
+                self._uplink_adaptive(t, links)
                 if cfg.shared_mode == "central"
-                else self._uplink_gosc_price(t, links)
+                else self._uplink_adaptive_price(t, links)
             )
         else:
             results = self._uplink_fifo(t, links)
         self.skip_tx = set()
-        # edge fusion, broadcast, motion: as in gosc.simulator
+        # edge fusion, broadcast, motion: as in mosaic_comm.simulator
         for a, res in results:
             for pkt in res.delivered:
                 self.deliver(a, pkt, t)
@@ -446,7 +453,7 @@ class RealisticSimulation(Simulation):
             return True
         return False
 
-    def _uplink_gosc(self, t, links):
+    def _uplink_adaptive(self, t, links):
         cfg, sch = self.cfg, self.scheme
         groups = []
         for a, known, _ in links:
@@ -472,8 +479,8 @@ class RealisticSimulation(Simulation):
             results.append((a, res))
         return results
 
-    def _uplink_gosc_price(self, t, links):
-        """Price-coordinated GOSC: the base station broadcasts a network price mu
+    def _uplink_adaptive_price(self, t, links):
+        """Coordinate adaptive agents using a broadcast network price mu
         (the multiplier of the shared budget); each agent selects its messages and
         rates with the decoupled rule at price eta + mu and requests the total channel
         uses with the value density of its selection (16 bits); the base station

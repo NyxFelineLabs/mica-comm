@@ -1,4 +1,4 @@
-﻿"""Decisive test of set-valued (joint) scheduling vs independent valuation.
+"""Decisive test of set-valued (joint) scheduling vs independent valuation.
 
 python -m experiments.run_joint --seeds 100
 """
@@ -11,7 +11,7 @@ from multiprocessing import Pool
 from mosaic_comm import Config, run_episode
 from mosaic_comm.paths import RESULTS_DIR
 
-OUT = RESULTS_DIR / "rev_joint.json"
+OUT = RESULTS_DIR / "robustness_joint.json"
 
 
 def _job(a):
@@ -30,7 +30,7 @@ def main():
         (s, f"W{W}/eta{e}", b.with_(symbols_per_slot=W, energy_price=e))
         for W in (100, 50)
         for e in (0.0, 1e-5, 3e-5)
-        for s in ("gosc", "gosc_joint", "gosc_joint_nb")
+        for s in ("adaptive", "adaptive_joint", "adaptive_joint_nb")
     ]
     jobs = [(s, p, cfg, seed) for s, p, cfg in rows for seed in range(args.seeds)]
     t0 = time.time()

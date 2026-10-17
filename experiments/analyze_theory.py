@@ -1,14 +1,14 @@
-﻿"""Empirical companion of the scheduler theory (Section IV of the revised paper).
+"""Measure scheduler thresholds, duality bounds, and transmission efficiency.
 
-On logged GOSC scheduling instances (search task, default price, seeds 0-29, W=100
+On logged AdaptiveScheduler scheduling instances (search task, default price, seeds 0-29, W=100
 and W=50, as in the optimality-gap analysis of experiments/analyze_scheduler.py) it measures
   * how often the price alone makes the budget slack (mu* = 0), in which case the
-    decoupled Lagrangian solution is exactly optimal (Theorem 2(i));
+    decoupled Lagrangian solution is exactly optimal;
   * for the remaining instances, the exact optimum by enumeration, the actual gap
     and the a-posteriori duality certificate (lambda - eta) (W - S(x_lambda));
   * the multiplicative distance |ln theta_g| of every candidate message from its
-    send threshold (Theorem 1): a common value error of factor e^{+-delta} can flip
-    a decision only if |ln theta_g| < delta (Proposition 3);
+    send threshold: a common value error of factor e^{+-delta} can flip
+    a decision only if |ln theta_g| < delta;
   * the selected rates relative to the cost-efficient rate argmin s/P_s and to the
     region P_s >= 1/e.
 
@@ -44,7 +44,7 @@ def pick(groups, lam):
 
 
 def lagrangian(groups, budget, price):
-    """lagrangian_select of gosc.schemes, returning also the multiplier and x_lambda"""
+    """lagrangian_select of mosaic_comm.schemes, returning also the multiplier and x_lambda"""
     chosen, used = pick(groups, price)
     if used <= budget:
         return chosen, price, chosen, used, False
@@ -84,7 +84,7 @@ def exact(groups, budget, price):
 def run(args):
     W, seed = args
     cfg = Config().with_(symbols_per_slot=W)
-    sim = Simulation(cfg, "gosc", seed)
+    sim = Simulation(cfg, "adaptive", seed)
     sched = sim.scheme
     sched.log = []
     rates_ps = {}

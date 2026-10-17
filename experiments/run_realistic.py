@@ -1,15 +1,15 @@
-﻿"""Simulation campaigns with realistic radio resources and imperfect values (evaluation
+"""Simulation campaigns with realistic radio resources and imperfect values (evaluation
 seeds 0-99).
 
     python -m experiments.run_realistic --only noise shared overhead [--seeds 100 --workers 6]
 
   noise     imperfect semantic values: log-normal errors, order-of-magnitude values,
             content-independent (permuted) values, with and without the relevance
-            filter; GOSC's price is swept in every setting
+            filter; AdaptiveScheduler's price is swept in every setting
   shared    a network-wide uplink budget B shared by all agents (K=6): price-
-            coordinated GOSC vs the periodic family with max-min fair grants
+            coordinated AdaptiveScheduler vs the periodic family with max-min fair grants
   overhead  a fixed per-packet overhead of 16/32/64 bits on every uplink packet, for
-            GOSC and the full periodic family in the six headline settings
+            AdaptiveScheduler and the full periodic family in the six evaluation settings
 
 Every mission is appended to results/<name>.jsonl (the run can be resumed).
 """
@@ -36,7 +36,7 @@ SETTINGS = {
     "rescue-W50": RB.with_(symbols_per_slot=50),
     "rescue-snr-5": RB.with_(snr_ref_db=-5),
 }
-HEADLINE = (
+EVALUATION_SETTINGS = (
     "search-W100",
     "search-K10",
     "search-clustered",
@@ -53,13 +53,13 @@ PERIODIC = (
     + [("sem_ras", k, th) for k in (1, 2, 4, 8) for th in THETAS]
 )
 ARMS = {  # value-estimation arms of the noise experiment
-    "exact": ("gosc", {}),  # rescue only (search: identical main-evaluation runs)
-    "ln0.5": ("gosc", dict(value_mode="lognormal", value_sigma=0.5)),
-    "ln1": ("gosc", dict(value_mode="lognormal", value_sigma=1.0)),
-    "ln2": ("gosc", dict(value_mode="lognormal", value_sigma=2.0)),
-    "quant": ("gosc", dict(value_mode="quantized")),
-    "perm": ("gosc", dict(value_mode="permuted")),
-    "perm_nofilter": ("gosc_nofilter", dict(value_mode="permuted")),
+    "exact": ("adaptive", {}),  # rescue only (search: identical main-evaluation runs)
+    "ln0.5": ("adaptive", dict(value_mode="lognormal", value_sigma=0.5)),
+    "ln1": ("adaptive", dict(value_mode="lognormal", value_sigma=1.0)),
+    "ln2": ("adaptive", dict(value_mode="lognormal", value_sigma=2.0)),
+    "quant": ("adaptive", dict(value_mode="quantized")),
+    "perm": ("adaptive", dict(value_mode="permuted")),
+    "perm_nofilter": ("adaptive_nofilter", dict(value_mode="permuted")),
 }
 SHARED = {
     "search-B600": (B, 600),
@@ -108,7 +108,7 @@ def periodic_rows(setting, cfg, extra):
 def experiments():
     ex = {}
     rows = []
-    for st in HEADLINE:
+    for st in EVALUATION_SETTINGS:
         cfg = SETTINGS[st]
         for arm, (scheme, kw) in ARMS.items():
             if arm == "exact" and not st.startswith("rescue"):
@@ -117,7 +117,7 @@ def experiments():
                 rows.append(
                     dict(
                         setting=st,
-                        family="gosc",
+                        family="adaptive",
                         arm=arm,
                         scheme=scheme,
                         point=f"eta{e}",
@@ -132,8 +132,8 @@ def experiments():
             rows.append(
                 dict(
                     setting=st,
-                    family="gosc",
-                    scheme="gosc",
+                    family="adaptive",
+                    scheme="adaptive",
                     point=f"eta{e}",
                     cfg=c.with_(energy_price=e),
                 )
@@ -143,14 +143,14 @@ def experiments():
     ex["shared"] = rows
     rows = []
     for H in OVERHEADS:
-        for st in HEADLINE:
+        for st in EVALUATION_SETTINGS:
             c = SETTINGS[st].with_(overhead_bits=H)
             for e in etas(st):
                 rows.append(
                     dict(
                         setting=st,
-                        family="gosc",
-                        scheme="gosc",
+                        family="adaptive",
+                        scheme="adaptive",
                         point=f"eta{e}",
                         H=H,
                         cfg=c.with_(energy_price=e),

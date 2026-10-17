@@ -1,7 +1,6 @@
-﻿"""Run every experiment reported in the paper and store raw per-episode results.
+"""Run baseline comparisons and parameter sweeps, storing per-episode results.
 
-Evaluation uses seeds 0..N-1.  Hyper-parameters of the proposed scheme were
-calibrated on disjoint seeds (1000+), see README.
+Evaluation uses seeds 0..N-1. Use separate seeds when tuning policy parameters.
 
     python -m experiments.run_all            # full campaign
     python -m experiments.run_all --seeds 8  # smoke test
@@ -16,8 +15,18 @@ from multiprocessing import Pool
 from mosaic_comm import Config, run_episode
 from mosaic_comm.paths import RESULTS_DIR
 
-ALL = ["report", "raw", "nl", "sem", "gosc_nouep", "gosc_novoi", "gosc_tv", "gosc", "genie"]
-MAIN = ["report", "raw", "nl", "sem", "gosc", "genie"]
+ALL = [
+    "report",
+    "raw",
+    "nl",
+    "sem",
+    "adaptive_nouep",
+    "adaptive_novoi",
+    "adaptive_tv",
+    "adaptive",
+    "genie",
+]
+MAIN = ["report", "raw", "nl", "sem", "adaptive", "genie"]
 OUT = RESULTS_DIR
 
 
@@ -37,11 +46,11 @@ def experiments(n_seeds):
         ],
         "agents": [(s, v, base.with_(n_agents=v), n_seeds) for v in (2, 4, 6, 8, 10) for s in MAIN],
         "pareto": [
-            ("gosc", v, base.with_(energy_price=v), n_seeds)
+            ("adaptive", v, base.with_(energy_price=v), n_seeds)
             for v in (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)
         ],
         "pareto_tv": [
-            ("gosc_tv", v, base.with_(energy_price=v), n_seeds)
+            ("adaptive_tv", v, base.with_(energy_price=v), n_seeds)
             for v in (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)
         ],
     }
@@ -74,7 +83,7 @@ def main():
             json.dump({"config": Config().__dict__, "rows": rows}, f)
         print(f"{name}: {len(rows)} episodes in {time.time() - t0:.0f}s", flush=True)
     # one recorded episode for the trajectory illustration
-    traj = {s: run_episode(Config(), s, 0, record_traj=True) for s in ("sem", "gosc")}
+    traj = {s: run_episode(Config(), s, 0, record_traj=True) for s in ("sem", "adaptive")}
     with open(os.path.join(OUT, "trajectories.json"), "w") as f:
         json.dump(
             {

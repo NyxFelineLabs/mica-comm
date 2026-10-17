@@ -1,15 +1,12 @@
 ﻿# MOSAIC-Comm
 
-MOSAIC-Comm is a small, reproducible simulator for **M**ulti-agent **O**rchestration
-and **S**emantic-aware **A**gent **I**nter-agent **C**ommunication. It models
-heterogeneous search-and-rescue agents sharing a fading wireless uplink. The
-project contains the simulator, the goal-oriented semantic communication (GOSC)
-baselines, LLM-driven planners, and the paper experiment runners.
+MOSAIC-Comm is an experiment platform for communication and collaboration in
+heterogeneous agent teams. Search-and-rescue missions combine local sensing,
+shared beliefs, wireless links, and optional LLM planners.
 
-This repository is a cleaned, `src`-layout continuation of the research code for
-"Resource-Efficient Semantic Communication for Heterogeneous Agentic Teams".
-The original research repository is preserved separately; this project is the
-recommended base for new work.
+Use it to develop communication policies, compare model backends, and measure
+task outcomes under limited bandwidth. The package includes deterministic
+simulation, baseline policies, ablations, and analysis tools.
 
 ## Quick start
 
@@ -24,12 +21,31 @@ python -m venv .venv
 Run one deterministic mission:
 
 ```bash
-.venv/bin/python -m mosaic_comm.simulator --scheme gosc --seed 0
+.venv/bin/python -m mosaic_comm.simulator --scheme adaptive --seed 0
 ```
 
-On Windows, use `.venv\\Scripts\\python.exe` in the same commands. The package
+On Windows, use `.venv\Scripts\python.exe` in the same commands. The package
 is installed in editable mode, so changes under `src/mosaic_comm` are immediately
 available to the experiment scripts.
+
+## Communication policies
+
+| Policy ID | Behavior |
+| --- | --- |
+| `adaptive` | Select messages and transmission rates using estimated task value |
+| `adaptive_tv` | Score messages by their effect on the shared belief |
+| `adaptive_bits` | Score messages by payload size |
+| `adaptive_aoi` | Score messages by information freshness |
+| `adaptive_joint` | Value evidence and intent together |
+| `sem`, `sem_agg` | Periodic semantic reporting, with optional aggregation |
+| `sem_ra`, `sem_raf`, `sem_ras` | Rate-aware periodic reporting and filtering variants |
+| `raw`, `nl`, `report` | Raw-data, text-message, and confirmation-only baselines |
+| `genie` | Ideal delivery reference |
+
+`adaptive_nofilter`, `adaptive_novoi`, `adaptive_nouep`, and `adaptive_joint_nb`
+disable source filtering, task valuation, importance-aware rate selection, and
+joint bundling, respectively. List all available IDs with
+`python -m mosaic_comm.simulator --help`.
 
 ## Experiments
 
@@ -45,55 +61,49 @@ export MOSAIC_FIGURES_DIR=/tmp/mosaic-figures
 ```
 
 ```bash
-.venv/bin/python -m experiments.run_all --seeds 100
-.venv/bin/python -m experiments.plot
-.venv/bin/python -m experiments.run_joint --seeds 100
+.venv/bin/python -m experiments.run_all --only default --seeds 2
+.venv/bin/python -m experiments.run_robustness --only ablation --seeds 2
 ```
 
-The larger paper campaign is described in [docs/reproduction.md](docs/reproduction.md).
-Start with a small seed count while developing a change.
+See [Experiment workflow](docs/experiments.md) for sweeps, validation, and output
+conventions. Increase the seed count after verifying a small run. Compare
+policies using identical seed sets and configurations.
 
 ## Optional Ollama backend
 
-LLM agents use Ollama only when an experiment selects an LLM team. Model names in
-the experiment code are stable project aliases:
-
-| Alias | Default Ollama tag | Environment override |
-| --- | --- | --- |
-| `small_reasoner` | `qwen2.5:3b` | `MOSAIC_MODEL_SMALL` |
-| `small_reasoner_alt` | `llama3.2:3b` | `MOSAIC_MODEL_SMALL_ALT` |
-| `large_reasoner` | `qwen2.5:7b` | `MOSAIC_MODEL_LARGE` |
-
-Pull only the model you need, then run for example:
+LLM agents call a locally managed Ollama server. Assign installed model tags to
+project aliases using environment variables; the aliases identify experiment
+roles and do not imply a measured capability ranking. For example:
 
 ```bash
-ollama pull qwen2.5:3b
+export MOSAIC_MODEL_SMALL=llama3.1:8b
 .venv/bin/python -m experiments.run_llm --seeds 2 --teams mixed
 ```
 
-Set `MOSAIC_OLLAMA_URL` when Ollama is reachable at a non-default address. A
-response cache is created in `results/llm_cache/`; it is intentionally local and
-is not part of the source distribution.
+Use a tag already installed in your Ollama server. Set `MOSAIC_OLLAMA_URL` when
+the server uses a non-default address. Responses are cached locally under
+`results/llm_cache/`, which can be redirected with `MOSAIC_CACHE_DIR`.
+See [Model backends](docs/model_backends.md) for all aliases and cache behavior.
 
 ## Project layout
 
 ```text
 src/mosaic_comm/   simulator, world model, beliefs, channels, schemes, LLM client
-experiments/       paper campaigns, analysis, and plotting
+experiments/       experiment runners, analysis, and plotting
 scripts/           focused sample and cache utilities
 tests/             unit and regression tests
-docs/              architecture and reproducibility notes
+docs/              architecture, experiment workflow, and backend configuration
 .github/           continuous integration checks
 ```
 
-The simulator keeps the research scheme identifiers (`gosc`, `sem`, `genie`, and
-the related baselines) stable so existing experiment results remain comparable.
-New code should depend on `mosaic_comm.Config` and `mosaic_comm.run_episode`, and
-put new experiment-specific orchestration under `experiments/`.
+Use `mosaic_comm.Config` and `mosaic_comm.run_episode` as the programmatic entry
+points. Add reusable policies under `src/mosaic_comm/` and experiment orchestration
+under `experiments/`. See [Architecture](docs/architecture.md) and
+[Contributing](CONTRIBUTING.md) for extension and development conventions.
 
-## License and citation
+## License
 
-MIT. See [LICENSE](LICENSE). If you use the research implementation, cite the
-paper listed in the original repository and describe any changes to the simulator
-configuration or model backend.
+MIT. See [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for copyright and source
+attribution. Record the code revision, configuration, model tags, and seed set
+when publishing experimental results.
 

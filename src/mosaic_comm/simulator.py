@@ -1,4 +1,4 @@
-﻿"""Episode simulator for multi-agent search and rescue over a fading uplink.
+"""Episode simulator for multi-agent search and rescue over a fading uplink.
 
 Slot structure: sense -> self-confirm -> plan -> uplink -> edge fusion and
 broadcast -> move.  The edge coordinator fuses every decoded packet into the
@@ -409,7 +409,7 @@ def run_episode(cfg: Config, scheme: str, seed: int, record_traj: bool = False) 
 
 def main():
     ap = argparse.ArgumentParser(description="Run one search-and-rescue episode.")
-    ap.add_argument("--scheme", default="gosc", choices=sorted(SCHEMES))
+    ap.add_argument("--scheme", default="adaptive", choices=sorted(SCHEMES))
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--snr", type=float, default=Config.snr_ref_db)
     ap.add_argument("--symbols", type=int, default=Config.symbols_per_slot)

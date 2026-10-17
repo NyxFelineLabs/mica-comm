@@ -1,4 +1,4 @@
-﻿"""Simulation parameters for the multi-agent search-and-rescue scenario."""
+"""Simulation parameters for the multi-agent search-and-rescue scenario."""
 
 from dataclasses import dataclass, replace
 from typing import Tuple
@@ -28,7 +28,7 @@ class Config:
     confirm_threshold: float = 0.99  # posterior needed to declare a survivor
     max_steps: int = 400  # mission horizon (slots)
 
-    # --- 6G uplink ---------------------------------------------------------
+    # --- wireless uplink ---------------------------------------------------
     cell_size_m: float = 10.0
     ref_distance_m: float = 100.0  # distance at which mean SNR equals snr_ref_db
     min_distance_m: float = 10.0
@@ -52,7 +52,7 @@ class Config:
     hysteresis: float = 1.2
     repulsion_sigma: float = 5.0
 
-    # --- goal-oriented semantic communication (GOSC) ------------------------
+    # --- adaptive message scheduling ---------------------------------------
     energy_price: float = 1e-5  # eta: value units per channel use
     confirm_value: float = 5.0  # value of a survivor confirmation
     intent_value: float = 0.5  # value of a fully changed intent
@@ -87,10 +87,10 @@ class Config:
     # --- shared, network-wide uplink budget ----------------------------------
     shared_budget: int = 0  # total channel uses per slot for all agents (0: orthogonal)
     bsr_bits: int = 8  # buffer status report of a periodic agent (per slot)
-    req_header_bits: int = 8  # GOSC scheduling request header (per slot)
-    req_option_bits: int = 16  # GOSC: (value, size) pair per reported option
+    req_header_bits: int = 8  # scheduling request header (per slot)
+    req_option_bits: int = 16  # (value, size) pair per reported option
     grant_bits: int = 32  # downlink grant per scheduled agent and slot
-    shared_mode: str = "price"  # GOSC: "price" (broadcast network price) or "central"
+    shared_mode: str = "price"  # "price" (broadcast network price) or "central"
     price_bits: int = 8  # broadcast network price (per slot)
     price_gain: float = 1.0  # multiplicative price update gain
 

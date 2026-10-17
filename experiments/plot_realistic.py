@@ -1,4 +1,4 @@
-﻿"""Tables, figures and number macros of the realistic-resource and LLM experiments.
+"""Tables, figures and number macros of the realistic-resource and LLM experiments.
 
 Reads results/*.json[l] and writes the corresponding tables and figures to figures/,
 and the numbers used in the text to figures/numbers.tex.
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 from experiments.plot import FIG  # noqa: E402  (shared style, read-only)
-from experiments.run_realistic import ARMS, HEADLINE, OUT  # noqa: E402
+from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT  # noqa: E402
 from experiments.validate_realistic import load_jsonl, main_frozen, reference  # noqa: E402
 from mosaic_comm.paths import RESULTS_DIR
 
@@ -134,21 +134,21 @@ def noise():
         pairs = [
             p
             for r in rows
-            if r.get("arm") == arm and r["setting"] in HEADLINE
+            if r.get("arm") == arm and r["setting"] in EVALUATION_SETTINGS
             for p in r.get("value_pairs", [])
         ]
         rho[arm] = spearman(pairs) if pairs else float("nan")
     rho["exact"] = 1.0
     res = {}
-    for st in HEADLINE:
+    for st in EVALUATION_SETTINGS:
         metric, target = reference(st)
         per = np.array(jv[st]["periodic"]["ksym_per_seed"]) * 1e3
         pm = np.array(jv[st]["periodic"]["metric_per_seed"])
         for arm in ARM_ORDER:
             if arm == "exact" and v.get(f"{st}/exact") is None:
-                g = np.array(jv[st]["gosc"]["ksym_per_seed"]) * 1e3
-                gm = np.array(jv[st]["gosc"]["metric_per_seed"])
-                pt = jv[st]["gosc"]["point"].split("/", 1)[1]
+                g = np.array(jv[st]["adaptive"]["ksym_per_seed"]) * 1e3
+                gm = np.array(jv[st]["adaptive"]["metric_per_seed"])
+                pt = jv[st]["adaptive"]["point"].split("/", 1)[1]
             else:
                 e = v.get(f"{st}/{arm}")
                 if e is None:
@@ -169,7 +169,7 @@ def noise():
     lines = []
     for arm in ARM_ORDER:
         cells = []
-        for st in HEADLINE:
+        for st in EVALUATION_SETTINGS:
             e = res[(st, arm)]
             if e is None:
                 cells.append("--")
@@ -189,7 +189,7 @@ def noise():
     cols = ["#2a78d6", "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#eb6834"]
     mks = ["o", "s", "D", "^", "v", "P"]
     xs = np.arange(len(ARM_ORDER))
-    for st, col, mk in zip(HEADLINE, cols, mks):
+    for st, col, mk in zip(EVALUATION_SETTINGS, cols, mks):
         ys = [res[(st, a)]["ratio"][0] if res[(st, a)] else np.nan for a in ARM_ORDER]
         ok = [res[(st, a)]["meets"] if res[(st, a)] else False for a in ARM_ORDER]
         ax.plot(
@@ -226,7 +226,7 @@ def noise():
         "perm.,\nno filt.",
     ]
     ax.set_xticklabels([f"{t}\n$\\rho$={rho[a]:.2f}" for t, a in zip(ticks, ARM_ORDER)], fontsize=6)
-    ax.set_ylabel("Channel uses, periodic / GOSC")
+    ax.set_ylabel("Channel uses, periodic / adaptive")
     ax.set_xlabel("Value estimate (accuracy decreases to the right)")
     ax.legend(frameon=False, fontsize=5.8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.22))
     fig.tight_layout()
@@ -239,24 +239,24 @@ def noise():
 def overhead():
     v = load("validate_overhead.json")
     res = {}
-    for st in HEADLINE:
+    for st in EVALUATION_SETTINGS:
         for H in (0, 16, 32, 64):
             e = v[f"{st}/H{H}"]
             metric, target = e["metric"], e["target"]
-            if e.get("gosc") and not e.get("periodic"):
-                gm = np.array(e["gosc"][metric], float)
+            if e.get("adaptive") and not e.get("periodic"):
+                gm = np.array(e["adaptive"][metric], float)
                 res[(st, H)] = {
-                    "only_gosc": True,
+                    "only_adaptive": True,
                     "margin_g": margin(metric, gm, target),
                     "g_meets": bool(
                         gm.mean() <= target if metric == "completion_time" else gm.mean() >= target
                     ),
                 }
                 continue
-            if not e.get("gosc") or not e.get("periodic"):
+            if not e.get("adaptive") or not e.get("periodic"):
                 res[(st, H)] = None
                 continue
-            g, p = e["gosc"], e["periodic"]
+            g, p = e["adaptive"], e["periodic"]
             ul = boot_ratio(p["symbols"], g["symbols"])
             tot = boot_ratio(p["total_symbols"], g["total_symbols"])
             gm, pm = np.array(g[metric], float), np.array(p[metric], float)
@@ -282,17 +282,17 @@ def overhead():
     lines = []
     for block, key in (("Uplink", "ul"), ("Uplink + downlink", "tot")):
         lines.append(
-            f"\\multicolumn{{5}}{{@{{}}l}}{{\\emph{{{block} channel uses, periodic / GOSC}}}}\\\\"
+            f"\\multicolumn{{5}}{{@{{}}l}}{{\\emph{{{block} channel uses, periodic / adaptive}}}}\\\\"
         )
-        for st in HEADLINE:
+        for st in EVALUATION_SETTINGS:
             cells = []
             for H in (0, 16, 32, 64):
                 e = res[(st, H)]
                 if e is None:
                     cells.append("--")
                     continue
-                if e.get("only_gosc"):
-                    cells.append("only GOSC" + ("" if e["g_meets"] else "$^\\dagger$"))
+                if e.get("only_adaptive"):
+                    cells.append("only adaptive" + ("" if e["g_meets"] else "$^\\dagger$"))
                     continue
                 c = f"{e[key][0]:.2f}\\,{{\\scriptsize[{e[key][1]:.2f}, {e[key][2]:.2f}]}}"
                 if not e["g_meets"]:
@@ -323,7 +323,7 @@ def overhead():
             "sem_ras": "suppressing",
         }[e["periodic"]["scheme"]]
         ent.append((f"Best periodic ({pname})", e["periodic"]))
-        ent.append(("\\textbf{GOSC}", e["gosc"]))
+        ent.append(("\\textbf{Adaptive}", e["adaptive"]))
         for name, d in ent:
             T = np.mean(d["completion_time"])
             if name.startswith("\\textbf") and T > e["target"]:
@@ -360,13 +360,13 @@ def shared():
         e = v[st]
         metric, target = e["metric"], e["target"]
         sc = 1.0 if metric == "completion_time" else 100.0
-        if not e.get("gosc") or not e.get("periodic"):
+        if not e.get("adaptive") or not e.get("periodic"):
             lines.append(
                 f"{nm} & {sc * target:.1f} & \\multicolumn{{8}}{{c}}{{target not reached}} \\\\"
             )
             res[st] = None
             continue
-        g, p = e["gosc"], e["periodic"]
+        g, p = e["adaptive"], e["periodic"]
         gul = np.array(g["symbols"], float) + np.array(g["ul_ctrl_symbols"], float)
         pul = np.array(p["symbols"], float) + np.array(p["ul_ctrl_symbols"], float)
         gm, pm = np.array(g[metric], float), np.array(p[metric], float)
@@ -405,14 +405,14 @@ def shared():
                 np.mean([r["completion_time"] for r in rs]),
             )
 
-        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "gosc" and len(rs) >= 100)
+        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "adaptive" and len(rs) >= 100)
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
             color="#2a78d6",
             marker="o",
             markersize=3,
-            label="GOSC, price-coordinated (each $\\eta$)",
+            label="Adaptive, price-coordinated (each $\\eta$)",
         )
         per = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "periodic" and len(rs) >= 100)
         env, best = [], None
@@ -474,7 +474,7 @@ def shared():
 
 
 def shared_column(rows):
-    """Single-column version of the shared-budget frontiers (main paper)."""
+    """Single-column version of the shared-budget frontiers."""
     fig, axes = plt.subplots(1, 3, figsize=(W1, 1.85), sharey=True)
     for ax, st in zip(axes, ("search-B600", "search-B300", "search-B150")):
         tab = {}
@@ -488,7 +488,7 @@ def shared_column(rows):
                 np.mean([r["completion_time"] for r in rs]),
             )
 
-        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "gosc" and len(rs) >= 100)
+        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "adaptive" and len(rs) >= 100)
         per = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "periodic" and len(rs) >= 100)
         env, best = [], None
         for a, b in per:
@@ -502,7 +502,7 @@ def shared_column(rows):
             marker="o",
             markersize=2.5,
             linewidth=1.0,
-            label="GOSC ($\\eta$ swept)",
+            label="Adaptive ($\\eta$ swept)",
         )
         ax.plot(
             [a for a, _ in env],
@@ -548,9 +548,9 @@ def llm():
     rows += [r for r in new if (r["team"], r["scheme"], r["seed"]) not in seen]
     teams = [
         ("planner", "Planner only"),
-        ("mixed", "Mixed, Qwen2.5-3B"),
-        ("mixed_alt", "Mixed, Llama-3.2-3B"),
-        ("mixed_large", "Mixed, Qwen2.5-7B"),
+        ("mixed", "Mixed, primary model"),
+        ("mixed_alt", "Mixed, alternative model"),
+        ("mixed_large", "Mixed, comparison model"),
     ]
     out, lines = {}, []
     for team, nm in teams:
@@ -558,18 +558,20 @@ def llm():
         for r in rows:
             if r["team"] == team:
                 by.setdefault(r["scheme"], {})[r["seed"]] = r
-        seeds = sorted(set(by.get("sem", {})) & set(by.get("gosc", {})))
+        seeds = sorted(set(by.get("sem", {})) & set(by.get("adaptive", {})))
         if not seeds:
             continue
         s = np.array([by["sem"][i]["completion_time"] for i in seeds], float)
-        g = np.array([by["gosc"][i]["completion_time"] for i in seeds], float)
+        g = np.array([by["adaptive"][i]["completion_time"] for i in seeds], float)
         ys = np.array([by["sem"][i]["symbols"] for i in seeds], float)
-        yg = np.array([by["gosc"][i]["symbols"] for i in seeds], float)
+        yg = np.array([by["adaptive"][i]["symbols"] for i in seeds], float)
         d = boot_mean(s - g)
         rt = boot_ratio(ys, yg)
         o = {"n": len(seeds), "dT": d, "ratio": rt}
         gen = [by["genie"][i]["completion_time"] for i in seeds if i in by.get("genie", {})]
-        agree = [by[sc][i] for sc in ("sem", "gosc") for i in seeds if "llm_decisions" in by[sc][i]]
+        agree = [
+            by[sc][i] for sc in ("sem", "adaptive") for i in seeds if "llm_decisions" in by[sc][i]
+        ]
         if agree:
             o["agree"] = sum(r["llm_agree"] for r in agree) / sum(r["llm_decisions"] for r in agree)
             o["fallbacks"] = sum(r["llm_fallbacks"] for r in agree)
@@ -583,7 +585,7 @@ def llm():
             f"{ys.mean() / 1e3:.1f} & \\multirow{{2}}{{*}}{{{fs(d)}}} & \\multirow{{2}}{{*}}{{{rt[0]:.2f}}}\\\\"
         )
         lines.append(
-            f" & \\textbf{{GOSC}} & {ci(g)[0]:.1f} $\\pm$ {ci(g)[1]:.1f} & {yg.mean() / 1e3:.1f} & & \\\\"
+            f" & \\textbf{{Adaptive}} & {ci(g)[0]:.1f} $\\pm$ {ci(g)[1]:.1f} & {yg.mean() / 1e3:.1f} & & \\\\"
         )
         if len(gen) == len(seeds):
             lines.append(f" & Genie & {ci(gen)[0]:.1f} $\\pm$ {ci(gen)[1]:.1f} & -- & & \\\\")
@@ -596,18 +598,18 @@ def llm():
     for r in rows:
         by.setdefault((r["team"], r["scheme"]), {})[r["seed"]] = r["completion_time"]
     for team in ("mixed", "mixed_alt", "mixed_large"):
-        if team not in out or (team, "gosc") not in by:
+        if team not in out or (team, "adaptive") not in by:
             continue
         seeds = sorted(
             set(by[(team, "sem")])
-            & set(by[(team, "gosc")])
+            & set(by[(team, "adaptive")])
             & set(by[("planner", "sem")])
-            & set(by[("planner", "gosc")])
+            & set(by[("planner", "adaptive")])
         )
         x = np.array(
             [
                 (by[(team, "sem")][i] - by[("planner", "sem")][i])
-                - (by[(team, "gosc")][i] - by[("planner", "gosc")][i])
+                - (by[(team, "adaptive")][i] - by[("planner", "adaptive")][i])
                 for i in seeds
             ],
             float,
@@ -631,8 +633,8 @@ def llm():
     def f1(v):
         return f"{v[0]:.1f} [{v[1]:.1f}, {v[2]:.1f}]".replace("[-", "[$-$").replace(", -", ", $-$")
 
-    macro("LLMdTQwen", f1(out["mixed"]["dT"]))
-    macro("LLMdTLlama", f1(out["mixed_alt"]["dT"]))
+    macro("LLMdTPrimary", f1(out["mixed"]["dT"]))
+    macro("LLMdTAlternative", f1(out["mixed_alt"]["dT"]))
     macro(
         "LLMdTPlanner",
         (
@@ -641,17 +643,17 @@ def llm():
             else f1(out["planner"]["dT"])
         ),
     )
-    macro("LLMInterQwen", f1(out["mixed"]["interaction"]))
+    macro("LLMInterPrimary", f1(out["mixed"]["interaction"]))
     if "mixed_large" in out:
         q = out["mixed_large"]
         sig = q["dT"][1] > 0 or q["dT"][2] < 0
         macro(
-            "QSevenText",
-            f"With the stronger Qwen2.5-7B ({q['n']} seeds), the difference was {f1(q['dT'])} slots"
+            "ComparisonModelText",
+            f"With the comparison model ({q['n']} seeds), the difference was {f1(q['dT'])} slots"
             + (", significant." if sig else ", not significant."),
         )
     else:
-        macro("QSevenText", "")
+        macro("ComparisonModelText", "")
     return out
 
 

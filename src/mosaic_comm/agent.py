@@ -1,4 +1,4 @@
-﻿"""Cognitive search agent: belief state, intention selection and motion."""
+"""Cognitive search agent: belief state, intention selection and motion."""
 
 from collections import deque
 from typing import Iterable, List, Optional, Tuple
@@ -22,7 +22,7 @@ class Agent:
         self.target: Optional[int] = None  # intention (flat cell)
         self.shared_intent: Optional[int] = None  # intention the team currently knows
         self.pending_llr = np.zeros((n, n))  # own evidence not yet delivered
-        self.pending_records: List = []  # GOSC: undelivered records, oldest first
+        self.pending_records: List = []  # undelivered records, oldest first
         self.confirmed_pending = set()  # self-confirmed survivors awaiting declaration
         self.queue = deque()  # FIFO baselines: data packets
         self.prio = deque()  # FIFO baselines: confirmation packets

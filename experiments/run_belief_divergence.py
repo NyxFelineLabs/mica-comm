@@ -1,8 +1,8 @@
-﻿"""Belief-divergence value (gosc_tv) in the K=10 and clustered search settings, which
+"""Belief-divergence value (adaptive_tv) in the K=10 and clustered search settings, which
 the "where does ToM matter" experiment of the main evaluation did not include.  Same
 price grid as the frontier experiment for this value, evaluation seeds 0-99; results go to
 results/belief_divergence.jsonl.  The matched-budget comparison then reuses the
-main-evaluation functions (experiments.plot_revision.matched).
+main-evaluation functions (experiments.plot_robustness.matched).
 
     python -m experiments.run_belief_divergence            # simulate
     python -m experiments.run_belief_divergence --table    # fill the n/e cells of table_values.tex
@@ -19,16 +19,16 @@ from mosaic_comm.paths import FIGURES_DIR, RESULTS_DIR
 OUT = RESULTS_DIR / "belief_divergence.jsonl"
 RES = RESULTS_DIR
 FIG = FIGURES_DIR
-ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)  # frontier grid for gosc_tv
+ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)  # frontier grid for adaptive_tv
 
 
 def jobs():
     b = Config()
     out = []
     for e in ETAS_TV:
-        out.append(("gosc_tv", f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
+        out.append(("adaptive_tv", f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
         out.append(
-            ("gosc_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
+            ("adaptive_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
         )
     return out
 
@@ -56,9 +56,9 @@ def simulate(seeds, workers):
 
 
 def fill_table():
-    from experiments.plot_revision import matched, table
+    from experiments.plot_robustness import matched, table
 
-    rows = json.load(open(os.path.join(RES, "rev_where_tom.json")))["rows"]
+    rows = json.load(open(os.path.join(RES, "robustness_where_tom.json")))["rows"]
     rows += [json.loads(line) for line in open(OUT)]
     tab = table(rows)
     curves = {}
@@ -69,7 +69,7 @@ def fill_table():
     for W in ("K10", "clustered"):
         st = matched(curves, W)
         for B, row in st.items():
-            v = row.get("gosc_tv")
+            v = row.get("adaptive_tv")
             cells[(W, B)] = "--" if not v else f"{v['diff']:+.1f} [{v['lo']:+.1f}, {v['hi']:+.1f}]"
     path = os.path.join(FIG, "table_values.tex")
     lines = open(path).read().splitlines()

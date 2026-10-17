@@ -1,4 +1,4 @@
-﻿"""Replay one cached mission per paper LLM and scheme without an Ollama server."""
+"""Replay cached LLM missions without contacting an Ollama server."""
 
 import json
 
@@ -38,7 +38,7 @@ def main():
         client = llm_agent.LLMClient(model, transport=no_network)
         llm_agent._CLIENTS[model] = client
         assert client.cache, f"{model}: empty cache"
-        for scheme in ("sem", "gosc"):
+        for scheme in ("sem", "adaptive"):
             expected = next(
                 r for r in rows if r["team"] == team and r["scheme"] == scheme and r["seed"] == seed
             )

@@ -1,4 +1,4 @@
-﻿"""Communication schemes: the proposed GOSC framework and the baselines.
+"""Adaptive message scheduling and conventional communication baselines.
 
 Every scheme decides, for one agent and one slot, which packets are put on the
 uplink, at which rate, and returns the packets that were decoded by the edge.
@@ -163,7 +163,7 @@ class SemanticPeriodic(FifoScheme):
 
 class SemanticAggregated(FifoScheme):
     """Strong periodic baseline: every `sem_interval` slots, one packet carries the
-    records of the interval with the same lossless aggregated encoding as GOSC,
+    records of the interval with the same lossless aggregated encoding as AdaptiveScheduler,
     plus the current intention; FIFO queue and conventional link adaptation."""
 
     name = "sem_agg"
@@ -182,7 +182,7 @@ class SemanticAggregated(FifoScheme):
 
 
 class SemanticRateAwareFiltered(SemanticAggregated):
-    """Rate-aware periodic scheduler with GOSC's semantic source filter: records that
+    """Rate-aware periodic scheduler with AdaptiveScheduler's semantic source filter: records that
     would move the team belief (given what is already queued) by less than
     filter_eps are not queued.  Isolates the effect of value-priced scheduling."""
 
@@ -231,7 +231,7 @@ class SemanticRateAwareSuppress(SemanticRateAwareFiltered):
     """Information-suppressing periodic baseline (send-on-delta with periodic timing):
     a record is retained only if it would move the team belief (given what is already
     queued) by at least the suppression threshold `filter_eps`, which is swept like
-    GOSC's price.  Every `sem_interval` slots it sends the retained records plus the
+    AdaptiveScheduler's price.  Every `sem_interval` slots it sends the retained records plus the
     intention; with no retained record it sends a short intent-only packet if the
     intention changed, and nothing otherwise.  Goodput-optimal rate, fragmentation."""
 
@@ -288,7 +288,7 @@ class SemanticRateAware(SemanticAggregated):
 
 
 # --------------------------------------------------------------------------
-# Proposed: goal-oriented semantic communication (GOSC)
+# Adaptive message selection and rate allocation
 # --------------------------------------------------------------------------
 @dataclass
 class Option:
@@ -355,11 +355,11 @@ def lagrangian_select(groups: List[Group], budget: int, price: float):
 PRIORITY = 1e6  # confirmation value under the non-goal valuation rules (strict priority)
 
 
-class GOSC(Scheme):
+class AdaptiveScheduler(Scheme):
     """Value-of-information scheduling with importance-aware rate selection.
 
     voi_mode selects the valuation rule, all on the same aggregation/transport:
-      "tom"  decision-theoretic theory-of-mind VoI (proposed),
+      "tom"  decision-theoretic theory-of-mind VoI,
       "tv"   total-variation shift of the common belief,
       "bits" payload size (throughput objective),
       "aoi"  age reduction of the delivered records (freshness objective).
@@ -368,7 +368,7 @@ class GOSC(Scheme):
     use_uep=False restricts every packet to the conventional link-adaptation rate.
     """
 
-    name = "gosc"
+    name = "adaptive"
 
     def __init__(
         self, cfg, channel, use_voi=True, use_uep=True, voi_mode="tom", name=None, use_filter=None
@@ -564,7 +564,7 @@ class GOSC(Scheme):
         return res
 
 
-class Genie(GOSC):
+class Genie(AdaptiveScheduler):
     """Ideal reference: every update reaches the team instantly and error-free."""
 
     name = "genie"
@@ -597,9 +597,9 @@ def sim_tasks(sim, agent):
 
 
 def _joint():
-    from .joint import GOSCJoint
+    from .joint import JointAdaptiveScheduler
 
-    return GOSCJoint
+    return JointAdaptiveScheduler
 
 
 SCHEMES = {
@@ -607,18 +607,26 @@ SCHEMES = {
     "raw": lambda cfg, ch: RawShare(cfg, ch),
     "nl": lambda cfg, ch: NaturalLanguage(cfg, ch),
     "sem": lambda cfg, ch: SemanticPeriodic(cfg, ch),
-    "gosc": lambda cfg, ch: GOSC(cfg, ch),
-    "gosc_nouep": lambda cfg, ch: GOSC(cfg, ch, use_uep=False, name="gosc_nouep"),
-    "gosc_novoi": lambda cfg, ch: GOSC(cfg, ch, use_voi=False, name="gosc_novoi"),
-    "gosc_tv": lambda cfg, ch: GOSC(cfg, ch, voi_mode="tv", name="gosc_tv"),
-    "gosc_nofilter": lambda cfg, ch: GOSC(cfg, ch, use_filter=False, name="gosc_nofilter"),
-    "gosc_bits": lambda cfg, ch: GOSC(cfg, ch, voi_mode="bits", name="gosc_bits"),
-    "gosc_aoi": lambda cfg, ch: GOSC(cfg, ch, voi_mode="aoi", name="gosc_aoi"),
+    "adaptive": lambda cfg, ch: AdaptiveScheduler(cfg, ch),
+    "adaptive_nouep": lambda cfg, ch: AdaptiveScheduler(
+        cfg, ch, use_uep=False, name="adaptive_nouep"
+    ),
+    "adaptive_novoi": lambda cfg, ch: AdaptiveScheduler(
+        cfg, ch, use_voi=False, name="adaptive_novoi"
+    ),
+    "adaptive_tv": lambda cfg, ch: AdaptiveScheduler(cfg, ch, voi_mode="tv", name="adaptive_tv"),
+    "adaptive_nofilter": lambda cfg, ch: AdaptiveScheduler(
+        cfg, ch, use_filter=False, name="adaptive_nofilter"
+    ),
+    "adaptive_bits": lambda cfg, ch: AdaptiveScheduler(
+        cfg, ch, voi_mode="bits", name="adaptive_bits"
+    ),
+    "adaptive_aoi": lambda cfg, ch: AdaptiveScheduler(cfg, ch, voi_mode="aoi", name="adaptive_aoi"),
     "sem_agg": lambda cfg, ch: SemanticAggregated(cfg, ch),
     "sem_ra": lambda cfg, ch: SemanticRateAware(cfg, ch),
     "sem_raf": lambda cfg, ch: SemanticRateAwareFiltered(cfg, ch),
     "sem_ras": lambda cfg, ch: SemanticRateAwareSuppress(cfg, ch),
-    "gosc_joint": lambda cfg, ch: _joint()(cfg, ch),
-    "gosc_joint_nb": lambda cfg, ch: _joint()(cfg, ch, bundle=False, name="gosc_joint_nb"),
+    "adaptive_joint": lambda cfg, ch: _joint()(cfg, ch),
+    "adaptive_joint_nb": lambda cfg, ch: _joint()(cfg, ch, bundle=False, name="adaptive_joint_nb"),
     "genie": lambda cfg, ch: Genie(cfg, ch),
 }

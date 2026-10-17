@@ -1,6 +1,6 @@
-﻿"""How well do value estimates predict the real effect of a message?
+"""How well do value estimates predict the real effect of a message?
 
-At sampled decision points of GOSC missions (after sensing and planning, before the
+At sampled decision points of AdaptiveScheduler missions (after sensing and planning, before the
 uplink), each candidate message m of one agent (evidence E, intention I, or both EI)
 is delivered instantly in a copy of the simulation, and compared with delivering
 nothing (the sender stays silent in that slot in every branch).
@@ -30,7 +30,7 @@ from mosaic_comm.messages import Packet, evidence_sizes, intent_bits
 from mosaic_comm.paths import RESULTS_DIR
 from mosaic_comm.voi import TeamModel
 
-OUT = RESULTS_DIR / "rev_value_fidelity.json"
+OUT = RESULTS_DIR / "robustness_value_fidelity.json"
 
 
 def has_intent(a):
@@ -141,7 +141,7 @@ def rollout(sim, reseed):
 def point(args):
     seed, t0, reps = args
     cfg = Config()
-    sim = Simulation(cfg, "gosc", seed)
+    sim = Simulation(cfg, "adaptive", seed)
     sim._start()
     for t in range(t0):
         sim.phase_decide(t)

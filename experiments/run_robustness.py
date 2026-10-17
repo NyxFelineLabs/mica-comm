@@ -1,9 +1,9 @@
-﻿"""Experiments added in the revision (valuation rules at matched resources,
+"""Robustness experiments covering valuation rules at matched resources,
 separated ablations, teammate-model approximation, downlink impairments,
-finite-blocklength errors).  Results go to results/rev_<name>.json.
+and finite-blocklength errors. Results go to results/robustness_<name>.json.
 
-    python -m experiments.run_revision                 # everything
-    python -m experiments.run_revision --only ablation --seeds 10
+    python -m experiments.run_robustness                 # everything
+    python -m experiments.run_robustness --only ablation --seeds 10
 """
 
 import argparse
@@ -18,10 +18,10 @@ from mosaic_comm.paths import RESULTS_DIR
 OUT = RESULTS_DIR
 
 ETAS = {
-    "gosc": (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3),
-    "gosc_tv": (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2),
-    "gosc_bits": (0.0, 0.1, 0.3, 1.0, 2.0, 3.0, 4.0),
-    "gosc_aoi": (0.0, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0),
+    "adaptive": (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3),
+    "adaptive_tv": (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2),
+    "adaptive_bits": (0.0, 0.1, 0.3, 1.0, 2.0, 3.0, 4.0),
+    "adaptive_aoi": (0.0, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0),
 }
 
 
@@ -40,10 +40,20 @@ def experiments():
     ex["ablation"] = [
         (s, f"W{W}", b.with_(symbols_per_slot=W))
         for W in (100, 50)
-        for s in ("gosc", "gosc_nofilter", "gosc_bits", "gosc_novoi", "gosc_nouep")
+        for s in (
+            "adaptive",
+            "adaptive_nofilter",
+            "adaptive_bits",
+            "adaptive_novoi",
+            "adaptive_nouep",
+        )
     ]
     ex["private"] = [
-        ("gosc", f"{name}/{'oracle' if o else 'shared'}", cfg.with_(tom_oracle=o, log_private=True))
+        (
+            "adaptive",
+            f"{name}/{'oracle' if o else 'shared'}",
+            cfg.with_(tom_oracle=o, log_private=True),
+        )
         for name, cfg in (
             ("default", b),
             ("W50", b.with_(symbols_per_slot=50)),
@@ -52,7 +62,7 @@ def experiments():
         for o in (False, True)
     ]
     dl = []
-    for s in ("sem", "gosc", "genie"):
+    for s in ("sem", "adaptive", "genie"):
         for p in (0.0, 0.1, 0.3, 0.5):
             dl.append((s, f"loss{p}", b.with_(dl_loss=p)))
         for d in (1, 3, 5, 10):
@@ -62,10 +72,10 @@ def experiments():
         (s, f"gap{g}/snr{v}", b.with_(error_model="fbl", code_gap_db=g, snr_ref_db=v))
         for g in (0.0, 2.0)
         for v in (-10, -5, 0, 5, 10, 15, 20)
-        for s in ("raw", "nl", "sem", "gosc")
+        for s in ("raw", "nl", "sem", "adaptive")
     ]
     where = []
-    for scheme in ("gosc", "gosc_bits", "gosc_aoi"):
+    for scheme in ("adaptive", "adaptive_bits", "adaptive_aoi"):
         for e in ETAS[scheme]:
             where.append((scheme, f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
             where.append(
@@ -87,11 +97,11 @@ def experiments():
         for k in (1, 2, 4, 8, 16):
             resc.append(("sem_ra", f"{name}/k{k}", cfg.with_(sem_interval=k)))
         for e in (0.0, 3e-6, 1e-5, 3e-5, 1e-4):
-            resc.append(("gosc", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("adaptive", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for e in (0.0, 0.1, 0.3, 1.0, 2.0):
-            resc.append(("gosc_bits", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("adaptive_bits", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for e in (0.0, 0.01, 0.03, 0.1, 0.3):
-            resc.append(("gosc_aoi", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("adaptive_aoi", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for sch in ("sem", "raw", "nl", "report", "genie"):
             resc.append((sch, f"{name}/ref", cfg))
     ex["rescue"] = resc
@@ -155,13 +165,14 @@ def main():
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--workers", type=int, default=6)
     args = ap.parse_args()
+    OUT.mkdir(parents=True, exist_ok=True)
     ex = experiments()
     for name in args.only or list(ex):
         jobs = [(name, s, p, cfg, seed) for s, p, cfg in ex[name] for seed in range(args.seeds)]
         t0 = time.time()
         with Pool(args.workers) as pool:
             rows = list(pool.imap_unordered(_job, jobs, chunksize=2))
-        with open(os.path.join(OUT, f"rev_{name}.json"), "w") as f:
+        with open(os.path.join(OUT, f"robustness_{name}.json"), "w") as f:
             json.dump({"rows": rows}, f)
         print(f"{name}: {len(rows)} episodes in {time.time() - t0:.0f}s", flush=True)
 

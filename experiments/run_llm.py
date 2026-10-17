@@ -1,4 +1,4 @@
-﻿"""Heterogeneous-team experiment: LLM agents and classical planner agents cooperate
+"""Heterogeneous-team experiment: LLM agents and classical planner agents cooperate
 through the same communication scheme.
 
 Results are appended per mission to results/llm_mixed.jsonl, so the run can be
@@ -18,8 +18,8 @@ from mosaic_comm.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "llm_mixed.jsonl"
 # scheme-specific settings: the throughput-value rule at a price that gives about the
-# same channel use as GOSC's default price in the planner team
-SCHEME_CFG = {"gosc_bits": {"energy_price": 0.3}}
+# same channel use as AdaptiveScheduler's default price in the planner team
+SCHEME_CFG = {"adaptive_bits": {"energy_price": 0.3}}
 TEAMS = {
     "mixed": ((0, 2, 4), "small_reasoner"),
     "mixed_alt": ((0, 2, 4), "small_reasoner_alt"),
@@ -30,7 +30,7 @@ TEAMS = {
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=20)
-    ap.add_argument("--schemes", nargs="*", default=["sem", "gosc", "genie"])
+    ap.add_argument("--schemes", nargs="*", default=["sem", "adaptive", "genie"])
     ap.add_argument("--teams", nargs="*", default=["planner", "mixed"])
     args = ap.parse_args()
     done = set()

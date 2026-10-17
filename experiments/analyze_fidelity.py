@@ -1,4 +1,4 @@
-﻿"""Cluster-robust analysis of the counterfactual value-fidelity samples.
+"""Cluster-robust analysis of the counterfactual value-fidelity samples.
 
 python -m experiments.analyze_fidelity
 """
@@ -25,7 +25,7 @@ def spearman(x, y):
 
 
 def main():
-    rows = json.load(open(os.path.join(RES, "rev_value_fidelity.json")))
+    rows = json.load(open(os.path.join(RES, "robustness_value_fidelity.json")))
     missions = sorted({r["seed"] for r in rows})
     rng = np.random.default_rng(0)
     out = {"missions": len(missions), "samples": len(rows)}
@@ -87,7 +87,7 @@ def main():
         full = [o for o in opts if o[0] == "EI"] or [opts[-1]]
         reg["always_send_all"].append(best - full[0][1])
     out["regret"] = {k: [float(np.mean(v)), len(v)] for k, v in reg.items() if v}
-    json.dump(out, open(os.path.join(RES, "rev_fidelity_analysis.json"), "w"), indent=1)
+    json.dump(out, open(os.path.join(RES, "robustness_fidelity_analysis.json"), "w"), indent=1)
     print(json.dumps({k: v for k, v in out.items() if k != "corr_cluster"}, indent=1))
     for k, v in corr.items():
         if k.split("/")[0] in ("E", "EI"):

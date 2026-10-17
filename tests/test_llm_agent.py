@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 import pytest
 
@@ -32,7 +32,7 @@ def client_factory(tmp_path, monkeypatch):
 def test_mixed_team_runs_and_uses_schema(client_factory):
     client, tr = client_factory("A")
     cfg = Config().with_(llm_agents=(0, 2), llm_model="fake-model", max_steps=40)
-    sim = Simulation(cfg, "gosc", seed=1)
+    sim = Simulation(cfg, "adaptive", seed=1)
     out = sim.run()
     assert isinstance(sim.agents[0], LLMAgent) and not isinstance(sim.agents[1], LLMAgent)
     assert out["llm_decisions"] > 0 and out["llm_fallbacks"] == 0
@@ -61,5 +61,5 @@ def test_cache_makes_runs_deterministic_without_model(client_factory, tmp_path):
 def test_invalid_output_falls_back_to_planner(client_factory):
     client_factory(None)
     cfg = Config().with_(llm_agents=(0,), llm_model="fake-model", max_steps=15)
-    out = Simulation(cfg, "gosc", seed=0).run()
+    out = Simulation(cfg, "adaptive", seed=0).run()
     assert out["llm_fallbacks"] == out["llm_decisions"] > 0
