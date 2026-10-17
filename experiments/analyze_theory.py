@@ -14,18 +14,19 @@ and W=50, as in the optimality-gap analysis of experiments/analyze_scheduler.py)
 
     python -m experiments.analyze_theory --seeds 30
 """
+
 import argparse
 import itertools
 import json
 import math
-import os
 from multiprocessing import Pool
 
 import numpy as np
 
 from mosaic_comm import Config, Simulation
+from mosaic_comm.paths import RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "theory.json")
+OUT = RESULTS_DIR / "theory.json"
 
 
 def pick(groups, lam):
@@ -57,10 +58,13 @@ def lagrangian(groups, budget, price):
     xl, used = pick(groups, price + hi)
     chosen = list(xl)
     taken = {id(g) for g, _ in chosen}
-    for g in sorted((g for g in groups if id(g) not in taken),
-                    key=lambda g: -max(o.value / o.symbols for o in g.options)):
-        fits = [o for o in g.options
-                if o.symbols <= budget - used and o.value - price * o.symbols > 0]
+    for g in sorted(
+        (g for g in groups if id(g) not in taken),
+        key=lambda g: -max(o.value / o.symbols for o in g.options),
+    ):
+        fits = [
+            o for o in g.options if o.symbols <= budget - used and o.value - price * o.symbols > 0
+        ]
         if fits:
             o = max(fits, key=lambda o: o.value - price * o.symbols)
             chosen.append((g, o))
@@ -92,6 +96,7 @@ def run(args):
             for o in g.options:
                 rates_ps[id(o)] = float(sched.channel.success_prob(o.rate, snr_mean, n=o.symbols))
         return gs
+
     sched.build_groups = build
     sim.run()
     inst = []
@@ -119,8 +124,15 @@ def run(args):
         rs = []
         for g, o in chosen:
             eff = min(g.options, key=lambda q: q.symbols / max(rates_ps[id(q)], 1e-300))
-            rs.append((g.kind, rates_ps[id(o)] >= math.exp(-1), o.rate <= eff.rate,
-                       o.rate == eff.rate, o.rate == min(q.rate for q in g.options)))
+            rs.append(
+                (
+                    g.kind,
+                    rates_ps[id(o)] >= math.exp(-1),
+                    o.rate <= eff.rate,
+                    o.rate == eff.rate,
+                    o.rate == min(q.rate for q in g.options),
+                )
+            )
         rec["rates"] = rs
         inst.append(rec)
     return W, inst
@@ -137,13 +149,19 @@ def main():
     for W in (100, 50):
         inst = [r for w, rs in res if w == W for r in rs]
         b = [r for r in inst if r["binding"]]
-        gaps = np.array([max(r["opt"] - r["got"], 0.0) / r["opt"] if r["opt"] > 1e-15 else 0.0 for r in b])
-        cert = np.array([max(r["cert"] - r["got"], 0.0) / r["opt"] if r["opt"] > 1e-15 else 0.0 for r in b])
+        gaps = np.array(
+            [max(r["opt"] - r["got"], 0.0) / r["opt"] if r["opt"] > 1e-15 else 0.0 for r in b]
+        )
+        cert = np.array(
+            [max(r["cert"] - r["got"], 0.0) / r["opt"] if r["opt"] > 1e-15 else 0.0 for r in b]
+        )
         th = [(k, v) for r in inst for k, v in r["theta"]]
         finite = np.array([abs(v) for _, v in th if v is not None])
         rates = [x for r in inst for x in r["rates"]]
         ev = np.array([x[1:] for x in rates if x[0] == "EVID"], dtype=bool)
-        fx = {k: np.array([x[1:] for x in rates if x[0] == k], dtype=bool) for k in ("CONF", "INTENT")}
+        fx = {
+            k: np.array([x[1:] for x in rates if x[0] == k], dtype=bool) for k in ("CONF", "INTENT")
+        }
         summary[f"W{W}"] = {
             "instances": len(inst),
             "slack_fraction": 1 - len(b) / len(inst),
@@ -156,11 +174,17 @@ def main():
             "cert_mean_binding": float(cert.mean()) if len(b) else None,
             "messages": len(th),
             "zero_value_fraction": float(np.mean([v is None for _, v in th])),
-            "within": {d: float(np.mean(finite < d) * len(finite) / len(th)) for d in (0.5, 1.0, 2.0)},
+            "within": {
+                d: float(np.mean(finite < d) * len(finite) / len(th)) for d in (0.5, 1.0, 2.0)
+            },
             "median_abs_log_theta": float(np.median(finite)),
             "evid_ps_ge_1e": float(ev[:, 0].mean()),
-            **{f"{k.lower()}_{name}": float(a[:, i].mean()) for k, a in fx.items() if len(a)
-               for i, name in enumerate(("ps_ge_1e", "rate_le_eff", "rate_eq_eff", "rate_min"))},
+            **{
+                f"{k.lower()}_{name}": float(a[:, i].mean())
+                for k, a in fx.items()
+                if len(a)
+                for i, name in enumerate(("ps_ge_1e", "rate_le_eff", "rate_eq_eff", "rate_min"))
+            },
             "sent_counts": {k: int(len(a)) for k, a in fx.items()} | {"EVID": int(len(ev))},
         }
     with open(OUT, "w") as f:
@@ -170,5 +194,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

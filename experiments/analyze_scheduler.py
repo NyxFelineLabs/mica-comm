@@ -7,6 +7,7 @@ joint VoI of sending both with the sum of their individual VoIs.
 
     python -m experiments.analyze_scheduler --seeds 30
 """
+
 import argparse
 import itertools
 import json
@@ -16,10 +17,11 @@ from multiprocessing import Pool
 import numpy as np
 
 from mosaic_comm import Config, Simulation
+from mosaic_comm.paths import RESULTS_DIR
 from mosaic_comm.schemes import GOSC
 from mosaic_comm.voi import TeamModel
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "rev_scheduler.json")
+OUT = RESULTS_DIR / "rev_scheduler.json"
 
 
 def exact(groups, budget, price):
@@ -84,7 +86,10 @@ def main():
         tot = ve + vi
         rel = np.abs(vj - tot) / np.maximum(np.abs(vj), 1e-12)
         bounded = np.abs(vj - tot) / np.maximum(np.maximum(np.abs(vj), np.abs(tot)), 1e-12)
-        rank = lambda x: np.argsort(np.argsort(x))
+
+        def rank(x):
+            return np.argsort(np.argsort(x))
+
         spearman = float(np.corrcoef(rank(vj), rank(tot))[0, 1])
         np.save(os.path.join(os.path.dirname(OUT), f"rev_additivity_W{W}.npy"), add)
         summary[f"W{W}"] = {
@@ -108,5 +113,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

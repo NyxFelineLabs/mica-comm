@@ -16,10 +16,10 @@ divergence (total variation), payload bits and age of information.
 
     python -m experiments.diagnose_value --missions 20 --every 8 --reps 12
 """
+
 import argparse
 import copy
 import json
-import os
 from multiprocessing import Pool
 
 import numpy as np
@@ -27,14 +27,18 @@ import numpy as np
 from mosaic_comm import Config, Simulation
 from mosaic_comm.belief import sigmoid
 from mosaic_comm.messages import Packet, evidence_sizes, intent_bits
+from mosaic_comm.paths import RESULTS_DIR
 from mosaic_comm.voi import TeamModel
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "rev_value_fidelity.json")
+OUT = RESULTS_DIR / "rev_value_fidelity.json"
 
 
 def has_intent(a):
-    return (a.target is not None and a.target != a.shared_intent
-            and a.target != getattr(a, "acked_intent", a.shared_intent))
+    return (
+        a.target is not None
+        and a.target != a.shared_intent
+        and a.target != getattr(a, "acked_intent", a.shared_intent)
+    )
 
 
 def estimates(sim, a):
@@ -47,18 +51,27 @@ def estimates(sim, a):
         for r in recs:
             sim.sensor.apply(delta, r)
         live = ~sim.declared.reshape(sim.Lc.shape)
-        est["E"] = {"tom": team.evidence_voi([delta], [recs[-1].pos])[0],
-                    "tv": float(np.abs(sigmoid(sim.Lc + delta) - sigmoid(sim.Lc))[live].sum()),
-                    "bits": float(evidence_sizes(recs, c)[-1]),
-                    "aoi": float(sum(t - r.t + 1 for r in recs))}
+        est["E"] = {
+            "tom": team.evidence_voi([delta], [recs[-1].pos])[0],
+            "tv": float(np.abs(sigmoid(sim.Lc + delta) - sigmoid(sim.Lc))[live].sum()),
+            "bits": float(evidence_sizes(recs, c)[-1]),
+            "aoi": float(sum(t - r.t + 1 for r in recs)),
+        }
     if has_intent(a):
-        est["I"] = {"tom": team.intent_voi(a.target), "tv": 0.0, "bits": float(intent_bits(c)),
-                    "aoi": float(t - getattr(a, "_intent_t", t) + 1)}
+        est["I"] = {
+            "tom": team.intent_voi(a.target),
+            "tv": 0.0,
+            "bits": float(intent_bits(c)),
+            "aoi": float(t - getattr(a, "_intent_t", t) + 1),
+        }
     if "E" in est and "I" in est:
-        est["EI"] = {"tom": team.joint_voi(delta, recs[-1].pos, a.target),
-                     "tom_add": est["E"]["tom"] + est["I"]["tom"],
-                     "tv": est["E"]["tv"], "bits": est["E"]["bits"] + est["I"]["bits"],
-                     "aoi": est["E"]["aoi"] + est["I"]["aoi"]}
+        est["EI"] = {
+            "tom": team.joint_voi(delta, recs[-1].pos, a.target),
+            "tom_add": est["E"]["tom"] + est["I"]["tom"],
+            "tv": est["E"]["tv"],
+            "bits": est["E"]["bits"] + est["I"]["bits"],
+            "aoi": est["E"]["aoi"] + est["I"]["aoi"],
+        }
     return est
 
 
@@ -150,13 +163,26 @@ def point(args):
             force(b, k, kind)
             branches[kind] = b
         gt = {kind: gt_utility(b, k) for kind, b in branches.items()}
-        T = {kind: [rollout(b, [seed, t0, k, rr]) for rr in range(reps)] for kind, b in branches.items()}
+        T = {
+            kind: [rollout(b, [seed, t0, k, rr]) for rr in range(reps)]
+            for kind, b in branches.items()
+        }
         for kind in est:
-            out.append({"seed": seed, "t": t0, "agent": k, "kind": kind, "est": est[kind],
-                        "gt_gain": gt[kind] - gt["none"],
-                        "dT": float(np.mean(T["none"]) - np.mean(T[kind])),
-                        "dT_se": float(np.std(np.array(T["none"]) - np.array(T[kind]), ddof=1) / np.sqrt(reps)),
-                        "n_teammate_changes": None})
+            out.append(
+                {
+                    "seed": seed,
+                    "t": t0,
+                    "agent": k,
+                    "kind": kind,
+                    "est": est[kind],
+                    "gt_gain": gt[kind] - gt["none"],
+                    "dT": float(np.mean(T["none"]) - np.mean(T[kind])),
+                    "dT_se": float(
+                        np.std(np.array(T["none"]) - np.array(T[kind]), ddof=1) / np.sqrt(reps)
+                    ),
+                    "n_teammate_changes": None,
+                }
+            )
     return out
 
 
@@ -167,8 +193,11 @@ def main():
     ap.add_argument("--reps", type=int, default=12)
     ap.add_argument("--first_seed", type=int, default=2000)
     args = ap.parse_args()
-    jobs = [(s, t0, args.reps) for s in range(args.first_seed, args.first_seed + args.missions)
-            for t0 in range(4, 120, args.every)]
+    jobs = [
+        (s, t0, args.reps)
+        for s in range(args.first_seed, args.first_seed + args.missions)
+        for t0 in range(4, 120, args.every)
+    ]
     with Pool(8) as pool:
         rows = [r for res in pool.imap_unordered(point, jobs) for r in res]
     with open(OUT, "w") as f:
@@ -178,5 +207,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -1,12 +1,10 @@
 ﻿import itertools
-import math
 
 import numpy as np
 import pytest
 
 from mosaic_comm import Config, Simulation, run_episode
 from mosaic_comm.channel import Channel, fbl_error
-from mosaic_comm.schemes import SCHEMES, lagrangian_select
 
 
 def test_fbl_error_behaves():
@@ -23,7 +21,9 @@ def test_fbl_matches_outage_for_long_packets_and_gap_hurts():
     fbl = Channel(Config().with_(error_model="fbl"), (16, 16))
     out = Channel(Config(), (16, 16))
     for r in (0.5, 1.0, 2.0):
-        assert fbl.success_prob(r, 10.0, n=5000) == pytest.approx(out.success_prob(r, 10.0), abs=0.01)
+        assert fbl.success_prob(r, 10.0, n=5000) == pytest.approx(
+            out.success_prob(r, 10.0), abs=0.01
+        )
     gapped = Channel(Config().with_(error_model="fbl", code_gap_db=2.0), (16, 16))
     assert gapped.success_prob(2.0, 10.0, n=40) < fbl.success_prob(2.0, 10.0, n=40)
 
@@ -86,7 +86,9 @@ def test_delivered_messages_are_not_resent_under_delay():
 
     def spy(agent, pkt, t):
         if pkt.kind in ("INTENT", "CONF"):
-            sent.append((agent.idx, pkt.kind, pkt.intent if pkt.kind == "INTENT" else pkt.confirm, t))
+            sent.append(
+                (agent.idx, pkt.kind, pkt.intent if pkt.kind == "INTENT" else pkt.confirm, t)
+            )
         return orig(agent, pkt, t)
 
     sim.deliver = spy
@@ -109,8 +111,9 @@ def test_ideal_downlink_matches_default():
 
 def test_downlink_delay_slows_or_equals_on_average():
     base = np.mean([run_episode(Config(), "sem", s)["completion_time"] for s in range(4)])
-    slow = np.mean([run_episode(Config().with_(dl_delay=10), "sem", s)["completion_time"]
-                    for s in range(4)])
+    slow = np.mean(
+        [run_episode(Config().with_(dl_delay=10), "sem", s)["completion_time"] for s in range(4)]
+    )
     assert slow >= base - 15  # stale common knowledge cannot help much
 
 
@@ -126,7 +129,7 @@ def test_oracle_teammate_model_runs():
 
 
 def exact_select(groups, budget, price):
-    best, best_val = (), 0.0
+    best_val = 0.0
     choices = [[None] + list(g.options) for g in groups]
     for combo in itertools.product(*choices):
         sym = sum(o.symbols for o in combo if o is not None)
@@ -134,7 +137,7 @@ def exact_select(groups, budget, price):
             continue
         val = sum(o.value - price * o.symbols for o in combo if o is not None)
         if val > best_val:
-            best, best_val = combo, val
+            best_val = val
     return best_val
 
 
@@ -152,5 +155,3 @@ def test_lagrangian_close_to_exact_on_logged_instances():
         assert sum(o.symbols for _, o in chosen) <= budget
         gaps.append(0.0 if opt <= 0 else (opt - got) / opt)
     assert gaps and np.mean(gaps) < 0.1
-
-

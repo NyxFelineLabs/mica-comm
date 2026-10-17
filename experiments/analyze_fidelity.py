@@ -1,13 +1,16 @@
 ﻿"""Cluster-robust analysis of the counterfactual value-fidelity samples.
 
-    python -m experiments.analyze_fidelity
+python -m experiments.analyze_fidelity
 """
+
 import json
 import os
 
 import numpy as np
 
-RES = os.path.join(os.path.dirname(__file__), "..", "results")
+from mosaic_comm.paths import RESULTS_DIR
+
+RES = RESULTS_DIR
 
 
 def rk(x):
@@ -52,11 +55,16 @@ def main():
     for kind in ("E", "I", "EI"):
         d = np.array([r["dT"] for r in rows if r["kind"] == kind])
         se = np.array([r["dT_se"] for r in rows if r["kind"] == kind])
-        dist[kind] = {"n": int(d.size), "mean": float(d.mean()),
-                      "q": [float(v) for v in np.percentile(d, [5, 25, 50, 75, 95])],
-                      "frac_pos": float(np.mean(d > 0)), "frac_neg": float(np.mean(d < 0)),
-                      "frac_sig_pos": float(np.mean(d > 2 * se)), "frac_sig_neg": float(np.mean(d < -2 * se)),
-                      "mean_se": float(se.mean())}
+        dist[kind] = {
+            "n": int(d.size),
+            "mean": float(d.mean()),
+            "q": [float(v) for v in np.percentile(d, [5, 25, 50, 75, 95])],
+            "frac_pos": float(np.mean(d > 0)),
+            "frac_neg": float(np.mean(d < 0)),
+            "frac_sig_pos": float(np.mean(d > 2 * se)),
+            "frac_sig_neg": float(np.mean(d < -2 * se)),
+            "mean_se": float(se.mean()),
+        }
     out["effects"] = dist
     # --- action-selection regret among {nothing, E, I, EI} at decision points with >=2 options
     pts = {}
@@ -65,7 +73,9 @@ def main():
     reg = {e: [] for e in ests}
     reg["random"], reg["always_send_all"] = [], []
     for grp in pts.values():
-        opts = [("none", 0.0, {e: 0.0 for e in ests})] + [(r["kind"], r["dT"], r["est"]) for r in grp]
+        opts = [("none", 0.0, {e: 0.0 for e in ests})] + [
+            (r["kind"], r["dT"], r["est"]) for r in grp
+        ]
         if len(opts) < 3:
             continue
         best = max(o[1] for o in opts)
@@ -86,5 +96,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

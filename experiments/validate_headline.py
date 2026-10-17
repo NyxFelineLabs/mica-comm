@@ -9,16 +9,17 @@ achieved outcome and channel uses are reported side by side, without interpolati
 
     python -m experiments.validate_headline
 """
+
 import json
-import os
 from multiprocessing import Pool
 
 import numpy as np
 
+from experiments.plot_revision import arr, load, table
 from mosaic_comm import Config, run_episode
-from experiments.plot_revision import table, load, arr
+from mosaic_comm.paths import RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "rev_validation.json")
+OUT = RESULTS_DIR / "rev_validation.json"
 B = Config()
 RB = B.with_(task="rescue", deadline_min=60, deadline_max=180)
 SETTINGS = {  # name: (base config, task metric, target factor, source files for GOSC)
@@ -46,23 +47,39 @@ def candidates(name):
         ra = table(load("rate_aware"))
         for (s, p), rs in ra.items():
             if p.startswith(st + "/k"):
-                out.append(("periodic", p, "sem_ra", base.with_(sem_interval=int(p.split("/k")[1])), rs))
+                out.append(
+                    ("periodic", p, "sem_ra", base.with_(sem_interval=int(p.split("/k")[1])), rs)
+                )
         pre = st
     else:
         rs_tab = table(load("rescue"))
         for (s, p), rs in rs_tab.items():
             if s == "gosc" and p.startswith(st + "/eta"):
-                out.append(("gosc", p, "gosc", base.with_(energy_price=float(p.split("eta")[1])), rs))
+                out.append(
+                    ("gosc", p, "gosc", base.with_(energy_price=float(p.split("eta")[1])), rs)
+                )
             if s == "sem_ra" and p.startswith(st + "/k"):
-                out.append(("periodic", p, "sem_ra", base.with_(sem_interval=int(p.split("/k")[1])), rs))
+                out.append(
+                    ("periodic", p, "sem_ra", base.with_(sem_interval=int(p.split("/k")[1])), rs)
+                )
         pre = "rescue-" + st
     for (s, p), rs in table(load("filtered_periodic")).items():
         if p.startswith(pre + "/k"):
-            out.append(("periodic", p, "sem_raf", base.with_(sem_interval=int(p.split("/k")[1])), rs))
+            out.append(
+                ("periodic", p, "sem_raf", base.with_(sem_interval=int(p.split("/k")[1])), rs)
+            )
     for (s, p), rs in table(load("suppress_periodic")).items():
         if p.startswith(pre + "/k"):
             k, th = p.split("/k")[1].split("/th")
-            out.append(("periodic", p, "sem_ras", base.with_(sem_interval=int(k), filter_eps=float(th)), rs))
+            out.append(
+                (
+                    "periodic",
+                    p,
+                    "sem_ras",
+                    base.with_(sem_interval=int(k), filter_eps=float(th)),
+                    rs,
+                )
+            )
     return out
 
 
@@ -83,8 +100,11 @@ def select(name):
     ok = (lambda m: m <= target) if metric == "completion_time" else (lambda m: m >= target)
     chosen = {}
     for fam in ("gosc", "periodic"):
-        pts = [(arr(rs, "symbols").mean(), lab, sch, cfg) for f, lab, sch, cfg, rs in candidates(name)
-               if f == fam and ok(arr(rs, metric).mean())]
+        pts = [
+            (arr(rs, "symbols").mean(), lab, sch, cfg)
+            for f, lab, sch, cfg, rs in candidates(name)
+            if f == fam and ok(arr(rs, metric).mean())
+        ]
         chosen[fam] = min(pts, key=lambda x: x[0]) if pts else None
     return target, chosen
 
@@ -110,30 +130,54 @@ def main():
                 outs = pool.map(_run, [(sch, cfg, s) for s in range(3000, 3100)])
             m = np.array([o[metric] for o in outs], float)
             y = np.array([o["symbols"] for o in outs], float)
-            row[fam] = {"point": lab, "scheme": sch, "eval_ksym": float(sym_eval / 1e3),
-                        "fresh_metric": float(m.mean()),
-                        "fresh_metric_ci": float(1.96 * m.std(ddof=1) / np.sqrt(len(m))),
-                        "fresh_ksym": float(y.mean() / 1e3),
-                        "fresh_ksym_ci": float(1.96 * y.std(ddof=1) / np.sqrt(len(y)) / 1e3),
-                        "meets_target": bool(m.mean() <= target if metric == "completion_time"
-                                             else m.mean() >= target),
-                        "metric_per_seed": m.tolist(), "ksym_per_seed": (y / 1e3).tolist()}
+            row[fam] = {
+                "point": lab,
+                "scheme": sch,
+                "eval_ksym": float(sym_eval / 1e3),
+                "fresh_metric": float(m.mean()),
+                "fresh_metric_ci": float(1.96 * m.std(ddof=1) / np.sqrt(len(m))),
+                "fresh_ksym": float(y.mean() / 1e3),
+                "fresh_ksym_ci": float(1.96 * y.std(ddof=1) / np.sqrt(len(y)) / 1e3),
+                "meets_target": bool(
+                    m.mean() <= target if metric == "completion_time" else m.mean() >= target
+                ),
+                "metric_per_seed": m.tolist(),
+                "ksym_per_seed": (y / 1e3).tolist(),
+            }
         if row.get("gosc") and row.get("periodic"):
             a = np.array(row["periodic"]["ksym_per_seed"])
             g = np.array(row["gosc"]["ksym_per_seed"])
             rng = np.random.default_rng(0)
             idx = rng.integers(0, len(a), (4000, len(a)))
             rat = a[idx].mean(1) / g[idx].mean(1)
-            row["ratio"] = [float(a.mean() / g.mean()), *[float(v) for v in np.percentile(rat, [2.5, 97.5])]]
+            row["ratio"] = [
+                float(a.mean() / g.mean()),
+                *[float(v) for v in np.percentile(rat, [2.5, 97.5])],
+            ]
         res[name] = row
-        print(name, {k: (v["point"], round(v["fresh_metric"], 3), round(v["fresh_ksym"], 1), v["meets_target"])
-                     if isinstance(v, dict) else v for k, v in row.items() if k in ("gosc", "periodic")},
-              "ratio", row.get("ratio"), flush=True)
+        print(
+            name,
+            {
+                k: (
+                    (
+                        v["point"],
+                        round(v["fresh_metric"], 3),
+                        round(v["fresh_ksym"], 1),
+                        v["meets_target"],
+                    )
+                    if isinstance(v, dict)
+                    else v
+                )
+                for k, v in row.items()
+                if k in ("gosc", "periodic")
+            },
+            "ratio",
+            row.get("ratio"),
+            flush=True,
+        )
     with open(OUT, "w") as f:
         json.dump(res, f)
 
 
 if __name__ == "__main__":
     main()
-
-

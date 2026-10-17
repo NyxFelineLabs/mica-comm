@@ -7,20 +7,24 @@ interrupted and resumed. Requires a running Ollama server with the model pulled
 
     python -m experiments.run_llm --seeds 20
 """
+
 import argparse
 import json
 import os
 import time
 
 from mosaic_comm import Config, run_episode
+from mosaic_comm.paths import RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "llm_mixed.jsonl")
+OUT = RESULTS_DIR / "llm_mixed.jsonl"
 # scheme-specific settings: the throughput-value rule at a price that gives about the
 # same channel use as GOSC's default price in the planner team
 SCHEME_CFG = {"gosc_bits": {"energy_price": 0.3}}
-TEAMS = {"mixed": ((0, 2, 4), "small_reasoner"),
-         "mixed_alt": ((0, 2, 4), "small_reasoner_alt"),
-         "planner": ((), "small_reasoner")}
+TEAMS = {
+    "mixed": ((0, 2, 4), "small_reasoner"),
+    "mixed_alt": ((0, 2, 4), "small_reasoner_alt"),
+    "planner": ((), "small_reasoner"),
+}
 
 
 def main():
@@ -41,19 +45,27 @@ def main():
                 if (team, scheme, seed) in done:
                     continue
                 agents, model = TEAMS[team]
-                cfg = Config().with_(llm_agents=agents, llm_model=model, **SCHEME_CFG.get(scheme, {}))
+                cfg = Config().with_(
+                    llm_agents=agents, llm_model=model, **SCHEME_CFG.get(scheme, {})
+                )
                 t0 = time.time()
                 out = run_episode(cfg, scheme, seed)
                 out.pop("curve")
-                out.update(team=team, scheme=scheme, seed=seed, model=model if agents else None,
-                           wall_s=round(time.time() - t0, 1))
+                out.update(
+                    team=team,
+                    scheme=scheme,
+                    seed=seed,
+                    model=model if agents else None,
+                    wall_s=round(time.time() - t0, 1),
+                )
                 with open(OUT, "a") as f:
                     f.write(json.dumps(out) + "\n")
-                print(f"seed {seed} {team:7s} {scheme:5s} T={out['completion_time']:3d} "
-                      f"wall={out['wall_s']:.0f}s", flush=True)
+                print(
+                    f"seed {seed} {team:7s} {scheme:5s} T={out['completion_time']:3d} "
+                    f"wall={out['wall_s']:.0f}s",
+                    flush=True,
+                )
 
 
 if __name__ == "__main__":
     main()
-
-

@@ -8,19 +8,22 @@ with the main LLM experiments).
     python -m experiments.run_llm_extended --seeds 50 --teams mixed_alt
     python -m experiments.run_llm_extended --seeds 30 --teams mixed_large
 """
+
 import argparse
 import json
 import os
 import time
 
-from mosaic_comm import Config, run_episode
-from mosaic_comm import llm_agent
+from mosaic_comm import Config, llm_agent, run_episode
+from mosaic_comm.paths import CACHE_DIR, RESULTS_DIR
 
-ROOT = os.path.join(os.path.dirname(__file__), "..", "results")
-OUT = os.path.join(ROOT, "llm_extended.jsonl")
-CACHE = os.path.join(ROOT, "llm_cache")
-TEAMS = {"mixed_large": ((0, 2, 4), "large_reasoner"),
-         "mixed_alt": ((0, 2, 4), "small_reasoner_alt")}
+ROOT = RESULTS_DIR
+OUT = ROOT / "llm_extended.jsonl"
+CACHE = CACHE_DIR
+TEAMS = {
+    "mixed_large": ((0, 2, 4), "large_reasoner"),
+    "mixed_alt": ((0, 2, 4), "small_reasoner_alt"),
+}
 
 
 def main():
@@ -54,16 +57,21 @@ def main():
         out.pop("curve")
         if out.get("llm_fallbacks", 0) > 0:
             # an unreachable server silently turns LLM agents into planners: never record it
-            raise SystemExit(f"{team} {scheme} seed {seed}: {out['llm_fallbacks']} LLM fallbacks "
-                             "(is the Ollama server running?); mission not recorded")
-        out.update(team=team, scheme=scheme, seed=seed, model=model, wall_s=round(time.time() - t0, 1))
+            raise SystemExit(
+                f"{team} {scheme} seed {seed}: {out['llm_fallbacks']} LLM fallbacks "
+                "(is the Ollama server running?); mission not recorded"
+            )
+        out.update(
+            team=team, scheme=scheme, seed=seed, model=model, wall_s=round(time.time() - t0, 1)
+        )
         with open(OUT, "a") as f:
             f.write(json.dumps(out) + "\n")
-        print(f"seed {seed} {team:12s} {scheme:5s} T={out['completion_time']:3d} "
-              f"agree={out['llm_agree']}/{out['llm_decisions']} wall={out['wall_s']:.0f}s", flush=True)
+        print(
+            f"seed {seed} {team:12s} {scheme:5s} T={out['completion_time']:3d} "
+            f"agree={out['llm_agree']}/{out['llm_decisions']} wall={out['wall_s']:.0f}s",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":
     main()
-
-

@@ -1,13 +1,16 @@
-﻿import math
-
-import numpy as np
+﻿import numpy as np
 import pytest
 
 from mosaic_comm import Config, Simulation, run_episode
-from mosaic_comm.belief import Obs, SensorModel, box_sum, logit, sigmoid
+from mosaic_comm.belief import Obs, SensorModel, box_sum, logit
 from mosaic_comm.channel import Channel
 from mosaic_comm.messages import evidence_bits, evidence_sizes
 from mosaic_comm.schemes import SCHEMES, Group, Option, lagrangian_select
+
+
+def test_unknown_scheme_error_lists_available_choices():
+    with pytest.raises(ValueError, match="Unknown scheme"):
+        Simulation(Config(), "does-not-exist", seed=0)
 
 
 def test_box_sum_matches_bruteforce():
@@ -17,7 +20,7 @@ def test_box_sum_matches_bruteforce():
     got = box_sum(a, r)
     for i in range(9):
         for j in range(9):
-            ref = a[max(i - r, 0):i + r + 1, max(j - r, 0):j + r + 1].sum()
+            ref = a[max(i - r, 0) : i + r + 1, max(j - r, 0) : j + r + 1].sum()
             assert got[i, j] == pytest.approx(ref)
 
 
@@ -61,9 +64,11 @@ def test_evidence_sizes_monotone_and_jump_cost():
 
 
 def test_lagrangian_respects_budget_and_prefers_value():
-    groups = [Group("A", [Option(1.0, 60, 60, 5.0), Option(2.0, 60, 30, 4.0)]),
-              Group("B", [Option(1.0, 60, 60, 0.5), Option(2.0, 60, 30, 0.4)]),
-              Group("C", [Option(1.0, 80, 80, 0.05)])]
+    groups = [
+        Group("A", [Option(1.0, 60, 60, 5.0), Option(2.0, 60, 30, 4.0)]),
+        Group("B", [Option(1.0, 60, 60, 0.5), Option(2.0, 60, 30, 0.4)]),
+        Group("C", [Option(1.0, 80, 80, 0.05)]),
+    ]
     chosen = lagrangian_select(groups, budget=70, price=0.0)
     assert sum(o.symbols for _, o in chosen) <= 70
     assert "A" in {g.kind for g, _ in chosen}
@@ -122,5 +127,3 @@ def test_all_schemes_complete_easy_mission():
     for s in SCHEMES:
         out = run_episode(cfg, s, 0)
         assert out["found"] == 2, s
-
-

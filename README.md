@@ -36,6 +36,14 @@ available to the experiment scripts.
 All experiment commands write local output under `results/` and generated plots
 under `figures/`; both are ignored by Git.
 
+The locations can be redirected without changing code, which is useful for WSL
+mounts and CI workers:
+
+```bash
+export MOSAIC_RESULTS_DIR=/tmp/mosaic-results
+export MOSAIC_FIGURES_DIR=/tmp/mosaic-figures
+```
+
 ```bash
 .venv/bin/python -m experiments.run_all --seeds 100
 .venv/bin/python -m experiments.plot
@@ -75,6 +83,7 @@ experiments/       paper campaigns, analysis, and plotting
 scripts/           focused sample and cache utilities
 tests/             unit and regression tests
 docs/              architecture and reproducibility notes
+.github/           continuous integration checks
 ```
 
 The simulator keeps the research scheme identifiers (`gosc`, `sem`, `genie`, and

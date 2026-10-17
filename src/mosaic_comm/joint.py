@@ -12,6 +12,7 @@ evidence may also be grouped into a single packet (one header, both-or-none).
 Confirmations are valued additively.  The per-slot problem is solved exactly by
 enumeration.
 """
+
 import itertools
 import math
 
@@ -23,6 +24,8 @@ from .voi import TeamModel
 
 
 class GOSCJoint(GOSC):
+    """Exact set-valued scheduler used to test joint message valuation."""
+
     name = "gosc_joint"
 
     def __init__(self, cfg, channel, bundle=True, name=None):
@@ -48,13 +51,18 @@ class GOSCJoint(GOSC):
             for r in rates:
                 s = math.ceil(b / r)
                 if s <= W:
-                    opts.append(((("C", r, b, s, cell),), c.confirm_value * self._ps(r, snr_mean, s), s))
+                    opts.append(
+                        ((("C", r, b, s, cell),), c.confirm_value * self._ps(r, snr_mean, s), s)
+                    )
             conf_groups.append(opts)
 
         # -- intention / evidence: set-valued options -------------------------
         acked_i = getattr(agent, "acked_intent", agent.shared_intent)
-        has_i = (agent.target is not None and agent.target != agent.shared_intent
-                 and agent.target != acked_i)
+        has_i = (
+            agent.target is not None
+            and agent.target != agent.shared_intent
+            and agent.target != acked_i
+        )
         recs = agent.pending_records
         sizes = evidence_sizes(recs, c) if recs else []
 
@@ -63,8 +71,11 @@ class GOSCJoint(GOSC):
 
         sep_e = [(r, fit(int(W * r))) for r in rates if fit(int(W * r)) > 0]
         i_extra = intent_bits(c) - HEADER_BITS
-        bund = ([(r, fit(int(W * r) - i_extra)) for r in rates if fit(int(W * r) - i_extra) > 0]
-                if has_i and self.bundle else [])
+        bund = (
+            [(r, fit(int(W * r) - i_extra)) for r in rates if fit(int(W * r) - i_extra) > 0]
+            if has_i and self.bundle
+            else []
+        )
         need = sorted({n for _, n in sep_e} | {n for _, n in bund})
         v_e, v_ei = {}, {}
         if need:
@@ -74,7 +85,9 @@ class GOSCJoint(GOSC):
                     sim.sensor.apply(delta, recs[i])
                     i += 1
                 deltas.append(delta.copy())
-            for n, v, d in zip(need, team.evidence_voi(deltas, [recs[n - 1].pos for n in need]), deltas):
+            for n, v, d in zip(
+                need, team.evidence_voi(deltas, [recs[n - 1].pos for n in need]), deltas
+            ):
                 v_e[n] = v
                 if has_i:
                     v_ei[n] = team.joint_voi(d, recs[n - 1].pos, agent.target)
@@ -142,8 +155,9 @@ class GOSCJoint(GOSC):
                     res.delivered.append(Packet("CONF", agent.idx, b, t, confirm=x))
                 if kind in ("I", "B"):
                     agent.acked_intent = agent.target
-                    res.delivered.append(Packet("INTENT", agent.idx, intent_bits(c), t,
-                                                intent=agent.target))
+                    res.delivered.append(
+                        Packet("INTENT", agent.idx, intent_bits(c), t, intent=agent.target)
+                    )
                 if kind in ("E", "B"):
                     n = x
                     rs = agent.pending_records[:n]
@@ -152,5 +166,3 @@ class GOSCJoint(GOSC):
                         sim.sensor.apply(agent.queued_llr, rec, sign=-1.0)
                     res.delivered.append(Packet("EVID", agent.idx, sizes[n - 1], t, records=rs))
         return res
-
-

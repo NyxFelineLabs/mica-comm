@@ -27,6 +27,10 @@ Config
 `run_episode` is the stable programmatic entry point. It accepts a `Config`, a
 scheme name, and a seed, and returns JSON-serializable mission metrics.
 
+Experiment output paths are centralized in `mosaic_comm.paths`. `results/` and
+`figures/` can be redirected with `MOSAIC_RESULTS_DIR` and `MOSAIC_FIGURES_DIR`;
+the LLM cache uses `MOSAIC_CACHE_DIR`.
+
 ## Extension points
 
 1. Add a field to `Config` for a new controlled parameter.

@@ -15,6 +15,7 @@ the fresh seeds, with common random numbers across methods.
 
     python -m experiments.validate_realistic --only overhead noise shared
 """
+
 import argparse
 import json
 import os
@@ -24,8 +25,9 @@ import numpy as np
 
 from experiments.run_realistic import ARMS, HEADLINE, OUT, SETTINGS, SHARED
 from mosaic_comm import run_realistic
+from mosaic_comm.paths import RESULTS_DIR
 
-RES = os.path.join(os.path.dirname(__file__), "..", "results")
+RES = RESULTS_DIR
 FRESH = range(3000, 3100)
 
 
@@ -94,8 +96,19 @@ def point_kw(p):
 def _run(a):
     cfg, scheme, seed = a
     o = run_realistic(cfg, scheme, seed)
-    keep = ("completion_time", "saved_fraction", "symbols", "bits", "ul_tx", "ul_overhead_bits",
-            "ul_ctrl_symbols", "dl_bcast_symbols", "dl_ctrl_symbols", "total_symbols", "completed")
+    keep = (
+        "completion_time",
+        "saved_fraction",
+        "symbols",
+        "bits",
+        "ul_tx",
+        "ul_overhead_bits",
+        "ul_ctrl_symbols",
+        "dl_bcast_symbols",
+        "dl_ctrl_symbols",
+        "total_symbols",
+        "completed",
+    )
     return {k: o[k] for k in keep if k in o}
 
 
@@ -122,19 +135,46 @@ def overhead(pool):
                 if H == 0:
                     sch, p = jv[st][fam]["scheme"], jv[st][fam]["point"].split("/", 1)[1]
                 else:
-                    b = select([r for r in rows if not (st.startswith("rescue") and r["family"] == "gosc"
-                                                        and r["point"] in ("eta0.0003", "eta0.001"))],
-                               st, fam, metric, target, H=H)
+                    b = select(
+                        [
+                            r
+                            for r in rows
+                            if not (
+                                st.startswith("rescue")
+                                and r["family"] == "gosc"
+                                and r["point"] in ("eta0.0003", "eta0.001")
+                            )
+                        ],
+                        st,
+                        fam,
+                        metric,
+                        target,
+                        H=H,
+                    )
                     if b is None:
                         entry[fam] = None
                         continue
                     _, sch, p = b
-                entry[fam] = {"scheme": sch, "point": p,
-                              **fresh(pool, base.with_(**point_kw(p)), sch)}
+                entry[fam] = {
+                    "scheme": sch,
+                    "point": p,
+                    **fresh(pool, base.with_(**point_kw(p)), sch),
+                }
             res[f"{st}/H{H}"] = entry
-            print("overhead", st, H, {f: (entry[f]["point"], np.mean(entry[f][metric]),
-                                          np.mean(entry[f]["symbols"])) if entry.get(f) else None
-                                      for f in ("gosc", "periodic")}, flush=True)
+            print(
+                "overhead",
+                st,
+                H,
+                {
+                    f: (
+                        (entry[f]["point"], np.mean(entry[f][metric]), np.mean(entry[f]["symbols"]))
+                        if entry.get(f)
+                        else None
+                    )
+                    for f in ("gosc", "periodic")
+                },
+                flush=True,
+            )
     for H in (0, 32):
         for s in ("report", "raw", "nl", "sem"):
             res[f"conv/{s}/H{H}"] = fresh(pool, SETTINGS["search-W100"].with_(overhead_bits=H), s)
@@ -154,10 +194,22 @@ def noise(pool):
                 res[f"{st}/{arm}"] = None
                 continue
             _, sch, p = b
-            res[f"{st}/{arm}"] = {"target": target, "metric": metric, "scheme": sch, "point": p,
-                                  **fresh(pool, SETTINGS[st].with_(**kw, **point_kw(p)), sch)}
-            print("noise", st, arm, p, np.mean(res[f"{st}/{arm}"][metric]),
-                  np.mean(res[f"{st}/{arm}"]["symbols"]), flush=True)
+            res[f"{st}/{arm}"] = {
+                "target": target,
+                "metric": metric,
+                "scheme": sch,
+                "point": p,
+                **fresh(pool, SETTINGS[st].with_(**kw, **point_kw(p)), sch),
+            }
+            print(
+                "noise",
+                st,
+                arm,
+                p,
+                np.mean(res[f"{st}/{arm}"][metric]),
+                np.mean(res[f"{st}/{arm}"]["symbols"]),
+                flush=True,
+            )
     return res
 
 
@@ -176,8 +228,19 @@ def shared(pool):
             _, sch, p = b
             entry[fam] = {"scheme": sch, "point": p, **fresh(pool, c.with_(**point_kw(p)), sch)}
         res[st] = entry
-        print("shared", st, {f: (entry[f]["point"], np.mean(entry[f][metric]), np.mean(entry[f]["symbols"]))
-                             if entry.get(f) else None for f in ("gosc", "periodic")}, flush=True)
+        print(
+            "shared",
+            st,
+            {
+                f: (
+                    (entry[f]["point"], np.mean(entry[f][metric]), np.mean(entry[f]["symbols"]))
+                    if entry.get(f)
+                    else None
+                )
+                for f in ("gosc", "periodic")
+            },
+            flush=True,
+        )
     return res
 
 
@@ -195,5 +258,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

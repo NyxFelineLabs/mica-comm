@@ -1,13 +1,15 @@
 ﻿"""Packet formats and their exact payload sizes in bits."""
+
 import math
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from .belief import Obs
 from .config import Config
 
-HEADER_BITS = 8      # 3-bit message type + 5-bit agent id
+HEADER_BITS = 8  # 3-bit message type + 5-bit agent id
 COUNT_BITS = 8
-MOVE_BITS = 3        # {stay, N, S, E, W}
+MOVE_BITS = 3  # {stay, N, S, E, W}
 RAW_SAMPLE_BITS = 8  # quantised sensor score per cell
 
 
@@ -19,7 +21,7 @@ def footprint_bits(cfg: Config) -> int:
     return math.ceil(math.log2((2 * cfg.sense_radius + 1) ** 2))
 
 
-JUMP_GAP_BITS = 8    # slot gap after a JUMP move code
+JUMP_GAP_BITS = 8  # slot gap after a JUMP move code
 
 
 def evidence_bits(n_steps: int, n_pos: int, cfg: Config, n_jumps: int = 0) -> int:
@@ -31,9 +33,14 @@ def evidence_bits(n_steps: int, n_pos: int, cfg: Config, n_jumps: int = 0) -> in
     if n_steps == 0:
         return 0
     step_idx = math.ceil(math.log2(n_steps)) if n_steps > 1 else 0
-    return (HEADER_BITS + cell_bits(cfg) + 2 * COUNT_BITS
-            + MOVE_BITS * (n_steps - 1) + n_jumps * (cell_bits(cfg) + JUMP_GAP_BITS)
-            + n_pos * (step_idx + footprint_bits(cfg)))
+    return (
+        HEADER_BITS
+        + cell_bits(cfg)
+        + 2 * COUNT_BITS
+        + MOVE_BITS * (n_steps - 1)
+        + n_jumps * (cell_bits(cfg) + JUMP_GAP_BITS)
+        + n_pos * (step_idx + footprint_bits(cfg))
+    )
 
 
 def evidence_sizes(records, cfg: Config):
@@ -72,11 +79,16 @@ def _xy(cell: int, n: int):
 def nl_step_text(agent: int, t: int, pos, det, target: Optional[int], cfg: Config) -> str:
     """Natural-language status message, as exchanged by LLM-based agents."""
     n, side = cfg.grid, 2 * cfg.sense_radius + 1
-    s = (f"[t={t}] Agent {agent} here. My position is ({pos[0]}, {pos[1]}). "
-         f"I scanned the {side}x{side} area around me. ")
+    s = (
+        f"[t={t}] Agent {agent} here. My position is ({pos[0]}, {pos[1]}). "
+        f"I scanned the {side}x{side} area around me. "
+    )
     if det:
-        s += ("Possible survivor signatures detected at "
-              + ", ".join("({}, {})".format(*_xy(c, n)) for c in det) + ". ")
+        s += (
+            "Possible survivor signatures detected at "
+            + ", ".join("({}, {})".format(*_xy(c, n)) for c in det)
+            + ". "
+        )
     else:
         s += "No survivor signatures detected in this area. "
     if target is not None:
@@ -85,8 +97,9 @@ def nl_step_text(agent: int, t: int, pos, det, target: Optional[int], cfg: Confi
 
 
 def nl_confirm_text(agent: int, cell: int, cfg: Config) -> str:
-    return ("URGENT from Agent {}: survivor CONFIRMED at ({}, {}). "
-            "Please dispatch the rescue team.").format(agent, *_xy(cell, cfg.grid))
+    return (
+        "URGENT from Agent {}: survivor CONFIRMED at ({}, {}). " "Please dispatch the rescue team."
+    ).format(agent, *_xy(cell, cfg.grid))
 
 
 def text_bits(s: str) -> int:
@@ -95,13 +108,13 @@ def text_bits(s: str) -> int:
 
 @dataclass
 class Packet:
-    kind: str                     # EVID | RAW | SEM | NL | CONF | INTENT
+    """A decoded or queued message exchanged with the edge coordinator."""
+
+    kind: str  # EVID | RAW | SEM | NL | CONF | INTENT
     sender: int
     bits: int
     created: int
-    records: List = field(default_factory=list)
+    records: List[Obs] = field(default_factory=list)
     confirm: Optional[int] = None
     intent: Optional[int] = None
-    sent: int = 0                 # bits already delivered (FIFO fragmentation)
-
-
+    sent: int = 0  # bits already delivered (FIFO fragmentation)

@@ -13,16 +13,17 @@ seeds 0-99).
 
 Every mission is appended to results/<name>.jsonl (the run can be resumed).
 """
+
 import argparse
 import json
 import os
 import time
 from multiprocessing import Pool
 
-from mosaic_comm import Config
-from mosaic_comm import run_realistic
+from mosaic_comm import Config, run_realistic
+from mosaic_comm.paths import RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results")
+OUT = RESULTS_DIR
 
 B = Config()
 RB = B.with_(task="rescue", deadline_min=60, deadline_max=180)
@@ -35,15 +36,24 @@ SETTINGS = {
     "rescue-W50": RB.with_(symbols_per_slot=50),
     "rescue-snr-5": RB.with_(snr_ref_db=-5),
 }
-HEADLINE = ("search-W100", "search-K10", "search-clustered", "rescue-W100", "rescue-W50", "rescue-snr-5")
+HEADLINE = (
+    "search-W100",
+    "search-K10",
+    "search-clustered",
+    "rescue-W100",
+    "rescue-W50",
+    "rescue-snr-5",
+)
 ETA_SEARCH = (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)
 ETA_RESCUE = (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)  # extended beyond the main-evaluation grid
 THETAS = (0.02, 0.05, 0.1, 0.2, 0.4, 1.0, 2.0)
-PERIODIC = ([("sem_ra", k, None) for k in (1, 2, 4, 8, 16)]
-            + [("sem_raf", k, None) for k in (1, 2, 4, 8, 16)]
-            + [("sem_ras", k, th) for k in (1, 2, 4, 8) for th in THETAS])
+PERIODIC = (
+    [("sem_ra", k, None) for k in (1, 2, 4, 8, 16)]
+    + [("sem_raf", k, None) for k in (1, 2, 4, 8, 16)]
+    + [("sem_ras", k, th) for k in (1, 2, 4, 8) for th in THETAS]
+)
 ARMS = {  # value-estimation arms of the noise experiment
-    "exact": ("gosc", {}),   # rescue only (search: identical main-evaluation runs)
+    "exact": ("gosc", {}),  # rescue only (search: identical main-evaluation runs)
     "ln0.5": ("gosc", dict(value_mode="lognormal", value_sigma=0.5)),
     "ln1": ("gosc", dict(value_mode="lognormal", value_sigma=1.0)),
     "ln2": ("gosc", dict(value_mode="lognormal", value_sigma=2.0)),
@@ -51,8 +61,12 @@ ARMS = {  # value-estimation arms of the noise experiment
     "perm": ("gosc", dict(value_mode="permuted")),
     "perm_nofilter": ("gosc_nofilter", dict(value_mode="permuted")),
 }
-SHARED = {"search-B600": (B, 600), "search-B300": (B, 300), "search-B150": (B, 150),
-          "rescue-B300": (RB, 300)}
+SHARED = {
+    "search-B600": (B, 600),
+    "search-B300": (B, 300),
+    "search-B150": (B, 150),
+    "rescue-B300": (RB, 300),
+}
 OVERHEADS = (16, 32, 64)
 
 
@@ -78,8 +92,16 @@ def periodic_rows(setting, cfg, extra):
         if th is not None:
             kw["filter_eps"] = th
             lab += f"/th{th}"
-        rows.append(dict(setting=setting, family="periodic", scheme=s, point=lab, **extra,
-                         cfg=cfg.with_(**kw)))
+        rows.append(
+            dict(
+                setting=setting,
+                family="periodic",
+                scheme=s,
+                point=lab,
+                **extra,
+                cfg=cfg.with_(**kw),
+            )
+        )
     return rows
 
 
@@ -92,15 +114,30 @@ def experiments():
             if arm == "exact" and not st.startswith("rescue"):
                 continue
             for e in noise_etas(st):
-                rows.append(dict(setting=st, family="gosc", arm=arm, scheme=scheme, point=f"eta{e}",
-                                 cfg=cfg.with_(energy_price=e, **kw)))
+                rows.append(
+                    dict(
+                        setting=st,
+                        family="gosc",
+                        arm=arm,
+                        scheme=scheme,
+                        point=f"eta{e}",
+                        cfg=cfg.with_(energy_price=e, **kw),
+                    )
+                )
     ex["noise"] = rows
     rows = []
     for st, (cfg, bud) in SHARED.items():
         c = cfg.with_(shared_budget=bud, symbols_per_slot=bud)
         for e in etas(st):
-            rows.append(dict(setting=st, family="gosc", scheme="gosc", point=f"eta{e}",
-                             cfg=c.with_(energy_price=e)))
+            rows.append(
+                dict(
+                    setting=st,
+                    family="gosc",
+                    scheme="gosc",
+                    point=f"eta{e}",
+                    cfg=c.with_(energy_price=e),
+                )
+            )
         rows += periodic_rows(st, c, {})
         rows.append(dict(setting=st, family="conventional", scheme="sem", point="k1", cfg=c))
     ex["shared"] = rows
@@ -109,13 +146,29 @@ def experiments():
         for st in HEADLINE:
             c = SETTINGS[st].with_(overhead_bits=H)
             for e in etas(st):
-                rows.append(dict(setting=st, family="gosc", scheme="gosc", point=f"eta{e}", H=H,
-                                 cfg=c.with_(energy_price=e)))
+                rows.append(
+                    dict(
+                        setting=st,
+                        family="gosc",
+                        scheme="gosc",
+                        point=f"eta{e}",
+                        H=H,
+                        cfg=c.with_(energy_price=e),
+                    )
+                )
             rows += periodic_rows(st, c, dict(H=H))
     for H in (0,) + OVERHEADS:
         for s in ("report", "raw", "nl", "sem"):
-            rows.append(dict(setting="search-W100", family="conventional", scheme=s, point="ref", H=H,
-                             cfg=B.with_(overhead_bits=H)))
+            rows.append(
+                dict(
+                    setting="search-W100",
+                    family="conventional",
+                    scheme=s,
+                    point="ref",
+                    H=H,
+                    cfg=B.with_(overhead_bits=H),
+                )
+            )
     ex["overhead"] = rows
     return ex
 
@@ -149,8 +202,12 @@ def main():
                         done.add(key(json.loads(line)))
                     except json.JSONDecodeError:
                         pass
-        jobs = [(row, s) for s in range(args.seeds) for row in ex[name]
-                if key({**row, "seed": s}) not in done]
+        jobs = [
+            (row, s)
+            for s in range(args.seeds)
+            for row in ex[name]
+            if key({**row, "seed": s}) not in done
+        ]
         t0 = time.time()
         with Pool(args.workers) as pool, open(path, "a") as f:
             for i, out in enumerate(pool.imap_unordered(_job, jobs, chunksize=2)):
@@ -163,5 +220,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

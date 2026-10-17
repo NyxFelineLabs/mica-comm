@@ -6,6 +6,7 @@ calibrated on disjoint seeds (1000+), see README.
     python -m experiments.run_all            # full campaign
     python -m experiments.run_all --seeds 8  # smoke test
 """
+
 import argparse
 import json
 import os
@@ -13,26 +14,36 @@ import time
 from multiprocessing import Pool
 
 from mosaic_comm import Config, run_episode
+from mosaic_comm.paths import RESULTS_DIR
 
 ALL = ["report", "raw", "nl", "sem", "gosc_nouep", "gosc_novoi", "gosc_tv", "gosc", "genie"]
 MAIN = ["report", "raw", "nl", "sem", "gosc", "genie"]
-OUT = os.path.join(os.path.dirname(__file__), "..", "results")
+OUT = RESULTS_DIR
 
 
 def experiments(n_seeds):
     base = Config()
     exps = {
         "default": [(s, "default", base, n_seeds) for s in ALL],
-        "snr": [(s, v, base.with_(snr_ref_db=v), n_seeds)
-                for v in (-10, -5, 0, 5, 10, 15, 20) for s in MAIN],
-        "budget": [(s, v, base.with_(symbols_per_slot=v), n_seeds)
-                   for v in (25, 50, 100, 200, 400) for s in MAIN],
-        "agents": [(s, v, base.with_(n_agents=v), n_seeds)
-                   for v in (2, 4, 6, 8, 10) for s in MAIN],
-        "pareto": [("gosc", v, base.with_(energy_price=v), n_seeds)
-                   for v in (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)],
-        "pareto_tv": [("gosc_tv", v, base.with_(energy_price=v), n_seeds)
-                      for v in (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)],
+        "snr": [
+            (s, v, base.with_(snr_ref_db=v), n_seeds)
+            for v in (-10, -5, 0, 5, 10, 15, 20)
+            for s in MAIN
+        ],
+        "budget": [
+            (s, v, base.with_(symbols_per_slot=v), n_seeds)
+            for v in (25, 50, 100, 200, 400)
+            for s in MAIN
+        ],
+        "agents": [(s, v, base.with_(n_agents=v), n_seeds) for v in (2, 4, 6, 8, 10) for s in MAIN],
+        "pareto": [
+            ("gosc", v, base.with_(energy_price=v), n_seeds)
+            for v in (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)
+        ],
+        "pareto_tv": [
+            ("gosc_tv", v, base.with_(energy_price=v), n_seeds)
+            for v in (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)
+        ],
     }
     return exps
 
@@ -65,11 +76,18 @@ def main():
     # one recorded episode for the trajectory illustration
     traj = {s: run_episode(Config(), s, 0, record_traj=True) for s in ("sem", "gosc")}
     with open(os.path.join(OUT, "trajectories.json"), "w") as f:
-        json.dump({s: {k: v for k, v in o.items() if k in ("trajectories", "victims", "completion_time")}
-                   for s, o in traj.items()}, f)
+        json.dump(
+            {
+                s: {
+                    k: v
+                    for k, v in o.items()
+                    if k in ("trajectories", "victims", "completion_time")
+                }
+                for s, o in traj.items()
+            },
+            f,
+        )
 
 
 if __name__ == "__main__":
     main()
-
-

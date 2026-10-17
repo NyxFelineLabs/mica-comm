@@ -1,15 +1,25 @@
 ﻿"""The realistic-resource extensions must reproduce the base simulator exactly with
 the default Config, and the new options must behave as specified."""
-import numpy as np
+
 import pytest
 
-from mosaic_comm import Config, run_episode
-from mosaic_comm import run_realistic
+from mosaic_comm import Config, run_episode, run_realistic
 from mosaic_comm.realistic import hull_size, waterfill
 from mosaic_comm.schemes import Option
 
 KEYS = ("completion_time", "symbols", "bits", "delivered_bits", "dl_symbols", "found")
-SCHEMES = ("gosc", "gosc_bits", "sem", "sem_ra", "sem_raf", "sem_ras", "raw", "nl", "report", "genie")
+SCHEMES = (
+    "gosc",
+    "gosc_bits",
+    "sem",
+    "sem_ra",
+    "sem_raf",
+    "sem_ras",
+    "raw",
+    "nl",
+    "report",
+    "genie",
+)
 
 
 @pytest.mark.parametrize("scheme", SCHEMES)
@@ -59,6 +69,7 @@ def test_noise_changes_decisions_and_is_logged():
 @pytest.mark.parametrize("scheme", ("gosc", "sem_ra"))
 def test_shared_budget_respected(scheme):
     from mosaic_comm.realistic import RealisticSimulation
+
     cfg = Config(shared_budget=150, symbols_per_slot=150)
     sim = RealisticSimulation(cfg, scheme, 0)
     sim._start()
@@ -85,5 +96,3 @@ def test_hull_size():
     opts = [Option(1, 10, 10, 1.0), Option(2, 10, 5, 0.9), Option(4, 10, 3, 0.1)]
     assert hull_size(opts, 0.0) == 2
     assert hull_size(opts, 1.0) == 0
-
-

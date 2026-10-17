@@ -3,6 +3,7 @@
 Every scheme decides, for one agent and one slot, which packets are put on the
 uplink, at which rate, and returns the packets that were decoded by the edge.
 """
+
 import math
 from dataclasses import dataclass
 from typing import List, Optional
@@ -12,19 +13,33 @@ import numpy as np
 from .belief import sigmoid
 from .channel import Channel
 from .config import Config
+from .messages import (
+    Packet,
+    cell_bits,
+    confirm_bits,
+    evidence_sizes,
+    intent_bits,
+    nl_confirm_text,
+    nl_step_text,
+    raw_bits,
+    sem_step_bits,
+    text_bits,
+)
 from .voi import TeamModel
-from .messages import (Packet, cell_bits, confirm_bits, evidence_bits, evidence_sizes, intent_bits,
-                       nl_confirm_text, nl_step_text, raw_bits, sem_step_bits, text_bits)
 
 
 @dataclass
 class TxResult:
+    """Per-agent transmission outcome for one simulation slot."""
+
     delivered: List[Packet]
     symbols: int = 0
     bits: int = 0
 
 
 class Scheme:
+    """Protocol interface implemented by every communication baseline."""
+
     name = "base"
     shares_evidence = True
 
@@ -47,6 +62,8 @@ class Scheme:
 # confirmations served with strict priority, stale data discarded.
 # --------------------------------------------------------------------------
 class FifoScheme(Scheme):
+    """Queue-based transport used by conventional periodic baselines."""
+
     def _rate(self, snr_mean: float) -> float:
         """Conventional link adaptation; if no rate meets the BLER target, the lowest
         rate is used (packets are fragmented over slots when needed)."""
@@ -71,7 +88,9 @@ class FifoScheme(Scheme):
         agent.prio = type(agent.prio)(p for p in agent.prio if not sim.declared[p.confirm])
         while agent.queue and t - agent.queue[0].created > c.max_packet_age:
             agent.queue.popleft()
-        backlog = sum(p.bits - p.sent for p in agent.prio) + sum(p.bits - p.sent for p in agent.queue)
+        backlog = sum(p.bits - p.sent for p in agent.prio) + sum(
+            p.bits - p.sent for p in agent.queue
+        )
         if backlog == 0:
             return TxResult([])
         rate = self._rate(snr_mean)
@@ -93,12 +112,14 @@ class FifoScheme(Scheme):
 
 class ReportOnly(FifoScheme):
     """Agents only report confirmed survivors; no coordination traffic."""
+
     name = "report"
     shares_evidence = False
 
 
 class RawShare(FifoScheme):
     """Bit-level sharing of raw sensor frames (conventional Shannon-layer design)."""
+
     name = "raw"
 
     def _data_packet(self, agent, rec, t):
@@ -107,6 +128,7 @@ class RawShare(FifoScheme):
 
 class NaturalLanguage(FifoScheme):
     """LLM-style verbose natural-language status messages."""
+
     name = "nl"
 
     def _data_packet(self, agent, rec, t):
@@ -114,23 +136,36 @@ class NaturalLanguage(FifoScheme):
         return Packet("NL", agent.idx, text_bits(s), t, records=[rec], intent=agent.target)
 
     def _confirm_packet(self, agent, cell, t):
-        return Packet("CONF", agent.idx, text_bits(nl_confirm_text(agent.idx, cell, self.cfg)),
-                      t, confirm=cell)
+        return Packet(
+            "CONF",
+            agent.idx,
+            text_bits(nl_confirm_text(agent.idx, cell, self.cfg)),
+            t,
+            confirm=cell,
+        )
 
 
 class SemanticPeriodic(FifoScheme):
     """Compact structured semantic updates every slot, but task-agnostic transport."""
+
     name = "sem"
 
     def _data_packet(self, agent, rec, t):
-        return Packet("SEM", agent.idx, sem_step_bits(len(rec.det), self.cfg), t,
-                      records=[rec], intent=agent.target)
+        return Packet(
+            "SEM",
+            agent.idx,
+            sem_step_bits(len(rec.det), self.cfg),
+            t,
+            records=[rec],
+            intent=agent.target,
+        )
 
 
 class SemanticAggregated(FifoScheme):
     """Strong periodic baseline: every `sem_interval` slots, one packet carries the
     records of the interval with the same lossless aggregated encoding as GOSC,
     plus the current intention; FIFO queue and conventional link adaptation."""
+
     name = "sem_agg"
 
     def on_step(self, agent, rec, t, sim):
@@ -140,8 +175,9 @@ class SemanticAggregated(FifoScheme):
         batch.append(rec)
         if len(batch) >= self.cfg.sem_interval:
             bits = evidence_sizes(batch, self.cfg)[-1] + cell_bits(self.cfg)
-            agent.queue.append(Packet("SEMA", agent.idx, bits, t, records=list(batch),
-                                      intent=agent.target))
+            agent.queue.append(
+                Packet("SEMA", agent.idx, bits, t, records=list(batch), intent=agent.target)
+            )
             batch.clear()
 
 
@@ -149,6 +185,7 @@ class SemanticRateAwareFiltered(SemanticAggregated):
     """Rate-aware periodic scheduler with GOSC's semantic source filter: records that
     would move the team belief (given what is already queued) by less than
     filter_eps are not queued.  Isolates the effect of value-priced scheduling."""
+
     name = "sem_raf"
 
     def _rate(self, snr_mean):
@@ -177,8 +214,9 @@ class SemanticRateAwareFiltered(SemanticAggregated):
             agent._slots = 0
             if batch:
                 bits = evidence_sizes(batch, self.cfg)[-1] + cell_bits(self.cfg)
-                agent.queue.append(Packet("SEMA", agent.idx, bits, t, records=list(batch),
-                                          intent=agent.target))
+                agent.queue.append(
+                    Packet("SEMA", agent.idx, bits, t, records=list(batch), intent=agent.target)
+                )
                 batch.clear()
 
     def transmit(self, agent, t, snr_mean, snr_inst, sim):
@@ -196,6 +234,7 @@ class SemanticRateAwareSuppress(SemanticRateAwareFiltered):
     GOSC's price.  Every `sem_interval` slots it sends the retained records plus the
     intention; with no retained record it sends a short intent-only packet if the
     intention changed, and nothing otherwise.  Goodput-optimal rate, fragmentation."""
+
     name = "sem_ras"
 
     def on_step(self, agent, rec, t, sim):
@@ -208,7 +247,9 @@ class SemanticRateAwareSuppress(SemanticRateAwareFiltered):
         new += sim.sensor.llr_neg
         n = c.grid
         for cell in rec.det:
-            new[cell // n - sx.start, cell % n - sy.start] += sim.sensor.llr_pos - sim.sensor.llr_neg
+            new[cell // n - sx.start, cell % n - sy.start] += (
+                sim.sensor.llr_pos - sim.sensor.llr_neg
+            )
         live = ~sim.declared.reshape(sim.Lc.shape)[sx, sy]
         batch = getattr(agent, "batch", None)
         if batch is None:
@@ -222,8 +263,9 @@ class SemanticRateAwareSuppress(SemanticRateAwareFiltered):
         agent._slots = 0
         if batch:
             bits = evidence_sizes(batch, c)[-1] + cell_bits(c)
-            agent.queue.append(Packet("SEMA", agent.idx, bits, t, records=list(batch),
-                                      intent=agent.target))
+            agent.queue.append(
+                Packet("SEMA", agent.idx, bits, t, records=list(batch), intent=agent.target)
+            )
             batch.clear()
             agent._sent_intent = agent.target
         elif agent.target is not None and agent.target != getattr(agent, "_sent_intent", None):
@@ -235,6 +277,7 @@ class SemanticRateAware(SemanticAggregated):
     """Rate-aware periodic semantic scheduler (strong external baseline): aggregated
     periodic updates as `sem_agg`, but each slot uses the rate that maximizes the
     expected goodput R * P_s(R) for a full-slot packet, with fragmentation."""
+
     name = "sem_ra"
 
     def _rate(self, snr_mean):
@@ -252,7 +295,7 @@ class Option:
     rate: float
     bits: int
     symbols: int
-    value: float          # expected goal value = VoI * P(success)
+    value: float  # expected goal value = VoI * P(success)
     n_records: int = 0
 
 
@@ -269,6 +312,7 @@ def lagrangian_select(groups: List[Group], budget: int, price: float):
     Solved by dualising the budget constraint (bisection on the multiplier) followed by
     a greedy fill of the residual budget.
     """
+
     def pick(lam):
         chosen, used = [], 0
         for g in groups:
@@ -294,10 +338,13 @@ def lagrangian_select(groups: List[Group], budget: int, price: float):
             lo = mid
     chosen, used = pick(price + hi)
     taken = {id(g) for g, _ in chosen}
-    for g in sorted((g for g in groups if id(g) not in taken),
-                    key=lambda g: -max(o.value / o.symbols for o in g.options)):
-        fits = [o for o in g.options
-                if o.symbols <= budget - used and o.value - price * o.symbols > 0]
+    for g in sorted(
+        (g for g in groups if id(g) not in taken),
+        key=lambda g: -max(o.value / o.symbols for o in g.options),
+    ):
+        fits = [
+            o for o in g.options if o.symbols <= budget - used and o.value - price * o.symbols > 0
+        ]
         if fits:
             o = max(fits, key=lambda o: o.value - price * o.symbols)
             chosen.append((g, o))
@@ -320,10 +367,12 @@ class GOSC(Scheme):
     use_filter toggles the semantic source filter independently.
     use_uep=False restricts every packet to the conventional link-adaptation rate.
     """
+
     name = "gosc"
 
-    def __init__(self, cfg, channel, use_voi=True, use_uep=True, voi_mode="tom", name=None,
-                 use_filter=None):
+    def __init__(
+        self, cfg, channel, use_voi=True, use_uep=True, voi_mode="tom", name=None, use_filter=None
+    ):
         super().__init__(cfg, channel)
         if not use_voi:
             voi_mode = "bits"
@@ -389,9 +438,15 @@ class GOSC(Scheme):
         for r in rates:
             sym = math.ceil(bits / r)
             if sym <= W:
-                opts.append(Option(r, bits, sym,
-                                   value * float(self.channel.success_prob(r, snr_mean, n=sym)),
-                                   n_records))
+                opts.append(
+                    Option(
+                        r,
+                        bits,
+                        sym,
+                        value * float(self.channel.success_prob(r, snr_mean, n=sym)),
+                        n_records,
+                    )
+                )
         return opts
 
     def _fixed_rates(self, bits, snr_mean):
@@ -423,14 +478,22 @@ class GOSC(Scheme):
                 v = PRIORITY
             groups.append(Group("CONF", self._options(b, v, rates, snr_mean), cell=cell))
         acked_intent = getattr(agent, "acked_intent", agent.shared_intent)
-        if agent.target is not None and agent.target != agent.shared_intent and agent.target != acked_intent:
+        if (
+            agent.target is not None
+            and agent.target != agent.shared_intent
+            and agent.target != acked_intent
+        ):
             b = intent_bits(c)
             if not self.use_uep:
                 rates = self._fixed_rates(b, snr_mean)
             if team is not None and c.task == "rescue" and agent.target in sim_tasks(sim, agent):
                 from .rescue import claim_value
-                v = claim_value(sim, agent, {**sim.open_tasks(),
-                                             agent.target: sim_tasks(sim, agent)[agent.target]})
+
+                v = claim_value(
+                    sim,
+                    agent,
+                    {**sim.open_tasks(), agent.target: sim_tasks(sim, agent)[agent.target]},
+                )
             elif team is not None:
                 v = max(team.intent_voi(agent.target), 0.0)
             elif mode == "aoi":
@@ -441,8 +504,12 @@ class GOSC(Scheme):
                 if agent.shared_intent is None:
                     v = c.intent_value
                 else:
-                    (x1, y1), (x2, y2) = divmod(agent.target, c.grid), divmod(agent.shared_intent, c.grid)
-                    v = c.intent_value * min(1.0, (abs(x1 - x2) + abs(y1 - y2)) / (2 * c.sense_radius + 1))
+                    (x1, y1), (x2, y2) = divmod(agent.target, c.grid), divmod(
+                        agent.shared_intent, c.grid
+                    )
+                    v = c.intent_value * min(
+                        1.0, (abs(x1 - x2) + abs(y1 - y2)) / (2 * c.sense_radius + 1)
+                    )
             else:
                 v = b
             groups.append(Group("INTENT", self._options(b, v, rates, snr_mean)))
@@ -458,9 +525,11 @@ class GOSC(Scheme):
                 if n > 0:
                     fits[r] = n
             if fits:
-                vals = (self.evidence_voi(sim, recs, fits.values(), team)
-                        if mode in ("tom", "tv", "aoi")
-                        else {n: float(sizes[n - 1]) for n in fits.values()})
+                vals = (
+                    self.evidence_voi(sim, recs, fits.values(), team)
+                    if mode in ("tom", "tv", "aoi")
+                    else {n: float(sizes[n - 1]) for n in fits.values()}
+                )
                 opts = []
                 for r, n in fits.items():
                     b = sizes[n - 1]
@@ -487,8 +556,8 @@ class GOSC(Scheme):
                 agent.acked_intent = agent.target
                 res.delivered.append(Packet("INTENT", agent.idx, o.bits, t, intent=agent.target))
             else:
-                recs = agent.pending_records[:o.n_records]
-                del agent.pending_records[:o.n_records]
+                recs = agent.pending_records[: o.n_records]
+                del agent.pending_records[: o.n_records]
                 for r in recs:
                     sim.sensor.apply(agent.queued_llr, r, sign=-1.0)
                 res.delivered.append(Packet("EVID", agent.idx, o.bits, t, records=recs))
@@ -497,6 +566,7 @@ class GOSC(Scheme):
 
 class Genie(GOSC):
     """Ideal reference: every update reaches the team instantly and error-free."""
+
     name = "genie"
 
     def __init__(self, cfg, channel):
@@ -508,11 +578,14 @@ class Genie(GOSC):
         for cell in sorted(agent.confirmed_pending):
             out.delivered.append(Packet("CONF", agent.idx, confirm_bits(c), t, confirm=cell))
         if agent.target != agent.shared_intent:
-            out.delivered.append(Packet("INTENT", agent.idx, intent_bits(c), t, intent=agent.target))
+            out.delivered.append(
+                Packet("INTENT", agent.idx, intent_bits(c), t, intent=agent.target)
+            )
         if agent.pending_records:
             recs = agent.pending_records
-            out.delivered.append(Packet("EVID", agent.idx, evidence_sizes(recs, c)[-1], t,
-                                        records=list(recs)))
+            out.delivered.append(
+                Packet("EVID", agent.idx, evidence_sizes(recs, c)[-1], t, records=list(recs))
+            )
             agent.pending_records = []
             agent.queued_llr[:] = 0.0
         out.bits = sum(p.bits for p in out.delivered)
@@ -525,6 +598,7 @@ def sim_tasks(sim, agent):
 
 def _joint():
     from .joint import GOSCJoint
+
     return GOSCJoint
 
 
@@ -548,5 +622,3 @@ SCHEMES = {
     "gosc_joint_nb": lambda cfg, ch: _joint()(cfg, ch, bundle=False, name="gosc_joint_nb"),
     "genie": lambda cfg, ch: Genie(cfg, ch),
 }
-
-

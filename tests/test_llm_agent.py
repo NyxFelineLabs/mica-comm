@@ -2,8 +2,7 @@
 
 import pytest
 
-from mosaic_comm import Config, Simulation
-from mosaic_comm import llm_agent
+from mosaic_comm import Config, Simulation, llm_agent
 from mosaic_comm.llm_agent import LLMAgent, LLMClient
 
 
@@ -25,6 +24,7 @@ def client_factory(tmp_path, monkeypatch):
         c = LLMClient("fake-model", cache_dir=str(tmp_path), transport=tr)
         monkeypatch.setitem(llm_agent._CLIENTS, "fake-model", c)
         return c, tr
+
     monkeypatch.setattr(llm_agent.time, "sleep", lambda s: None)
     return make
 
@@ -47,8 +47,11 @@ def test_cache_makes_runs_deterministic_without_model(client_factory, tmp_path):
     first = Simulation(cfg, "sem", seed=2).run()
     n_calls = len(tr.calls)
     # a fresh client that would fail on any call must reproduce the run from cache
-    offline = LLMClient("fake-model", cache_dir=str(tmp_path),
-                        transport=lambda b: (_ for _ in ()).throw(RuntimeError("offline")))
+    offline = LLMClient(
+        "fake-model",
+        cache_dir=str(tmp_path),
+        transport=lambda b: (_ for _ in ()).throw(RuntimeError("offline")),
+    )
     llm_agent._CLIENTS["fake-model"] = offline
     second = Simulation(cfg, "sem", seed=2).run()
     assert n_calls > 0 and offline.calls == 0
@@ -60,5 +63,3 @@ def test_invalid_output_falls_back_to_planner(client_factory):
     cfg = Config().with_(llm_agents=(0,), llm_model="fake-model", max_steps=15)
     out = Simulation(cfg, "gosc", seed=0).run()
     assert out["llm_fallbacks"] == out["llm_decisions"] > 0
-
-

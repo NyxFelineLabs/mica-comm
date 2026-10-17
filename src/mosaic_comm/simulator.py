@@ -7,6 +7,7 @@ agent's local belief is `Lc + pending_llr` (its own undelivered evidence).  With
 broadcast loss/delay (Config.dl_loss, Config.dl_delay) each agent instead acts on
 its own, possibly stale, snapshot of the common knowledge (a `View`).
 """
+
 import argparse
 import json
 
@@ -19,6 +20,20 @@ from .config import Config
 from .environment import World
 from .messages import cell_bits
 from .schemes import SCHEMES
+
+_RNG_STREAMS = {
+    "world": 0,
+    "sensing": 1,
+    "channel": 2,
+    "channel_model": 4,
+    "planning": 3,
+    "downlink": 5,
+}
+
+
+def _stream_rng(seed: int, stream: str) -> np.random.Generator:
+    """Create an independent deterministic RNG stream for one mission subsystem."""
+    return np.random.default_rng([seed, _RNG_STREAMS[stream]])
 
 
 def teammate_points(cfg, team_pos, team_intent, k):
@@ -48,41 +63,53 @@ class View:
 
 
 class Simulation:
+    """Run one seeded mission through sensing, planning, communication, and motion."""
+
     def __init__(self, cfg: Config, scheme: str, seed: int, record_traj: bool = False):
         self.cfg = cfg
         n = cfg.grid
-        world_rng = np.random.default_rng([seed, 0])
-        self.sense_rng = np.random.default_rng([seed, 1])
-        self.chan_rng = np.random.default_rng([seed, 2])
-        self.plan_rng = np.random.default_rng([seed, 3])
-        self.dl_rng = np.random.default_rng([seed, 5])
+        world_rng = _stream_rng(seed, "world")
+        self.sense_rng = _stream_rng(seed, "sensing")
+        self.chan_rng = _stream_rng(seed, "channel")
+        self.plan_rng = _stream_rng(seed, "planning")
+        self.dl_rng = _stream_rng(seed, "downlink")
         self.world = World(cfg, world_rng)
         self.sensor = SensorModel(cfg.p_detect, cfg.p_false_alarm, cfg.sense_radius, n)
-        self.channel = Channel(cfg, self.world.bs, rng=np.random.default_rng([seed, 4]))
-        self.scheme = SCHEMES[scheme](cfg, self.channel)
+        self.channel = Channel(cfg, self.world.bs, rng=_stream_rng(seed, "channel_model"))
+        try:
+            scheme_factory = SCHEMES[scheme]
+        except KeyError as exc:
+            available = ", ".join(sorted(SCHEMES))
+            raise ValueError(f"Unknown scheme {scheme!r}; choose one of: {available}") from exc
+        self.scheme = scheme_factory(cfg, self.channel)
         self.prior = logit(cfg.n_victims / (n * n))
-        self.Lc = np.full((n, n), self.prior)          # edge / shared belief
+        self.Lc = np.full((n, n), self.prior)  # edge / shared belief
         self.declared = np.zeros(n * n, dtype=bool)
         bx, by = self.world.bs
-        starts = [(int(np.clip(bx + dx, 0, n - 1)), int(np.clip(by + dy, 0, n - 1)))
-                  for dx, dy in world_rng.integers(-1, 2, size=(cfg.n_agents, 2))]
+        starts = [
+            (int(np.clip(bx + dx, 0, n - 1)), int(np.clip(by + dy, 0, n - 1)))
+            for dx, dy in world_rng.integers(-1, 2, size=(cfg.n_agents, 2))
+        ]
         self.t = 0
         if cfg.task == "rescue":
-            dls = world_rng.integers(cfg.deadline_min, cfg.deadline_max + 1, size=len(self.world.victims))
+            dls = world_rng.integers(
+                cfg.deadline_min, cfg.deadline_max + 1, size=len(self.world.victims)
+            )
             self.world.deadline = {v: int(d) for v, d in zip(sorted(self.world.victims), dls)}
-        self.rescue_progress = {}   # task cell -> slots of service so far (common knowledge)
-        self.rescue_done = {}       # task cell -> slot when finished
-        self.lost = set()           # survivors whose deadline passed before rescue
+        self.rescue_progress = {}  # task cell -> slots of service so far (common knowledge)
+        self.rescue_done = {}  # task cell -> slot when finished
+        self.lost = set()  # survivors whose deadline passed before rescue
         self.agents = []
         for k, p in enumerate(starts):
             if k in cfg.llm_agents:
                 from .llm_agent import LLMAgent, get_client
+
                 self.agents.append(LLMAgent(k, p, cfg, self, get_client(cfg.llm_model)))
             else:
                 self.agents.append(Agent(k, p, cfg))
         # agent -> last position known to the team (launch points are common knowledge)
         self.team_pos = {k: p for k, p in enumerate(starts)}
-        self.team_intent = {}   # agent -> last intent known to the team
+        self.team_intent = {}  # agent -> last intent known to the team
         self.record_traj = record_traj
         self.located_time = {}
         self.first_confirm = {}
@@ -93,7 +120,7 @@ class Simulation:
         self.thr = logit(cfg.confirm_threshold)
         # downlink broadcast of the common knowledge
         self.ideal_dl = cfg.dl_loss == 0 and cfg.dl_delay == 0
-        self.bcast_bits = {}     # slot -> bits fused (and rebroadcast) in that slot
+        self.bcast_bits = {}  # slot -> bits fused (and rebroadcast) in that slot
         self.dl_bits = 0
         self.private_tv = []
         if not self.ideal_dl:
@@ -151,9 +178,11 @@ class Simulation:
     def open_tasks(self):
         """Located (declared) survivors still to be rescued: common knowledge."""
         dl = self.world.deadline
-        return {int(c): dl.get(int(c), self.t + self.cfg.rescue_service + 1000)
-                for c in np.flatnonzero(self.declared)
-                if int(c) not in self.rescue_done and int(c) not in self.lost}
+        return {
+            int(c): dl.get(int(c), self.t + self.cfg.rescue_service + 1000)
+            for c in np.flatnonzero(self.declared)
+            if int(c) not in self.rescue_done and int(c) not in self.lost
+        }
 
     def known_tasks(self, agent):
         """Tasks agent knows: open common tasks plus its own confirmed survivors."""
@@ -178,11 +207,14 @@ class Simulation:
                 continue
             old = self.view_t[k]
             # catch-up: updates of the slots this agent missed are re-sent
-            self.dl_bits += sum(self.bcast_bits.get(s, 0) for s in range(old + 1, target) if s >= 0
-                                ) if target - old > 1 else 0
+            self.dl_bits += (
+                sum(self.bcast_bits.get(s, 0) for s in range(old + 1, target) if s >= 0)
+                if target - old > 1
+                else 0
+            )
             self.view_t[k] = target
             keep = []
-            for (s, recs, intent) in a.inflight:
+            for s, recs, intent in a.inflight:
                 if s <= target:
                     for rec in recs:
                         self.sensor.apply(a.pending_llr, rec, sign=-1.0)
@@ -209,7 +241,7 @@ class Simulation:
         V = self.cfg.n_victims
         self.curve = np.full(self.cfg.max_steps, V, dtype=np.int16)
         self.done_at = self.cfg.max_steps
-        self.skip_tx = set()   # agents that do not transmit in the current slot (analysis)
+        self.skip_tx = set()  # agents that do not transmit in the current slot (analysis)
 
     def phase_decide(self, t):
         """Sensing, self-confirmation and intention selection of slot t."""
@@ -227,9 +259,14 @@ class Simulation:
         if cfg.log_private:
             live = ~self.declared.reshape(n, n)
             p0 = sigmoid(self.Lc)
-            self.private_tv.append(np.mean([
-                float(np.abs(sigmoid(self.Lc + a.pending_llr) - p0)[live].sum())
-                for a in self.agents]))
+            self.private_tv.append(
+                np.mean(
+                    [
+                        float(np.abs(sigmoid(self.Lc + a.pending_llr) - p0)[live].sum())
+                        for a in self.agents
+                    ]
+                )
+            )
         # 2) self-confirmation of survivors
         for a in self.agents:
             vw = self.view(a)
@@ -250,9 +287,19 @@ class Simulation:
             a.plan(p.reshape(n, n), vw.teammates(a.idx), self.plan_rng)
             if cfg.task == "rescue":
                 from .rescue import rescue_choice
+
                 tasks = self.known_tasks(a)
-                s = rescue_choice(cfg, a.idx, a.pos, t, tasks, vw.team_intent, a.target,
-                                  self.rescue_progress, vw.team_pos)
+                s = rescue_choice(
+                    cfg,
+                    a.idx,
+                    a.pos,
+                    t,
+                    tasks,
+                    vw.team_intent,
+                    a.target,
+                    self.rescue_progress,
+                    vw.team_pos,
+                )
                 if s is not None:
                     a.target = s
             self.scheme.on_step(a, rec, t, vw)
@@ -316,8 +363,11 @@ class Simulation:
 
     def result(self):
         cfg, V = self.cfg, self.cfg.n_victims
-        latency = [self.located_time[c] - self.first_confirm[c]
-                   for c in self.located_time if c in self.first_confirm]
+        latency = [
+            self.located_time[c] - self.first_confirm[c]
+            for c in self.located_time
+            if c in self.first_confirm
+        ]
         out = {
             "completion_time": self.done_at,
             "completed": len(self.located_time) == V,
@@ -333,8 +383,11 @@ class Simulation:
         if cfg.log_private:
             out["private_tv"] = float(np.mean(self.private_tv))
         if cfg.task == "rescue":
-            saved = [v for v in self.world.victims
-                     if v in self.rescue_done and self.rescue_done[v] < self.world.deadline[v]]
+            saved = [
+                v
+                for v in self.world.victims
+                if v in self.rescue_done and self.rescue_done[v] < self.world.deadline[v]
+            ]
             out["saved"] = len(saved)
             out["lost"] = len(self.lost)
             out["saved_fraction"] = len(saved) / cfg.n_victims
@@ -350,6 +403,7 @@ class Simulation:
 
 
 def run_episode(cfg: Config, scheme: str, seed: int, record_traj: bool = False) -> dict:
+    """Run one mission and return JSON-serializable aggregate metrics."""
     return Simulation(cfg, scheme, seed, record_traj).run()
 
 
@@ -369,5 +423,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

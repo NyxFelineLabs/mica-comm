@@ -1,51 +1,76 @@
 ﻿"""Turn results/*.json into the paper's figures and tables.
 
-    python -m experiments.plot
+python -m experiments.plot
 """
+
 import json
 import os
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-ROOT = os.path.join(os.path.dirname(__file__), "..")
-RES = os.path.join(ROOT, "results")
-FIG = os.path.join(ROOT, "figures")
-os.makedirs(FIG, exist_ok=True)
+from mosaic_comm.paths import FIGURES_DIR, RESULTS_DIR
+
+RES = RESULTS_DIR
+FIG = FIGURES_DIR
+FIG.mkdir(parents=True, exist_ok=True)
 
 # Categorical slots in fixed order (validated palette); genie is a neutral reference.
 STYLE = {
-    "gosc":       dict(color="#2a78d6", marker="o", label="GOSC (proposed)"),
-    "sem":        dict(color="#eb6834", marker="s", label="Semantic, periodic"),
-    "raw":        dict(color="#1baf7a", marker="^", label="Raw sensor data"),
-    "nl":         dict(color="#eda100", marker="D", label="Natural language"),
-    "report":     dict(color="#e87ba4", marker="v", label="Report only"),
+    "gosc": dict(color="#2a78d6", marker="o", label="GOSC (proposed)"),
+    "sem": dict(color="#eb6834", marker="s", label="Semantic, periodic"),
+    "raw": dict(color="#1baf7a", marker="^", label="Raw sensor data"),
+    "nl": dict(color="#eda100", marker="D", label="Natural language"),
+    "report": dict(color="#e87ba4", marker="v", label="Report only"),
     "gosc_novoi": dict(color="#008300", marker="P", label="GOSC w/o VoI"),
-    "gosc_tv":    dict(color="#4a3aa7", marker="X", label="GOSC, belief-div. VoI"),
-    "genie":      dict(color="#7a7974", marker="", label="Ideal-communication reference (genie)", linestyle="--"),
+    "gosc_tv": dict(color="#4a3aa7", marker="X", label="GOSC, belief-div. VoI"),
+    "genie": dict(
+        color="#7a7974", marker="", label="Ideal-communication reference (genie)", linestyle="--"
+    ),
 }
 NAMES = {
-    "report": "Report only", "raw": "Raw sensor data", "nl": "Natural language (LLM-style)",
-    "sem": "Semantic, periodic", "gosc_nouep": "GOSC w/o UEP", "gosc_novoi": "GOSC w/o VoI",
-    "gosc_tv": "GOSC w/ belief-divergence VoI", "gosc": "GOSC (proposed)",
+    "report": "Report only",
+    "raw": "Raw sensor data",
+    "nl": "Natural language (LLM-style)",
+    "sem": "Semantic, periodic",
+    "gosc_nouep": "GOSC w/o UEP",
+    "gosc_novoi": "GOSC w/o VoI",
+    "gosc_tv": "GOSC w/ belief-divergence VoI",
+    "gosc": "GOSC (proposed)",
     "genie": "Ideal-comm. reference (genie)",
 }
 MAIN = ["report", "raw", "nl", "sem", "gosc", "genie"]
 
-plt.rcParams.update({
-    "font.family": "serif", "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8,
-    "legend.fontsize": 6.5, "xtick.labelsize": 7, "ytick.labelsize": 7,
-    "axes.spines.top": False, "axes.spines.right": False,
-    "axes.edgecolor": "#52514e", "axes.linewidth": 0.6,
-    "xtick.color": "#52514e", "ytick.color": "#52514e",
-    "axes.grid": True, "grid.color": "#e4e3de", "grid.linewidth": 0.5,
-    "lines.linewidth": 1.4, "lines.markersize": 4,
-    "savefig.bbox": "tight", "savefig.pad_inches": 0.05, "pdf.fonttype": 42,
-})
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.size": 8,
+        "axes.titlesize": 8,
+        "axes.labelsize": 8,
+        "legend.fontsize": 6.5,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "axes.edgecolor": "#52514e",
+        "axes.linewidth": 0.6,
+        "xtick.color": "#52514e",
+        "ytick.color": "#52514e",
+        "axes.grid": True,
+        "grid.color": "#e4e3de",
+        "grid.linewidth": 0.5,
+        "lines.linewidth": 1.4,
+        "lines.markersize": 4,
+        "savefig.bbox": "tight",
+        "savefig.pad_inches": 0.05,
+        "pdf.fonttype": 42,
+    }
+)
 W1 = 3.45  # IEEE single column (in)
-W2 = 7.0   # IEEE double column (in)
+W2 = 7.0  # IEEE double column (in)
 
 
 def load(name):
@@ -67,7 +92,8 @@ def summarize(rows):
     lat = [r["confirm_latency"] for r in rows if r["confirm_latency"] is not None]
     m, h = ci(ct)
     return {
-        "T": m, "T_ci": h,
+        "T": m,
+        "T_ci": h,
         "T_median": float(np.median(ct)),
         "completed": float(np.mean([r["completed"] for r in rows])),
         "kbits": float(np.mean([r["bits"] for r in rows])) / 1e3,
@@ -111,7 +137,9 @@ def sweep_bits_plot(name, xlabel, fname, xlog=False, xticks=None):
         if s == "genie":
             continue  # ideal channel: no radio resources modelled
         st = dict(STYLE[s])
-        ax.plot(params, [np.mean([r["symbols"] for r in by(rows, s, p)]) / 1e3 for p in params], **st)
+        ax.plot(
+            params, [np.mean([r["symbols"] for r in by(rows, s, p)]) / 1e3 for p in params], **st
+        )
     ax.set_yscale("log")
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Channel uses ($\\times 10^3$)")
@@ -138,8 +166,11 @@ def sweep_pair_plot(name, xlabel, fname):
         axes[0].plot(params, mu, **st)
         if s == "genie":
             continue  # ideal channel: no radio resources modelled
-        st2 = dict(st); st2.pop("label", None)
-        axes[1].plot(params, [np.mean([r["symbols"] for r in by(rows, s, p)]) / 1e3 for p in params], **st2)
+        st2 = dict(st)
+        st2.pop("label", None)
+        axes[1].plot(
+            params, [np.mean([r["symbols"] for r in by(rows, s, p)]) / 1e3 for p in params], **st2
+        )
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].set_ylim(bottom=0)
     axes[1].set_ylabel("Channel uses ($\\times 10^3$)")
@@ -177,8 +208,11 @@ def pareto_plot():
 
     def front(data, scheme):
         etas = sorted({r["param"] for r in data})
-        return etas, [np.mean([r["symbols"] for r in by(data, scheme, e)]) / 1e3 for e in etas], \
-            [np.mean([r["completion_time"] for r in by(data, scheme, e)]) for e in etas]
+        return (
+            etas,
+            [np.mean([r["symbols"] for r in by(data, scheme, e)]) / 1e3 for e in etas],
+            [np.mean([r["completion_time"] for r in by(data, scheme, e)]) for e in etas],
+        )
 
     etas, xs, ys = front(rows, "gosc")
     ax.plot(xs, ys, **STYLE["gosc"])
@@ -186,15 +220,26 @@ def pareto_plot():
         if e in (0.0, 1e-5, 1e-4, 1e-3):
             lab = r"$\eta$=0" if e == 0 else rf"$\eta$={e:.0e}".replace("e-0", "e-")
             off = (-5, 4) if e == 0 else (-4, -9)
-            ax.annotate(lab, (x, y), textcoords="offset points", xytext=off, fontsize=5.5,
-                        color="#2a78d6", ha="right")
+            ax.annotate(
+                lab,
+                (x, y),
+                textcoords="offset points",
+                xytext=off,
+                fontsize=5.5,
+                color="#2a78d6",
+                ha="right",
+            )
     _, xt, yt = front(tv, "gosc_tv")
     ax.plot(xt, yt, **STYLE["gosc_tv"])
     for s in ["sem", "raw", "nl", "report", "gosc_novoi"]:
         st = dict(STYLE[s])
         r = by(dflt, s)
-        ax.plot([np.mean([q["symbols"] for q in r]) / 1e3], [np.mean([q["completion_time"] for q in r])],
-                linestyle="none", **st)
+        ax.plot(
+            [np.mean([q["symbols"] for q in r]) / 1e3],
+            [np.mean([q["completion_time"] for q in r])],
+            linestyle="none",
+            **st,
+        )
     g = np.mean([q["completion_time"] for q in by(dflt, "genie")])
     ax.axhline(g, **{k: v for k, v in STYLE["genie"].items() if k != "marker"}, linewidth=1.0)
     ax.set_xscale("log")
@@ -203,8 +248,10 @@ def pareto_plot():
     ax.legend(frameon=False, ncol=2, loc="upper center", bbox_to_anchor=(0.5, -0.2))
     fig.savefig(os.path.join(FIG, "fig_pareto.pdf"))
     plt.close(fig)
-    return {"tom": {e: summarize(by(rows, "gosc", e)) for e in etas},
-            "tv": {e: summarize(by(tv, "gosc_tv", e)) for e in sorted({r["param"] for r in tv})}}
+    return {
+        "tom": {e: summarize(by(rows, "gosc", e)) for e in etas},
+        "tv": {e: summarize(by(tv, "gosc_tv", e)) for e in sorted({r["param"] for r in tv})},
+    }
 
 
 def traj_plot():
@@ -262,9 +309,11 @@ def default_table():
             name = r"\textbf{" + name + "}"
         if s == "genie":
             lines.append(r"\midrule")
-        lines.append(f"{name} & {fmt(m['T'])} $\\pm$ {fmt(m['T_ci'])} & {dcell} & "
-                     f"{fmt(m['kbits'], 2)} & {fmt(m['ksym'], 2)} & {fmt(m['latency'], 2)} & "
-                     f"{fmt(m['false'], 2)} \\\\")
+        lines.append(
+            f"{name} & {fmt(m['T'])} $\\pm$ {fmt(m['T_ci'])} & {dcell} & "
+            f"{fmt(m['kbits'], 2)} & {fmt(m['ksym'], 2)} & {fmt(m['latency'], 2)} & "
+            f"{fmt(m['false'], 2)} \\\\"
+        )
     with open(os.path.join(FIG, "table_default.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return summ
@@ -297,7 +346,11 @@ def llm_table():
         return sorted(common or [])
 
     out, lines = {}, []
-    teams = [("planner", "Planner only"), ("mixed", "Mixed, Qwen2.5-3B"), ("mixed_alt", "Mixed, Llama-3.2-3B")]
+    teams = [
+        ("planner", "Planner only"),
+        ("mixed", "Mixed, Qwen2.5-3B"),
+        ("mixed_alt", "Mixed, Llama-3.2-3B"),
+    ]
     for team, name in teams:
         if (team, "gosc") not in T:
             continue
@@ -318,27 +371,53 @@ def llm_table():
             ch = "--" if sch == "genie" else fmt(m["ksym"], 1)
             lines.append(f"{label} & {sname} & {fmt(m['T'])} $\\pm$ {fmt(m['T_ci'])} & {ch} \\\\")
         lines.append(r"\midrule")
-        out[f"{team}/sem_minus_gosc"] = boot([T[(team, "sem")][k]["completion_time"]
-                                              - T[(team, "gosc")][k]["completion_time"] for k in ss])
+        out[f"{team}/sem_minus_gosc"] = boot(
+            [
+                T[(team, "sem")][k]["completion_time"] - T[(team, "gosc")][k]["completion_time"]
+                for k in ss
+            ]
+        )
         if team != "planner":
             for sch in ("sem", "gosc", "genie"):
                 cs = seeds((team, sch), ("planner", sch))
                 out[f"{team}_minus_planner/{sch}"] = boot(
-                    [T[(team, sch)][k]["completion_time"] - T[("planner", sch)][k]["completion_time"]
-                     for k in cs])
+                    [
+                        T[(team, sch)][k]["completion_time"]
+                        - T[("planner", sch)][k]["completion_time"]
+                        for k in cs
+                    ]
+                )
             cs = seeds((team, "sem"), (team, "gosc"), ("planner", "sem"), ("planner", "gosc"))
             # difference in degradation: (mixed - planner | sem) - (mixed - planner | gosc)
             out[f"{team}/degradation_difference"] = boot(
-                [(T[(team, "sem")][k]["completion_time"] - T[("planner", "sem")][k]["completion_time"])
-                 - (T[(team, "gosc")][k]["completion_time"] - T[("planner", "gosc")][k]["completion_time"])
-                 for k in cs])
+                [
+                    (
+                        T[(team, "sem")][k]["completion_time"]
+                        - T[("planner", "sem")][k]["completion_time"]
+                    )
+                    - (
+                        T[(team, "gosc")][k]["completion_time"]
+                        - T[("planner", "gosc")][k]["completion_time"]
+                    )
+                    for k in cs
+                ]
+            )
     for team in ("planner", "mixed"):
         if (team, "gosc_bits") in T:
             cs = seeds((team, "gosc_bits"), (team, "gosc"))
-            out[f"{team}/bits_minus_gosc"] = boot([T[(team, "gosc_bits")][k]["completion_time"]
-                                                   - T[(team, "gosc")][k]["completion_time"] for k in cs])
-            out[f"{team}/bits_ksym"] = float(np.mean([T[(team, "gosc_bits")][k]["symbols"] for k in cs]) / 1e3)
-            out[f"{team}/gosc_ksym_on_bits_seeds"] = float(np.mean([T[(team, "gosc")][k]["symbols"] for k in cs]) / 1e3)
+            out[f"{team}/bits_minus_gosc"] = boot(
+                [
+                    T[(team, "gosc_bits")][k]["completion_time"]
+                    - T[(team, "gosc")][k]["completion_time"]
+                    for k in cs
+                ]
+            )
+            out[f"{team}/bits_ksym"] = float(
+                np.mean([T[(team, "gosc_bits")][k]["symbols"] for k in cs]) / 1e3
+            )
+            out[f"{team}/gosc_ksym_on_bits_seeds"] = float(
+                np.mean([T[(team, "gosc")][k]["symbols"] for k in cs]) / 1e3
+            )
     if lines and lines[-1] == r"\midrule":
         lines.pop()
     with open(os.path.join(FIG, "table_llm.tex"), "w") as f:
@@ -353,19 +432,23 @@ def main():
     summary["snr"] = sweep_plot("snr", "Reference SNR at 100 m (dB)", "fig_snr.pdf")
     sweep_bits_plot("snr", "Reference SNR at 100 m (dB)", "fig_snr_sym.pdf")
     sweep_pair_plot("snr", "Reference SNR at 100 m (dB)", "fig_snr_pair.pdf")
-    summary["budget"] = sweep_plot("budget", "Channel uses per agent per slot, $W$", "fig_budget.pdf",
-                                   xlog=True, xticks=[25, 50, 100, 200, 400])
-    summary["agents"] = sweep_plot("agents", "Number of agents, $K$", "fig_agents.pdf",
-                                   xticks=[2, 4, 6, 8, 10])
+    summary["budget"] = sweep_plot(
+        "budget",
+        "Channel uses per agent per slot, $W$",
+        "fig_budget.pdf",
+        xlog=True,
+        xticks=[25, 50, 100, 200, 400],
+    )
+    summary["agents"] = sweep_plot(
+        "agents", "Number of agents, $K$", "fig_agents.pdf", xticks=[2, 4, 6, 8, 10]
+    )
     summary["pareto"] = pareto_plot()
     summary["llm"] = llm_table()
     traj_plot()
     with open(os.path.join(RES, "summary.json"), "w") as f:
         json.dump(summary, f, indent=1, default=float)
-    print("figures written to", os.path.abspath(FIG))
+    print("figures written to", FIG.resolve())
 
 
 if __name__ == "__main__":
     main()
-
-

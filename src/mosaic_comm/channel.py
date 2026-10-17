@@ -9,6 +9,7 @@ Two packet-error models are available (Config.error_model):
             Config.code_gap_db additionally models the SNR gap of practical
             short codes to the normal approximation.
 """
+
 import math
 from functools import lru_cache
 
@@ -29,7 +30,7 @@ def fbl_error(n: int, rate: float, snr):
     rate R (bit/channel use) over an AWGN channel with the given SNR."""
     snr = np.asarray(snr, dtype=float)
     cap = np.log2(1.0 + snr)
-    disp = (1.0 - (1.0 + snr) ** -2) * _LOG2E ** 2
+    disp = (1.0 - (1.0 + snr) ** -2) * _LOG2E**2
     z = (n * (cap - rate) + 0.5 * math.log2(n)) / np.sqrt(np.maximum(n * disp, 1e-300))
     return np.asarray(0.5 * _erfc(z / math.sqrt(2.0)), dtype=float)
 
@@ -40,6 +41,8 @@ def _fbl_success(n: int, rate: float, snr_mean: float) -> float:
 
 
 class Channel:
+    """Block-fading uplink model shared by every communication scheme."""
+
     def __init__(self, cfg: Config, bs, rng: np.random.Generator = None):
         self.cfg = cfg
         self.bs = bs
@@ -87,5 +90,3 @@ class Channel:
             return math.log2(1.0 + snr_inst) >= rate
         n = self.cfg.symbols_per_slot if n is None else max(int(n), 1)
         return bool(self.rng.random() >= float(fbl_error(n, rate, snr_inst * self.gap)))
-
-

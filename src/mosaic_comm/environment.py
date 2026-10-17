@@ -1,12 +1,16 @@
 ﻿"""Disaster area with hidden survivors and a noisy on-board detector."""
+
 import numpy as np
+from numpy.random import Generator
 
 from .belief import SensorModel
 from .config import Config
 
 
 class World:
-    def __init__(self, cfg: Config, rng: np.random.Generator):
+    """Hidden survivor map and the noisy sensing process used by each agent."""
+
+    def __init__(self, cfg: Config, rng: Generator):
         n = cfg.grid
         if cfg.victim_layout == "clustered":
             cells = self._clustered(cfg, rng)
@@ -23,7 +27,7 @@ class World:
         self.n = n
 
     @staticmethod
-    def _clustered(cfg, rng):
+    def _clustered(cfg: Config, rng: Generator):
         """Survivors grouped around `victim_clusters` random centres (collapsed
         buildings): each survivor lies within 3 cells of its cluster centre."""
         n, out = cfg.grid, []
@@ -36,11 +40,9 @@ class World:
                 out.append(c)
         return np.array(out)
 
-    def sense(self, pos, sensor: SensorModel, rng: np.random.Generator):
+    def sense(self, pos, sensor: SensorModel, rng: Generator):
         sx, sy = sensor.window(pos)
         truth = self.mask[sx, sy]
         prob = np.where(truth, self.p_detect, self.p_false_alarm)
         xs, ys = np.nonzero(rng.random(truth.shape) < prob)
         return tuple(int((x + sx.start) * self.n + y + sy.start) for x, y in zip(xs, ys))
-
-

@@ -5,6 +5,7 @@ finite-blocklength errors).  Results go to results/rev_<name>.json.
     python -m experiments.run_revision                 # everything
     python -m experiments.run_revision --only ablation --seeds 10
 """
+
 import argparse
 import json
 import os
@@ -12,8 +13,9 @@ import time
 from multiprocessing import Pool
 
 from mosaic_comm import Config, run_episode
+from mosaic_comm.paths import RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results")
+OUT = RESULTS_DIR
 
 ETAS = {
     "gosc": (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3),
@@ -35,14 +37,20 @@ def experiments():
             rows.append(("sem_agg", f"W{W}/k{k}", b.with_(symbols_per_slot=W, sem_interval=k)))
         rows.append(("sem", f"W{W}/k1", b.with_(symbols_per_slot=W)))
     ex["frontier"] = rows
-    ex["ablation"] = [(s, f"W{W}", b.with_(symbols_per_slot=W))
-                      for W in (100, 50)
-                      for s in ("gosc", "gosc_nofilter", "gosc_bits", "gosc_novoi", "gosc_nouep")]
-    ex["private"] = [("gosc", f"{name}/{'oracle' if o else 'shared'}",
-                      cfg.with_(tom_oracle=o, log_private=True))
-                     for name, cfg in (("default", b), ("W50", b.with_(symbols_per_slot=50)),
-                                       ("snr-5", b.with_(snr_ref_db=-5)))
-                     for o in (False, True)]
+    ex["ablation"] = [
+        (s, f"W{W}", b.with_(symbols_per_slot=W))
+        for W in (100, 50)
+        for s in ("gosc", "gosc_nofilter", "gosc_bits", "gosc_novoi", "gosc_nouep")
+    ]
+    ex["private"] = [
+        ("gosc", f"{name}/{'oracle' if o else 'shared'}", cfg.with_(tom_oracle=o, log_private=True))
+        for name, cfg in (
+            ("default", b),
+            ("W50", b.with_(symbols_per_slot=50)),
+            ("snr-5", b.with_(snr_ref_db=-5)),
+        )
+        for o in (False, True)
+    ]
     dl = []
     for s in ("sem", "gosc", "genie"):
         for p in (0.0, 0.1, 0.3, 0.5):
@@ -50,22 +58,32 @@ def experiments():
         for d in (1, 3, 5, 10):
             dl.append((s, f"delay{d}", b.with_(dl_delay=d)))
     ex["downlink"] = dl
-    ex["fbl"] = [(s, f"gap{g}/snr{v}", b.with_(error_model="fbl", code_gap_db=g, snr_ref_db=v))
-                 for g in (0.0, 2.0) for v in (-10, -5, 0, 5, 10, 15, 20)
-                 for s in ("raw", "nl", "sem", "gosc")]
+    ex["fbl"] = [
+        (s, f"gap{g}/snr{v}", b.with_(error_model="fbl", code_gap_db=g, snr_ref_db=v))
+        for g in (0.0, 2.0)
+        for v in (-10, -5, 0, 5, 10, 15, 20)
+        for s in ("raw", "nl", "sem", "gosc")
+    ]
     where = []
     for scheme in ("gosc", "gosc_bits", "gosc_aoi"):
         for e in ETAS[scheme]:
             where.append((scheme, f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
-            where.append((scheme, f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e)))
+            where.append(
+                (scheme, f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
+            )
     for k in (1, 2, 4, 8):
         where.append(("sem_agg", f"K10/k{k}", b.with_(n_agents=10, sem_interval=k)))
-        where.append(("sem_agg", f"clustered/k{k}", b.with_(victim_layout="clustered", sem_interval=k)))
+        where.append(
+            ("sem_agg", f"clustered/k{k}", b.with_(victim_layout="clustered", sem_interval=k))
+        )
     ex["where_tom"] = where
     rb = b.with_(task="rescue", deadline_min=60, deadline_max=180)  # frozen after calibration
     resc = []
-    for name, cfg in (("W100", rb), ("W50", rb.with_(symbols_per_slot=50)),
-                      ("snr-5", rb.with_(snr_ref_db=-5))):
+    for name, cfg in (
+        ("W100", rb),
+        ("W50", rb.with_(symbols_per_slot=50)),
+        ("snr-5", rb.with_(snr_ref_db=-5)),
+    ):
         for k in (1, 2, 4, 8, 16):
             resc.append(("sem_ra", f"{name}/k{k}", cfg.with_(sem_interval=k)))
         for e in (0.0, 3e-6, 1e-5, 3e-5, 1e-4):
@@ -78,30 +96,49 @@ def experiments():
             resc.append((sch, f"{name}/ref", cfg))
     ex["rescue"] = resc
     rf = []
-    for name, cfg in (("W100", b), ("W50", b.with_(symbols_per_slot=50)), ("K10", b.with_(n_agents=10)),
-                      ("clustered", b.with_(victim_layout="clustered")),
-                      ("rescue-W100", rb), ("rescue-W50", rb.with_(symbols_per_slot=50)),
-                      ("rescue-snr-5", rb.with_(snr_ref_db=-5))):
+    for name, cfg in (
+        ("W100", b),
+        ("W50", b.with_(symbols_per_slot=50)),
+        ("K10", b.with_(n_agents=10)),
+        ("clustered", b.with_(victim_layout="clustered")),
+        ("rescue-W100", rb),
+        ("rescue-W50", rb.with_(symbols_per_slot=50)),
+        ("rescue-snr-5", rb.with_(snr_ref_db=-5)),
+    ):
         for k in (1, 2, 4, 8, 16):
             rf.append(("sem_raf", f"{name}/k{k}", cfg.with_(sem_interval=k)))
     ex["filtered_periodic"] = rf
     sup = []
-    for name, cfg in (("W100", b), ("W50", b.with_(symbols_per_slot=50)), ("K10", b.with_(n_agents=10)),
-                      ("clustered", b.with_(victim_layout="clustered")),
-                      ("rescue-W100", rb), ("rescue-W50", rb.with_(symbols_per_slot=50)),
-                      ("rescue-snr-5", rb.with_(snr_ref_db=-5))):
+    for name, cfg in (
+        ("W100", b),
+        ("W50", b.with_(symbols_per_slot=50)),
+        ("K10", b.with_(n_agents=10)),
+        ("clustered", b.with_(victim_layout="clustered")),
+        ("rescue-W100", rb),
+        ("rescue-W50", rb.with_(symbols_per_slot=50)),
+        ("rescue-snr-5", rb.with_(snr_ref_db=-5)),
+    ):
         for k in (1, 2, 4, 8):
             for th in (0.02, 0.05, 0.1, 0.2, 0.4, 1.0, 2.0):
-                sup.append(("sem_ras", f"{name}/k{k}/th{th}", cfg.with_(sem_interval=k, filter_eps=th)))
+                sup.append(
+                    ("sem_ras", f"{name}/k{k}/th{th}", cfg.with_(sem_interval=k, filter_eps=th))
+                )
     ex["suppress_periodic"] = sup
-    ex["genie_ref"] = [("genie", "K10", b.with_(n_agents=10)),
-                       ("genie", "clustered", b.with_(victim_layout="clustered")),
-                       ("genie", "W100", b)]
-    ex["rate_aware"] = [("sem_ra", f"{name}/k{k}", cfg.with_(sem_interval=k))
-                        for name, cfg in (("W100", b), ("W50", b.with_(symbols_per_slot=50)),
-                                          ("K10", b.with_(n_agents=10)),
-                                          ("clustered", b.with_(victim_layout="clustered")))
-                        for k in (1, 2, 4, 8)]
+    ex["genie_ref"] = [
+        ("genie", "K10", b.with_(n_agents=10)),
+        ("genie", "clustered", b.with_(victim_layout="clustered")),
+        ("genie", "W100", b),
+    ]
+    ex["rate_aware"] = [
+        ("sem_ra", f"{name}/k{k}", cfg.with_(sem_interval=k))
+        for name, cfg in (
+            ("W100", b),
+            ("W50", b.with_(symbols_per_slot=50)),
+            ("K10", b.with_(n_agents=10)),
+            ("clustered", b.with_(victim_layout="clustered")),
+        )
+        for k in (1, 2, 4, 8)
+    ]
     return ex
 
 
@@ -131,5 +168,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

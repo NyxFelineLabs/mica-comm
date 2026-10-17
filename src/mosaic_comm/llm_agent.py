@@ -9,6 +9,7 @@ classical planner agents interoperate through one semantic protocol.
 Responses are cached on disk (keyed by model and prompt), which makes every run
 deterministic and lets the experiments be re-run without the model.
 """
+
 import hashlib
 import json
 import os
@@ -16,17 +17,17 @@ import string
 import time
 import urllib.request
 from pathlib import Path
+from typing import Callable, Optional, Sequence
 
 import numpy as np
 
 from .agent import Agent
 from .belief import box_sum
+from .paths import CACHE_DIR
 
-OLLAMA_URL = os.environ.get("MOSAIC_OLLAMA_URL", os.environ.get(
-    "OLLAMA_URL", "http://localhost:11434/api/generate"))
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CACHE_DIR = os.environ.get("MOSAIC_CACHE_DIR", str(PROJECT_ROOT / "results" / "llm_cache"))
-
+OLLAMA_URL = os.environ.get(
+    "MOSAIC_OLLAMA_URL", os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate")
+)
 # Public names used by experiments.  Override these when using a different
 # Ollama registry or a locally fine-tuned model.
 MODEL_ALIASES = {
@@ -34,6 +35,7 @@ MODEL_ALIASES = {
     "small_reasoner_alt": os.environ.get("MOSAIC_MODEL_SMALL_ALT", "llama3.2:3b"),
     "large_reasoner": os.environ.get("MOSAIC_MODEL_LARGE", "qwen2.5:7b"),
 }
+Transport = Callable[[dict], dict]
 
 
 def resolve_model_name(name: str) -> str:
@@ -44,58 +46,81 @@ def resolve_model_name(name: str) -> str:
 class LLMClient:
     """Minimal Ollama client with a persistent append-only response cache."""
 
-    def __init__(self, model: str, cache_dir: str = CACHE_DIR, transport=None):
+    def __init__(
+        self, model: str, cache_dir: str = str(CACHE_DIR), transport: Optional[Transport] = None
+    ):
         self.alias = model
         self.model = resolve_model_name(model)
         self.transport = transport or self._http
-        os.makedirs(cache_dir, exist_ok=True)
-        self.cache_path = os.path.join(cache_dir, f"{self.model.replace(':', '_')}.jsonl")
-        self.cache = {}
-        if os.path.exists(self.cache_path):
-            with open(self.cache_path) as f:
-                for line in f:
-                    try:
-                        rec = json.loads(line)
-                        self.cache[rec["key"]] = rec["response"]
-                    except (json.JSONDecodeError, KeyError):
-                        continue  # tolerate a partially written last line
+        self.cache_path = Path(cache_dir) / f"{self.model.replace(':', '_')}.jsonl"
+        self.cache_path.parent.mkdir(parents=True, exist_ok=True)
+        self.cache = self._load_cache()
         self.calls = 0
         self.hits = 0
         self.seconds = 0.0
 
+    def _load_cache(self) -> dict[str, str]:
+        """Load valid records while tolerating an interrupted final write."""
+        if not self.cache_path.exists():
+            return {}
+        cache = {}
+        with self.cache_path.open(encoding="utf-8") as stream:
+            for line in stream:
+                try:
+                    record = json.loads(line)
+                    cache[record["key"]] = record["response"]
+                except (json.JSONDecodeError, KeyError, TypeError):
+                    continue
+        return cache
+
+    def _cache_response(self, key: str, response: str) -> None:
+        """Append a successful response so later runs can replay it offline."""
+        self.cache[key] = response
+        with self.cache_path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({"key": key, "response": response}) + "\n")
+
     def _http(self, body: dict) -> dict:
-        req = urllib.request.Request(OLLAMA_URL, json.dumps(body).encode(),
-                                     {"Content-Type": "application/json"})
+        req = urllib.request.Request(
+            OLLAMA_URL, json.dumps(body).encode(), {"Content-Type": "application/json"}
+        )
         with urllib.request.urlopen(req, timeout=300) as r:
             return json.loads(r.read())
 
-    def choose(self, prompt: str, labels) -> str:
-        schema = {"type": "object",
-                  "properties": {"choice": {"type": "string", "enum": list(labels)}},
-                  "required": ["choice"]}
+    def choose(self, prompt: str, labels: Sequence[str]) -> Optional[str]:
+        """Return one allowed label, or ``None`` after repeated backend failures."""
+        schema = {
+            "type": "object",
+            "properties": {"choice": {"type": "string", "enum": list(labels)}},
+            "required": ["choice"],
+        }
         key = hashlib.sha256(f"{self.model}\n{prompt}\n{','.join(labels)}".encode()).hexdigest()
         if key in self.cache:
             self.hits += 1
             return self.cache[key]
-        body = {"model": self.model, "prompt": prompt, "format": schema, "stream": False,
-                "options": {"temperature": 0, "seed": 0, "num_predict": 12, "num_ctx": 1024},
-                "keep_alive": "60m"}
-        t0 = time.time()
+        body = {
+            "model": self.model,
+            "prompt": prompt,
+            "format": schema,
+            "stream": False,
+            "options": {"temperature": 0, "seed": 0, "num_predict": 12, "num_ctx": 1024},
+            "keep_alive": "60m",
+        }
+        response = None
+        t0 = time.monotonic()
         for attempt in range(3):
             try:
-                resp = json.loads(self.transport(body)["response"])["choice"]
+                response = json.loads(self.transport(body)["response"])["choice"]
                 break
-            except Exception:  # server hiccup or malformed output
+            except Exception:  # network and schema boundary; fallback is intentional
                 if attempt == 2:
-                    resp = None
+                    response = None
                 time.sleep(1.0)
-        self.seconds += time.time() - t0
+        self.seconds += time.monotonic() - t0
         self.calls += 1
-        if resp in labels:
-            self.cache[key] = resp
-            with open(self.cache_path, "a") as f:
-                f.write(json.dumps({"key": key, "response": resp}) + "\n")
-        return resp
+        if response in labels:
+            self._cache_response(key, response)
+            return response
+        return None
 
 
 _CLIENTS = {}
@@ -128,7 +153,7 @@ class LLMAgent(Agent):
         super().__init__(idx, pos, cfg)
         self.sim = sim
         self.client = client
-        self.last_call = -10 ** 9
+        self.last_call = -(10**9)
         self.target_mass = 0.0
         self.decisions = 0
         self.fallbacks = 0
@@ -165,7 +190,11 @@ class LLMAgent(Agent):
         c, n = self.cfg, self.cfg.grid
         t = self.sim.t
         here = self.pos[0] * n + self.pos[1]
-        if self.target is not None and self.target != here and t - self.last_call < c.llm_replan_every:
+        if (
+            self.target is not None
+            and self.target != here
+            and t - self.last_call < c.llm_replan_every
+        ):
             m = box_sum(p, c.sense_radius).reshape(-1)[self.target]
             if m >= 0.5 * self.target_mass:
                 return  # commitment to the current intention
@@ -174,17 +203,29 @@ class LLMAgent(Agent):
             return super().plan(p, others, rng)
         mates = self._mates()
         pts = [q for _, _, q in mates]
-        labels = list(string.ascii_uppercase[:len(cands)])
+        labels = list(string.ascii_uppercase[: len(cands)])
         lines = []
         for lab, cell in zip(labels, cands):
             x, y = divmod(cell, n)
             near = min((abs(x - a) + abs(y - b) for a, b in pts), default=None)
-            lines.append(f"{lab}: ({x}, {y}) mass {mass[x, y]:.2f}, distance {int(dist[x, y])}, "
-                         f"nearest teammate {near if near is not None else 'unknown'}")
-        mates_txt = "\n".join(f"Agent {j} {kind} ({a}, {b})" for j, kind, (a, b) in mates) or "none known"
-        prompt = PROMPT.format(k=self.idx, K=c.n_agents, n=n, nm=n - 1, x=self.pos[0], y=self.pos[1],
-                               found=int(self.sim.view(self).declared.sum()), cands="\n".join(lines),
-                               mates=mates_txt)
+            lines.append(
+                f"{lab}: ({x}, {y}) mass {mass[x, y]:.2f}, distance {int(dist[x, y])}, "
+                f"nearest teammate {near if near is not None else 'unknown'}"
+            )
+        mates_txt = (
+            "\n".join(f"Agent {j} {kind} ({a}, {b})" for j, kind, (a, b) in mates) or "none known"
+        )
+        prompt = PROMPT.format(
+            k=self.idx,
+            K=c.n_agents,
+            n=n,
+            nm=n - 1,
+            x=self.pos[0],
+            y=self.pos[1],
+            found=int(self.sim.view(self).declared.sum()),
+            cands="\n".join(lines),
+            mates=mates_txt,
+        )
         choice = self.client.choose(prompt, labels)
         # what the classical planner would pick (no hysteresis), for the fallback and
         # for the agreement statistic: the candidate closest to the planner's target
@@ -202,5 +243,3 @@ class LLMAgent(Agent):
         self.target = chosen
         self.target_mass = float(mass.reshape(-1)[chosen])
         self.last_call = t
-
-

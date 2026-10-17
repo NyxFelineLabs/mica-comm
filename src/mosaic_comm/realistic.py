@@ -13,30 +13,47 @@ broadcast network price and request their selection; periodic/FIFO baselines sen
 buffer status report and receive max-min fair grants.  Requests are counted as uplink
 control bits (1 bit per channel use) and grants as downlink control bits.
 """
+
 import math
 from collections import defaultdict
 
 import numpy as np
 
 from .messages import Packet, confirm_bits, evidence_sizes, intent_bits
-from .schemes import (SCHEMES, GOSC, PRIORITY, Genie, Group, NaturalLanguage, Option, RawShare,
-                          ReportOnly, SemanticPeriodic, SemanticRateAware,
-                          SemanticRateAwareFiltered, SemanticRateAwareSuppress, TxResult,
-                          lagrangian_select, sim_tasks)
-from .voi import TeamModel
+from .schemes import (
+    GOSC,
+    PRIORITY,
+    SCHEMES,
+    Genie,
+    Group,
+    NaturalLanguage,
+    Option,
+    RawShare,
+    ReportOnly,
+    SemanticPeriodic,
+    SemanticRateAware,
+    SemanticRateAwareFiltered,
+    SemanticRateAwareSuppress,
+    TxResult,
+    lagrangian_select,
+    sim_tasks,
+)
 from .simulator import Simulation
+from .voi import TeamModel
 
 
 # --------------------------------------------------------------------------
 # GOSC with packet overhead and (optionally) imperfect message values
 # --------------------------------------------------------------------------
 class RealisticGOSC(GOSC):
+    """GOSC with packet overhead, imperfect value estimates, and shared budgets."""
+
     def __init__(self, cfg, channel, **kw):
         super().__init__(cfg, channel, **kw)
         self.H = cfg.overhead_bits
-        self.rng = np.random.default_rng(0)   # re-seeded per mission by RealisticSimulation
+        self.rng = np.random.default_rng(0)  # re-seeded per mission by RealisticSimulation
         self.reservoir = {"INTENT": [], "EVID": []}
-        self.value_pairs = []                  # (true, estimated) group values
+        self.value_pairs = []  # (true, estimated) group values
         self.n_tx = 0
 
     # -- imperfect valuation -------------------------------------------------
@@ -76,9 +93,15 @@ class RealisticGOSC(GOSC):
         for r in rates:
             sym = math.ceil((bits + H) / r)
             if sym <= W:
-                opts.append(Option(r, bits + H, sym,
-                                   value * float(self.channel.success_prob(r, snr_mean, n=sym)),
-                                   n_records))
+                opts.append(
+                    Option(
+                        r,
+                        bits + H,
+                        sym,
+                        value * float(self.channel.success_prob(r, snr_mean, n=sym)),
+                        n_records,
+                    )
+                )
         return opts
 
     def build_groups(self, agent, snr_mean, sim):
@@ -102,14 +125,22 @@ class RealisticGOSC(GOSC):
                 v = PRIORITY
             groups.append(Group("CONF", self._options(b, v, rates, snr_mean), cell=cell))
         acked_intent = getattr(agent, "acked_intent", agent.shared_intent)
-        if agent.target is not None and agent.target != agent.shared_intent and agent.target != acked_intent:
+        if (
+            agent.target is not None
+            and agent.target != agent.shared_intent
+            and agent.target != acked_intent
+        ):
             b = intent_bits(c)
             if not self.use_uep:
                 rates = self._fixed_rates(b, snr_mean)
             if team is not None and c.task == "rescue" and agent.target in sim_tasks(sim, agent):
                 from .rescue import claim_value
-                v = claim_value(sim, agent, {**sim.open_tasks(),
-                                             agent.target: sim_tasks(sim, agent)[agent.target]})
+
+                v = claim_value(
+                    sim,
+                    agent,
+                    {**sim.open_tasks(), agent.target: sim_tasks(sim, agent)[agent.target]},
+                )
             elif team is not None:
                 v = max(team.intent_voi(agent.target), 0.0)
             elif mode == "aoi":
@@ -120,8 +151,12 @@ class RealisticGOSC(GOSC):
                 if agent.shared_intent is None:
                     v = c.intent_value
                 else:
-                    (x1, y1), (x2, y2) = divmod(agent.target, c.grid), divmod(agent.shared_intent, c.grid)
-                    v = c.intent_value * min(1.0, (abs(x1 - x2) + abs(y1 - y2)) / (2 * c.sense_radius + 1))
+                    (x1, y1), (x2, y2) = divmod(agent.target, c.grid), divmod(
+                        agent.shared_intent, c.grid
+                    )
+                    v = c.intent_value * min(
+                        1.0, (abs(x1 - x2) + abs(y1 - y2)) / (2 * c.sense_radius + 1)
+                    )
             else:
                 v = b
             v = self._estimate("INTENT", {0: v})[0]
@@ -138,9 +173,11 @@ class RealisticGOSC(GOSC):
                 if n > 0:
                     fits[r] = n
             if fits:
-                vals = (self.evidence_voi(sim, recs, fits.values(), team)
-                        if mode in ("tom", "tv", "aoi")
-                        else {n: float(sizes[n - 1]) for n in fits.values()})
+                vals = (
+                    self.evidence_voi(sim, recs, fits.values(), team)
+                    if mode in ("tom", "tv", "aoi")
+                    else {n: float(sizes[n - 1]) for n in fits.values()}
+                )
                 vals = self._estimate("EVID", vals, sizes)
                 opts = []
                 for r, n in fits.items():
@@ -164,10 +201,12 @@ class RealisticGOSC(GOSC):
                 res.delivered.append(Packet("CONF", agent.idx, o.bits - self.H, t, confirm=g.cell))
             elif g.kind == "INTENT":
                 agent.acked_intent = agent.target
-                res.delivered.append(Packet("INTENT", agent.idx, o.bits - self.H, t, intent=agent.target))
+                res.delivered.append(
+                    Packet("INTENT", agent.idx, o.bits - self.H, t, intent=agent.target)
+                )
             else:
-                recs = agent.pending_records[:o.n_records]
-                del agent.pending_records[:o.n_records]
+                recs = agent.pending_records[: o.n_records]
+                del agent.pending_records[: o.n_records]
                 for r in recs:
                     sim.sensor.apply(agent.queued_llr, r, sign=-1.0)
                 res.delivered.append(Packet("EVID", agent.idx, o.bits - self.H, t, records=recs))
@@ -188,6 +227,7 @@ class FifoRealistic:
     """Mixin for the FIFO baselines.  One transport block per slot and agent carries
     the multiplexed queue content plus `overhead_bits`; the grant W defaults to the
     orthogonal per-agent budget."""
+
     rate_aware = False
 
     def rate_for(self, snr_mean, W):
@@ -195,7 +235,9 @@ class FifoRealistic:
         rates = self.channel.rates
         if self.rate_aware:
             n = self.cfg.symbols_per_slot
-            good = np.maximum(W * rates - H, 0.0) * np.asarray(self.channel.success_prob(rates, snr_mean, n=n))
+            good = np.maximum(W * rates - H, 0.0) * np.asarray(
+                self.channel.success_prob(rates, snr_mean, n=n)
+            )
             return float(rates[int(np.argmax(good))]) if good.max() > 0 else None
         r0 = self.channel.fixed_rate(snr_mean)
         if int(W * r0) - H > 0:
@@ -262,6 +304,7 @@ def _fifo(base, aware=False):
     def init(self, cfg, channel):
         base.__init__(self, cfg, channel)
         self.n_tx = 0
+
     cls.__init__ = init
     return cls
 
@@ -304,7 +347,7 @@ def hull_size(options, eta):
     for i, o in enumerate(options):
         if o.symbols > 0:
             lams.add(o.value / o.symbols)
-        for p in options[i + 1:]:
+        for p in options[i + 1 :]:
             if o.symbols != p.symbols:
                 lams.add((o.value - p.value) / (o.symbols - p.symbols))
     chosen = set()
@@ -376,8 +419,11 @@ class RealisticSimulation(Simulation):
             snr_inst = snr_mean * self.chan_rng.exponential()
             links.append((a, snr_inst if cfg.csit else snr_mean, snr_inst))
         if isinstance(self.scheme, RealisticGOSC):
-            results = (self._uplink_gosc(t, links) if cfg.shared_mode == "central"
-                       else self._uplink_gosc_price(t, links))
+            results = (
+                self._uplink_gosc(t, links)
+                if cfg.shared_mode == "central"
+                else self._uplink_gosc_price(t, links)
+            )
         else:
             results = self._uplink_fifo(t, links)
         self.skip_tx = set()
@@ -513,12 +559,16 @@ class RealisticSimulation(Simulation):
         out.update(
             ul_tx=ntx,
             ul_overhead_bits=H * ntx,
-            ul_ctrl_symbols=int(self.req_bits),          # requests at 1 bit per channel use
+            ul_ctrl_symbols=int(self.req_bits),  # requests at 1 bit per channel use
             dl_bcast_symbols=int(math.ceil((self.dl_bits + dl_oh) / cfg.dl_rate)),
             dl_ctrl_symbols=int(math.ceil(dl_ctrl / cfg.dl_rate)),
         )
-        out["total_symbols"] = (out["symbols"] + out["ul_ctrl_symbols"]
-                                + out["dl_bcast_symbols"] + out["dl_ctrl_symbols"])
+        out["total_symbols"] = (
+            out["symbols"]
+            + out["ul_ctrl_symbols"]
+            + out["dl_bcast_symbols"]
+            + out["dl_ctrl_symbols"]
+        )
         pairs = getattr(self.scheme, "value_pairs", None)
         if pairs:
             rng = np.random.default_rng(1)
@@ -531,5 +581,3 @@ def run_realistic(cfg, scheme, seed):
     out = RealisticSimulation(cfg, scheme, seed).run()
     out.pop("curve", None)
     return out
-
-

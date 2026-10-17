@@ -1,4 +1,5 @@
 ﻿"""Log-odds occupancy beliefs, the sensor model and evidence records."""
+
 from dataclasses import dataclass
 from typing import Tuple
 
@@ -6,16 +7,19 @@ import numpy as np
 
 
 def sigmoid(x):
+    """Map log odds to probability using a numerically stable form."""
     return 0.5 * (1.0 + np.tanh(0.5 * x))
 
 
 def logit(p):
+    """Map a probability in ``(0, 1)`` to log odds."""
     return float(np.log(p) - np.log1p(-p))
 
 
 @dataclass(frozen=True)
 class Obs:
     """One sensing event: agent position and the cells that triggered a detection."""
+
     t: int
     agent: int
     pos: Tuple[int, int]
@@ -23,6 +27,8 @@ class Obs:
 
 
 class SensorModel:
+    """Convert sensor observations into additive log-likelihood ratios."""
+
     def __init__(self, p_detect: float, p_false_alarm: float, radius: int, grid: int):
         self.llr_pos = float(np.log(p_detect / p_false_alarm))
         self.llr_neg = float(np.log((1 - p_detect) / (1 - p_false_alarm)))
@@ -52,5 +58,3 @@ def box_sum(a: np.ndarray, r: int) -> np.ndarray:
     lo = np.clip(i - r, 0, n)
     hi = np.clip(i + r + 1, 0, n)
     return c[np.ix_(hi, hi)] - c[np.ix_(lo, hi)] - c[np.ix_(hi, lo)] + c[np.ix_(lo, lo)]
-
-

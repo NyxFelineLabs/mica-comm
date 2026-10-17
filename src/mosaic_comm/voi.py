@@ -13,6 +13,7 @@ where K is the common knowledge, pi_j the softmax policy of teammate j and U_j i
 utility (survivor mass in the footprint, discounted by travel distance and by
 proximity to higher-priority teammates) computed with the sender's local belief.
 """
+
 import numpy as np
 
 from .belief import box_sum, sigmoid
@@ -20,7 +21,7 @@ from .belief import box_sum, sigmoid
 
 def repulsion(points, X, Y, sigma):
     f = np.ones(X.shape)
-    two_s2 = 2.0 * sigma ** 2
+    two_s2 = 2.0 * sigma**2
     for ox, oy in points:
         f = f * (1.0 - np.exp(-((X - ox) ** 2 + (Y - oy) ** 2) / two_s2))
     return f
@@ -50,9 +51,13 @@ class TeamModel:
                 mate = sim.agents[j]
                 self.priv[j] = mate.pending_llr
                 self.mass_mate[j] = self.mass_of(sim.Lc + mate.pending_llr, mate.confirmed_pending)
-            self.dist[j] = 1.0 / (1.0 + cfg.distance_discount * (np.abs(self.X - x) + np.abs(self.Y - y)))
+            self.dist[j] = 1.0 / (
+                1.0 + cfg.distance_discount * (np.abs(self.X - x) + np.abs(self.Y - y))
+            )
             pts = self._points(j)
-            self.others[j] = repulsion([p for i, p in pts if i != k], self.X, self.Y, cfg.repulsion_sigma)
+            self.others[j] = repulsion(
+                [p for i, p in pts if i != k], self.X, self.Y, cfg.repulsion_sigma
+            )
             self.rep_known[j] = self.others[j] * self._rep_point(dict(pts).get(k))
             self.rep_true[j] = self.others[j] * self._rep_point(self.true_k)
         self.u_true = {j: self.mass_true * self.dist[j] * self.rep_true[j] for j in self.mates}
@@ -105,15 +110,20 @@ class TeamModel:
     def evidence_voi(self, delta_llrs, new_positions):
         """VoI of candidate evidence updates.  Delivering evidence also reveals the
         sender's latest position to teammates that deconflict against it."""
-        base = {j: self._expected_utility(self._belief_mass(j), j, self.rep_known[j])
-                for j in self.mates}
+        base = {
+            j: self._expected_utility(self._belief_mass(j), j, self.rep_known[j])
+            for j in self.mates
+        }
         out = []
         for d, pos in zip(delta_llrs, new_positions):
             mass = None if self.oracle else self.mass_of(self.sim.Lc + d)
             v = 0.0
             for j in self.mates:
-                rep = (self.rep_known[j] if self._uses_intent_of_sender(j)
-                       else self.others[j] * self._rep_point(pos))
+                rep = (
+                    self.rep_known[j]
+                    if self._uses_intent_of_sender(j)
+                    else self.others[j] * self._rep_point(pos)
+                )
                 m = self._belief_mass(j, d) if self.oracle else mass
                 v += self._expected_utility(m, j, rep) - base[j]
             out.append(v)
@@ -129,8 +139,9 @@ class TeamModel:
                 continue  # higher-priority agents do not deconflict against k's intent
             rep_new = self.others[j] * self._rep_point(tgt)
             m = self._belief_mass(j)
-            v += (self._expected_utility(m, j, rep_new)
-                  - self._expected_utility(m, j, self.rep_known[j]))
+            v += self._expected_utility(m, j, rep_new) - self._expected_utility(
+                m, j, self.rep_known[j]
+            )
         return v
 
     def joint_voi(self, delta, pos, target: int):
@@ -144,5 +155,3 @@ class TeamModel:
             rep = self.others[j] * self._rep_point(tgt if j > k else pos)
             v += self._expected_utility(self._belief_mass(j, delta), j, rep) - base
         return v
-
-

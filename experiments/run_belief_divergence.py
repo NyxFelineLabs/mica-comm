@@ -7,19 +7,19 @@ main-evaluation functions (experiments.plot_revision.matched).
     python -m experiments.run_belief_divergence            # simulate
     python -m experiments.run_belief_divergence --table    # fill the n/e cells of table_values.tex
 """
+
 import argparse
 import json
 import os
 from multiprocessing import Pool
 
-import numpy as np
-
 from mosaic_comm import Config, run_episode
+from mosaic_comm.paths import FIGURES_DIR, RESULTS_DIR
 
-OUT = os.path.join(os.path.dirname(__file__), "..", "results", "belief_divergence.jsonl")
-RES = os.path.join(os.path.dirname(__file__), "..", "results")
-FIG = os.path.join(os.path.dirname(__file__), "..", "figures")
-ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)   # frontier grid for gosc_tv
+OUT = RESULTS_DIR / "belief_divergence.jsonl"
+RES = RESULTS_DIR
+FIG = FIGURES_DIR
+ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)  # frontier grid for gosc_tv
 
 
 def jobs():
@@ -27,7 +27,9 @@ def jobs():
     out = []
     for e in ETAS_TV:
         out.append(("gosc_tv", f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
-        out.append(("gosc_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e)))
+        out.append(
+            ("gosc_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
+        )
     return out
 
 
@@ -55,6 +57,7 @@ def simulate(seeds, workers):
 
 def fill_table():
     from experiments.plot_revision import matched, table
+
     rows = json.load(open(os.path.join(RES, "rev_where_tom.json")))["rows"]
     rows += [json.loads(line) for line in open(OUT)]
     tab = table(rows)
@@ -94,5 +97,3 @@ if __name__ == "__main__":
         fill_table()
     else:
         simulate(args.seeds, args.workers)
-
-

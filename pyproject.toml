@@ -16,7 +16,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = [
+  "pytest>=7",
+  "black>=24.0",
+  "ruff>=0.6",
+]
 
 [project.scripts]
 mosaic-mission = "mosaic_comm.simulator:main"
@@ -27,3 +31,17 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+extend-exclude = "(results|figures|models)"
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = ["results", "figures", "models"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+ignore = ["E501"]

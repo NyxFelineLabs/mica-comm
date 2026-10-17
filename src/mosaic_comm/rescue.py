@@ -23,13 +23,17 @@ def rescue_choice(cfg, k, pos, t, tasks, team_intent, own_target, progress, team
 
     # commitment: keep the current rescue while feasible and not claimed by a
     # higher-priority teammate
-    if own_target in tasks and feasible(own_target) >= 0 and not any(
-            j != k and g == own_target and j < k for j, g in team_intent.items()):
+    if (
+        own_target in tasks
+        and feasible(own_target) >= 0
+        and not any(j != k and g == own_target and j < k for j, g in team_intent.items())
+    ):
         return own_target
     best, best_slack = None, None
     for s, dl in tasks.items():
-        claimed = any(j != k and g == s and (j < k or own_target != s)
-                      for j, g in team_intent.items())
+        claimed = any(
+            j != k and g == s and (j < k or own_target != s) for j, g in team_intent.items()
+        )
         if claimed:
             continue
         sx, sy = divmod(s, n)
@@ -66,9 +70,19 @@ def claim_value(sim, agent, known_tasks):
         if j == agent.idx or j not in sim.team_pos:
             continue
         own = ti.get(j)
-        if rescue_choice(c, j, sim.team_pos[j], sim.t, known_tasks, ti, own,
-                         sim.rescue_progress, sim.team_pos) == s:
+        if (
+            rescue_choice(
+                c,
+                j,
+                sim.team_pos[j],
+                sim.t,
+                known_tasks,
+                ti,
+                own,
+                sim.rescue_progress,
+                sim.team_pos,
+            )
+            == s
+        ):
             return c.confirm_value
     return 0.1 * c.intent_value
-
-
