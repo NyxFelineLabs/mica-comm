@@ -20,13 +20,13 @@ FIG.mkdir(parents=True, exist_ok=True)
 
 # Categorical slots in fixed order (validated palette); genie is a neutral reference.
 STYLE = {
-    "adaptive": dict(color="#2a78d6", marker="o", label="Adaptive scheduling"),
+    "mica": dict(color="#2a78d6", marker="o", label="MICA"),
     "sem": dict(color="#eb6834", marker="s", label="Semantic, periodic"),
     "raw": dict(color="#1baf7a", marker="^", label="Raw sensor data"),
     "nl": dict(color="#eda100", marker="D", label="Natural language"),
     "report": dict(color="#e87ba4", marker="v", label="Report only"),
-    "adaptive_novoi": dict(color="#008300", marker="P", label="Adaptive w/o VoI"),
-    "adaptive_tv": dict(color="#4a3aa7", marker="X", label="Adaptive, belief-div. VoI"),
+    "mica_novoi": dict(color="#008300", marker="P", label="MICA w/o VoI"),
+    "mica_tv": dict(color="#4a3aa7", marker="X", label="MICA, belief-div. VoI"),
     "genie": dict(
         color="#7a7974", marker="", label="Ideal-communication reference (genie)", linestyle="--"
     ),
@@ -36,13 +36,13 @@ NAMES = {
     "raw": "Raw sensor data",
     "nl": "Natural language (LLM-style)",
     "sem": "Semantic, periodic",
-    "adaptive_nouep": "Adaptive w/o UEP",
-    "adaptive_novoi": "Adaptive w/o VoI",
-    "adaptive_tv": "Adaptive w/ belief-divergence VoI",
-    "adaptive": "Adaptive scheduling",
+    "mica_nouep": "MICA w/o UEP",
+    "mica_novoi": "MICA w/o VoI",
+    "mica_tv": "MICA w/ belief-divergence VoI",
+    "mica": "MICA",
     "genie": "Ideal-comm. reference (genie)",
 }
-MAIN = ["report", "raw", "nl", "sem", "adaptive", "genie"]
+MAIN = ["report", "raw", "nl", "sem", "mica", "genie"]
 
 plt.rcParams.update(
     {
@@ -214,8 +214,8 @@ def pareto_plot():
             [np.mean([r["completion_time"] for r in by(data, scheme, e)]) for e in etas],
         )
 
-    etas, xs, ys = front(rows, "adaptive")
-    ax.plot(xs, ys, **STYLE["adaptive"])
+    etas, xs, ys = front(rows, "mica")
+    ax.plot(xs, ys, **STYLE["mica"])
     for e, x, y in zip(etas, xs, ys):
         if e in (0.0, 1e-5, 1e-4, 1e-3):
             lab = r"$\eta$=0" if e == 0 else rf"$\eta$={e:.0e}".replace("e-0", "e-")
@@ -229,9 +229,9 @@ def pareto_plot():
                 color="#2a78d6",
                 ha="right",
             )
-    _, xt, yt = front(tv, "adaptive_tv")
-    ax.plot(xt, yt, **STYLE["adaptive_tv"])
-    for s in ["sem", "raw", "nl", "report", "adaptive_novoi"]:
+    _, xt, yt = front(tv, "mica_tv")
+    ax.plot(xt, yt, **STYLE["mica_tv"])
+    for s in ["sem", "raw", "nl", "report", "mica_novoi"]:
         st = dict(STYLE[s])
         r = by(dflt, s)
         ax.plot(
@@ -249,8 +249,8 @@ def pareto_plot():
     fig.savefig(os.path.join(FIG, "fig_pareto.pdf"))
     plt.close(fig)
     return {
-        "tom": {e: summarize(by(rows, "adaptive", e)) for e in etas},
-        "tv": {e: summarize(by(tv, "adaptive_tv", e)) for e in sorted({r["param"] for r in tv})},
+        "tom": {e: summarize(by(rows, "mica", e)) for e in etas},
+        "tv": {e: summarize(by(tv, "mica_tv", e)) for e in sorted({r["param"] for r in tv})},
     }
 
 
@@ -259,7 +259,7 @@ def traj_plot():
         tr = json.load(f)
     fig, axes = plt.subplots(1, 2, figsize=(W1, 1.85), sharey=True)
     agent_colors = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"]
-    for ax, s in zip(axes, ["sem", "adaptive"]):
+    for ax, s in zip(axes, ["sem", "mica"]):
         d = tr[s]
         for k, path in enumerate(d["trajectories"]):
             p = np.array(path)
@@ -295,17 +295,17 @@ def paired_diff(rows, a, b, nboot=4000):
 
 def default_table():
     rows = load("default")
-    order = ["report", "raw", "nl", "sem", "adaptive", "genie"]
+    order = ["report", "raw", "nl", "sem", "mica", "genie"]
     summ = {s: summarize(by(rows, s)) for s in order}
     for s in order:
-        summ[s]["diff_vs_adaptive"] = None if s == "adaptive" else paired_diff(rows, s, "adaptive")
+        summ[s]["diff_vs_mica"] = None if s == "mica" else paired_diff(rows, s, "mica")
     lines = []
     for s in order:
         m = summ[s]
-        d = m["diff_vs_adaptive"]
+        d = m["diff_vs_mica"]
         dcell = "--" if d is None else f"{d[0]:+.1f} [{d[1]:+.1f}, {d[2]:+.1f}]"
         name = NAMES[s]
-        if s == "adaptive":
+        if s == "mica":
             name = r"\textbf{" + name + "}"
         if s == "genie":
             lines.append(r"\midrule")
@@ -352,11 +352,11 @@ def llm_table():
         ("mixed_alt", "Mixed, alternative model"),
     ]
     for team, name in teams:
-        if (team, "adaptive") not in T:
+        if (team, "mica") not in T:
             continue
-        ss = seeds((team, "sem"), (team, "adaptive"), (team, "genie"))
+        ss = seeds((team, "sem"), (team, "mica"), (team, "genie"))
         first = True
-        for sch in ("sem", "adaptive", "genie"):
+        for sch in ("sem", "mica", "genie"):
             r = [T[(team, sch)][k] for k in ss]
             m = summarize(r)
             if team != "planner":
@@ -369,20 +369,20 @@ def llm_table():
             first = False
             sname = {
                 "sem": "Semantic, periodic",
-                "adaptive": r"\textbf{Adaptive}",
+                "mica": r"\textbf{MICA}",
                 "genie": "Genie",
             }[sch]
             ch = "--" if sch == "genie" else fmt(m["ksym"], 1)
             lines.append(f"{label} & {sname} & {fmt(m['T'])} $\\pm$ {fmt(m['T_ci'])} & {ch} \\\\")
         lines.append(r"\midrule")
-        out[f"{team}/sem_minus_adaptive"] = boot(
+        out[f"{team}/sem_minus_mica"] = boot(
             [
-                T[(team, "sem")][k]["completion_time"] - T[(team, "adaptive")][k]["completion_time"]
+                T[(team, "sem")][k]["completion_time"] - T[(team, "mica")][k]["completion_time"]
                 for k in ss
             ]
         )
         if team != "planner":
-            for sch in ("sem", "adaptive", "genie"):
+            for sch in ("sem", "mica", "genie"):
                 cs = seeds((team, sch), ("planner", sch))
                 out[f"{team}_minus_planner/{sch}"] = boot(
                     [
@@ -391,10 +391,8 @@ def llm_table():
                         for k in cs
                     ]
                 )
-            cs = seeds(
-                (team, "sem"), (team, "adaptive"), ("planner", "sem"), ("planner", "adaptive")
-            )
-            # difference in degradation: (mixed - planner | sem) - (mixed - planner | adaptive)
+            cs = seeds((team, "sem"), (team, "mica"), ("planner", "sem"), ("planner", "mica"))
+            # difference in degradation: (mixed - planner | sem) - (mixed - planner | mica)
             out[f"{team}/degradation_difference"] = boot(
                 [
                     (
@@ -402,27 +400,27 @@ def llm_table():
                         - T[("planner", "sem")][k]["completion_time"]
                     )
                     - (
-                        T[(team, "adaptive")][k]["completion_time"]
-                        - T[("planner", "adaptive")][k]["completion_time"]
+                        T[(team, "mica")][k]["completion_time"]
+                        - T[("planner", "mica")][k]["completion_time"]
                     )
                     for k in cs
                 ]
             )
     for team in ("planner", "mixed"):
-        if (team, "adaptive_bits") in T:
-            cs = seeds((team, "adaptive_bits"), (team, "adaptive"))
-            out[f"{team}/bits_minus_adaptive"] = boot(
+        if (team, "mica_bits") in T:
+            cs = seeds((team, "mica_bits"), (team, "mica"))
+            out[f"{team}/bits_minus_mica"] = boot(
                 [
-                    T[(team, "adaptive_bits")][k]["completion_time"]
-                    - T[(team, "adaptive")][k]["completion_time"]
+                    T[(team, "mica_bits")][k]["completion_time"]
+                    - T[(team, "mica")][k]["completion_time"]
                     for k in cs
                 ]
             )
             out[f"{team}/bits_ksym"] = float(
-                np.mean([T[(team, "adaptive_bits")][k]["symbols"] for k in cs]) / 1e3
+                np.mean([T[(team, "mica_bits")][k]["symbols"] for k in cs]) / 1e3
             )
-            out[f"{team}/adaptive_ksym_on_bits_seeds"] = float(
-                np.mean([T[(team, "adaptive")][k]["symbols"] for k in cs]) / 1e3
+            out[f"{team}/mica_ksym_on_bits_seeds"] = float(
+                np.mean([T[(team, "mica")][k]["symbols"] for k in cs]) / 1e3
             )
     if lines and lines[-1] == r"\midrule":
         lines.pop()

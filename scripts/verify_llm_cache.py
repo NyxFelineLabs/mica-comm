@@ -38,7 +38,7 @@ def main():
         client = llm_agent.LLMClient(model, transport=no_network)
         llm_agent._CLIENTS[model] = client
         assert client.cache, f"{model}: empty cache"
-        for scheme in ("sem", "adaptive"):
+        for scheme in ("sem", "mica"):
             expected = next(
                 r for r in rows if r["team"] == team and r["scheme"] == scheme and r["seed"] == seed
             )

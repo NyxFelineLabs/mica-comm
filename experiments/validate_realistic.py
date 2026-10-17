@@ -6,7 +6,7 @@ mean outcome meets the target (1.25 x the ideal-communication completion time in
 search task, 0.90 x its saved fraction in the rescue task); freeze it and re-run it on
 the fresh seeds, with common random numbers across methods.
 
-  overhead  H = 16/32/64 bits: AdaptiveScheduler and the periodic family re-selected per H; H = 0
+  overhead  H = 16/32/64 bits: MicaScheduler and the periodic family re-selected per H; H = 0
             re-runs the main-evaluation frozen points with the complete cost account;
             search default: conventional schemes too (cost table)
   noise     each value-estimation arm re-selected per setting (the periodic
@@ -131,7 +131,7 @@ def overhead(pool):
         for H in (0, 16, 32, 64):
             base = SETTINGS[st].with_(overhead_bits=H)
             entry = {"target": target, "metric": metric}
-            for fam in ("adaptive", "periodic"):
+            for fam in ("mica", "periodic"):
                 if H == 0:
                     sch, p = jv[st][fam]["scheme"], jv[st][fam]["point"].split("/", 1)[1]
                 else:
@@ -141,7 +141,7 @@ def overhead(pool):
                             for r in rows
                             if not (
                                 st.startswith("rescue")
-                                and r["family"] == "adaptive"
+                                and r["family"] == "mica"
                                 and r["point"] in ("eta0.0003", "eta0.001")
                             )
                         ],
@@ -171,7 +171,7 @@ def overhead(pool):
                         if entry.get(f)
                         else None
                     )
-                    for f in ("adaptive", "periodic")
+                    for f in ("mica", "periodic")
                 },
                 flush=True,
             )
@@ -189,7 +189,7 @@ def noise(pool):
         for arm, (scheme, kw) in ARMS.items():
             if arm == "exact" and not st.startswith("rescue"):
                 continue
-            b = select(rows, st, "adaptive", metric, target, arm=arm)
+            b = select(rows, st, "mica", metric, target, arm=arm)
             if b is None:
                 res[f"{st}/{arm}"] = None
                 continue
@@ -220,7 +220,7 @@ def shared(pool):
         metric, target = reference(st)
         c = cfg.with_(shared_budget=bud, symbols_per_slot=bud)
         entry = {"target": target, "metric": metric}
-        for fam in ("adaptive", "periodic"):
+        for fam in ("mica", "periodic"):
             b = select(rows, st, fam, metric, target)
             if b is None:
                 entry[fam] = None
@@ -237,7 +237,7 @@ def shared(pool):
                     if entry.get(f)
                     else None
                 )
-                for f in ("adaptive", "periodic")
+                for f in ("mica", "periodic")
             },
             flush=True,
         )

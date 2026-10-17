@@ -1,4 +1,4 @@
-"""Belief-divergence value (adaptive_tv) in the K=10 and clustered search settings, which
+"""Belief-divergence value (mica_tv) in the K=10 and clustered search settings, which
 the "where does ToM matter" experiment of the main evaluation did not include.  Same
 price grid as the frontier experiment for this value, evaluation seeds 0-99; results go to
 results/belief_divergence.jsonl.  The matched-budget comparison then reuses the
@@ -19,16 +19,16 @@ from mosaic_comm.paths import FIGURES_DIR, RESULTS_DIR
 OUT = RESULTS_DIR / "belief_divergence.jsonl"
 RES = RESULTS_DIR
 FIG = FIGURES_DIR
-ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)  # frontier grid for adaptive_tv
+ETAS_TV = (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)  # frontier grid for mica_tv
 
 
 def jobs():
     b = Config()
     out = []
     for e in ETAS_TV:
-        out.append(("adaptive_tv", f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
+        out.append(("mica_tv", f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
         out.append(
-            ("adaptive_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
+            ("mica_tv", f"clustered/eta{e}", b.with_(victim_layout="clustered", energy_price=e))
         )
     return out
 
@@ -69,7 +69,7 @@ def fill_table():
     for W in ("K10", "clustered"):
         st = matched(curves, W)
         for B, row in st.items():
-            v = row.get("adaptive_tv")
+            v = row.get("mica_tv")
             cells[(W, B)] = "--" if not v else f"{v['diff']:+.1f} [{v['lo']:+.1f}, {v['hi']:+.1f}]"
     path = os.path.join(FIG, "table_values.tex")
     lines = open(path).read().splitlines()

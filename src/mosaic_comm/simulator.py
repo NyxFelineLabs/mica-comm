@@ -409,7 +409,7 @@ def run_episode(cfg: Config, scheme: str, seed: int, record_traj: bool = False) 
 
 def main():
     ap = argparse.ArgumentParser(description="Run one search-and-rescue episode.")
-    ap.add_argument("--scheme", default="adaptive", choices=sorted(SCHEMES))
+    ap.add_argument("--scheme", default="mica", choices=sorted(SCHEMES))
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--snr", type=float, default=Config.snr_ref_db)
     ap.add_argument("--symbols", type=int, default=Config.symbols_per_slot)

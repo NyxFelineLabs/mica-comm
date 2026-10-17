@@ -8,7 +8,7 @@ model exactly (tests/test_realistic.py):
     uplink + downlink cost account (broadcast, HARQ feedback, grants);
   * a shared, network-wide uplink budget for which the agents compete.
 
-Shared mode (Config.shared_budget = B > 0): adaptive agents apply the decoupled rule at a
+Shared mode (Config.shared_budget = B > 0): MICA agents apply the decoupled rule at a
 broadcast network price and request their selection; periodic/FIFO baselines send a
 buffer status report and receive max-min fair grants.  Requests are counted as uplink
 control bits (1 bit per channel use) and grants as downlink control bits.
@@ -23,9 +23,9 @@ from .messages import Packet, confirm_bits, evidence_sizes, intent_bits
 from .schemes import (
     PRIORITY,
     SCHEMES,
-    AdaptiveScheduler,
     Genie,
     Group,
+    MicaScheduler,
     NaturalLanguage,
     Option,
     RawShare,
@@ -43,10 +43,10 @@ from .voi import TeamModel
 
 
 # --------------------------------------------------------------------------
-# Adaptive scheduling with overhead and imperfect message values
+# MICA scheduling with overhead and imperfect message values
 # --------------------------------------------------------------------------
-class ResourceAwareScheduler(AdaptiveScheduler):
-    """Adaptive scheduling with packet overhead, imperfect values, and shared budgets."""
+class ResourceAwareMicaScheduler(MicaScheduler):
+    """MICA scheduling with packet overhead, imperfect values, and shared budgets."""
 
     def __init__(self, cfg, channel, **kw):
         super().__init__(cfg, channel, **kw)
@@ -331,15 +331,15 @@ REALISTIC_SCHEMES = {
     "sem_ra": XSemRA,
     "sem_raf": XSemRAF,
     "sem_ras": XSemRAS,
-    "adaptive": lambda cfg, ch: ResourceAwareScheduler(cfg, ch),
-    "adaptive_bits": lambda cfg, ch: ResourceAwareScheduler(
-        cfg, ch, voi_mode="bits", name="adaptive_bits"
+    "mica": lambda cfg, ch: ResourceAwareMicaScheduler(cfg, ch),
+    "mica_bits": lambda cfg, ch: ResourceAwareMicaScheduler(
+        cfg, ch, voi_mode="bits", name="mica_bits"
     ),
-    "adaptive_aoi": lambda cfg, ch: ResourceAwareScheduler(
-        cfg, ch, voi_mode="aoi", name="adaptive_aoi"
+    "mica_aoi": lambda cfg, ch: ResourceAwareMicaScheduler(
+        cfg, ch, voi_mode="aoi", name="mica_aoi"
     ),
-    "adaptive_nofilter": lambda cfg, ch: ResourceAwareScheduler(
-        cfg, ch, use_filter=False, name="adaptive_nofilter"
+    "mica_nofilter": lambda cfg, ch: ResourceAwareMicaScheduler(
+        cfg, ch, use_filter=False, name="mica_nofilter"
     ),
     "genie": XGenie,
 }
@@ -347,7 +347,7 @@ REALISTIC_SCHEMES = {
 
 def hull_size(options, eta):
     """Number of options that maximize value - lambda * symbols (and are positive)
-    for some lambda >= eta, i.e. what an adaptive agent reports to the base station."""
+    for some lambda >= eta, i.e. the options reported by MICA agents to the base station."""
     lams = {eta}
     for i, o in enumerate(options):
         if o.symbols > 0:
@@ -417,7 +417,7 @@ class RealisticSimulation(Simulation):
     def phase_communicate(self, t):
         cfg = self.cfg
         if not cfg.shared_budget or not isinstance(
-            self.scheme, (ResourceAwareScheduler, FifoRealistic)
+            self.scheme, (ResourceAwareMicaScheduler, FifoRealistic)
         ):
             return super().phase_communicate(t)
         links = []
@@ -425,11 +425,11 @@ class RealisticSimulation(Simulation):
             snr_mean = self.channel.mean_snr(a.pos)
             snr_inst = snr_mean * self.chan_rng.exponential()
             links.append((a, snr_inst if cfg.csit else snr_mean, snr_inst))
-        if isinstance(self.scheme, ResourceAwareScheduler):
+        if isinstance(self.scheme, ResourceAwareMicaScheduler):
             results = (
-                self._uplink_adaptive(t, links)
+                self._uplink_mica(t, links)
                 if cfg.shared_mode == "central"
-                else self._uplink_adaptive_price(t, links)
+                else self._uplink_mica_price(t, links)
             )
         else:
             results = self._uplink_fifo(t, links)
@@ -453,7 +453,7 @@ class RealisticSimulation(Simulation):
             return True
         return False
 
-    def _uplink_adaptive(self, t, links):
+    def _uplink_mica(self, t, links):
         cfg, sch = self.cfg, self.scheme
         groups = []
         for a, known, _ in links:
@@ -479,8 +479,8 @@ class RealisticSimulation(Simulation):
             results.append((a, res))
         return results
 
-    def _uplink_adaptive_price(self, t, links):
-        """Coordinate adaptive agents using a broadcast network price mu
+    def _uplink_mica_price(self, t, links):
+        """Coordinate MICA agents using a broadcast network price mu
         (the multiplier of the shared budget); each agent selects its messages and
         rates with the decoupled rule at price eta + mu and requests the total channel
         uses with the value density of its selection (16 bits); the base station

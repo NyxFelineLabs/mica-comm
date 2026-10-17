@@ -1,6 +1,8 @@
-﻿# Architecture
+# Architecture
 
-MOSAIC-Comm has one simulation path and a thin experiment layer.
+MOSAIC-Comm has one simulation path and a thin experiment layer. It implements
+MICA (Multiagent Information Coordination Architecture), which coordinates
+message selection, task-value estimation, and transmission-rate allocation.
 
 ```text
 Config
@@ -21,16 +23,16 @@ Config
 - `agent.py` and `llm_agent.py`: classical and Ollama-backed intention planners.
 - `channel.py` and `messages.py`: fading link, packet errors, and bit accounting.
 - `schemes.py`: semantic and conventional communication policies.
-- `joint.py`: joint evidence/intent valuation through `JointAdaptiveScheduler`.
+- `joint.py`: joint evidence/intent valuation through `JointMicaScheduler`.
 - `simulator.py`: one mission's sense, plan, transmit, fuse, broadcast, and move loop.
 - `realistic.py`: packet overhead, imperfect valuation, and shared uplink extensions.
 
 `run_episode` is the stable programmatic entry point. It accepts a `Config`, a
 scheme name, and a seed, and returns JSON-serializable mission metrics.
 
-The default policy ID is `adaptive`, implemented by `AdaptiveScheduler`.
-`JointAdaptiveScheduler` extends it with joint valuation, while
-`ResourceAwareScheduler` adds packet overhead, imperfect values, and shared
+The default policy ID is `mica`, implemented by `MicaScheduler`.
+`JointMicaScheduler` extends it with joint valuation, while
+`ResourceAwareMicaScheduler` adds packet overhead, imperfect values, and shared
 budgets. Policy factories are registered in `SCHEMES` and `REALISTIC_SCHEMES`.
 
 Experiment output paths are centralized in `mosaic_comm.paths`. `results/` and

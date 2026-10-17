@@ -1,6 +1,6 @@
 """Exact joint message, grouping and rate selection (set-valued scheduling).
 
-Independent valuation (AdaptiveScheduler) scores each message by its own value.  Here the
+Independent valuation (MicaScheduler) scores each message by its own value.  Here the
 scheduler scores the *set of messages the receiver obtains*: for an intention I
 and an evidence prefix E it uses V({E}), V({I}) and the joint value V({E, I})
 from the same theory-of-mind team model, so interactions between the two are
@@ -19,14 +19,14 @@ import math
 import numpy as np
 
 from .messages import HEADER_BITS, Packet, confirm_bits, evidence_sizes, intent_bits
-from .schemes import AdaptiveScheduler, TxResult
+from .schemes import MicaScheduler, TxResult
 from .voi import TeamModel
 
 
-class JointAdaptiveScheduler(AdaptiveScheduler):
+class JointMicaScheduler(MicaScheduler):
     """Exact set-valued scheduler used to test joint message valuation."""
 
-    name = "adaptive_joint"
+    name = "mica_joint"
 
     def __init__(self, cfg, channel, bundle=True, name=None):
         super().__init__(cfg, channel, name=name)

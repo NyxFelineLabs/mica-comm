@@ -1,6 +1,6 @@
 """How well do value estimates predict the real effect of a message?
 
-At sampled decision points of AdaptiveScheduler missions (after sensing and planning, before the
+At sampled decision points of MicaScheduler missions (after sensing and planning, before the
 uplink), each candidate message m of one agent (evidence E, intention I, or both EI)
 is delivered instantly in a copy of the simulation, and compared with delivering
 nothing (the sender stays silent in that slot in every branch).
@@ -141,7 +141,7 @@ def rollout(sim, reseed):
 def point(args):
     seed, t0, reps = args
     cfg = Config()
-    sim = Simulation(cfg, "adaptive", seed)
+    sim = Simulation(cfg, "mica", seed)
     sim._start()
     for t in range(t0):
         sim.phase_decide(t)

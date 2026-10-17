@@ -31,11 +31,11 @@ def test_fbl_matches_outage_for_long_packets_and_gap_hurts():
 
 
 def test_fbl_mission_runs():
-    out = run_episode(Config().with_(error_model="fbl", max_steps=60), "adaptive", 0)
+    out = run_episode(Config().with_(error_model="fbl", max_steps=60), "mica", 0)
     assert out["bits"] > 0
 
 
-@pytest.mark.parametrize("scheme", ["adaptive", "sem", "genie"])
+@pytest.mark.parametrize("scheme", ["mica", "sem", "genie"])
 def test_lossy_downlink_bookkeeping(scheme):
     """With a lossy/delayed broadcast, each agent's private residual equals its own
     evidence that is NOT represented in its last received snapshot, i.e. evidence
@@ -82,7 +82,7 @@ def test_delivered_messages_are_not_resent_under_delay():
     """Reliable HARQ acknowledgments: a delivered intent/confirmation is not re-sent
     while the delayed broadcast is still on its way."""
     cfg = Config().with_(dl_delay=5, max_steps=80)
-    sim = Simulation(cfg, "adaptive", seed=1)
+    sim = Simulation(cfg, "mica", seed=1)
     sent = []
     orig = sim.deliver
 
@@ -106,8 +106,8 @@ def test_delivered_messages_are_not_resent_under_delay():
 
 
 def test_ideal_downlink_matches_default():
-    a = run_episode(Config().with_(max_steps=80), "adaptive", 7)
-    b = run_episode(Config().with_(max_steps=80, dl_loss=0.0, dl_delay=0), "adaptive", 7)
+    a = run_episode(Config().with_(max_steps=80), "mica", 7)
+    b = run_episode(Config().with_(max_steps=80, dl_loss=0.0, dl_delay=0), "mica", 7)
     assert a == b
 
 
@@ -119,18 +119,14 @@ def test_downlink_delay_slows_or_equals_on_average():
     assert slow >= base - 15  # stale common knowledge cannot help much
 
 
-@pytest.mark.parametrize(
-    "scheme", ["adaptive_nofilter", "adaptive_bits", "adaptive_aoi", "sem_agg"]
-)
+@pytest.mark.parametrize("scheme", ["mica_nofilter", "mica_bits", "mica_aoi", "sem_agg"])
 def test_new_schemes_complete_easy_mission(scheme):
     out = run_episode(Config().with_(n_victims=2, snr_ref_db=20, sem_interval=4), scheme, 0)
     assert out["found"] == 2
 
 
 def test_oracle_teammate_model_runs():
-    out = run_episode(
-        Config().with_(tom_oracle=True, log_private=True, max_steps=60), "adaptive", 1
-    )
+    out = run_episode(Config().with_(tom_oracle=True, log_private=True, max_steps=60), "mica", 1)
     assert out["private_tv"] >= 0
 
 
@@ -148,7 +144,7 @@ def exact_select(groups, budget, price):
 
 
 def test_lagrangian_close_to_exact_on_logged_instances():
-    sim = Simulation(Config().with_(symbols_per_slot=50, max_steps=60), "adaptive", 2)
+    sim = Simulation(Config().with_(symbols_per_slot=50, max_steps=60), "mica", 2)
     sim.scheme.log = []
     sim.run()
     gaps = []

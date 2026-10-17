@@ -20,13 +20,13 @@ ALL = [
     "raw",
     "nl",
     "sem",
-    "adaptive_nouep",
-    "adaptive_novoi",
-    "adaptive_tv",
-    "adaptive",
+    "mica_nouep",
+    "mica_novoi",
+    "mica_tv",
+    "mica",
     "genie",
 ]
-MAIN = ["report", "raw", "nl", "sem", "adaptive", "genie"]
+MAIN = ["report", "raw", "nl", "sem", "mica", "genie"]
 OUT = RESULTS_DIR
 
 
@@ -46,11 +46,11 @@ def experiments(n_seeds):
         ],
         "agents": [(s, v, base.with_(n_agents=v), n_seeds) for v in (2, 4, 6, 8, 10) for s in MAIN],
         "pareto": [
-            ("adaptive", v, base.with_(energy_price=v), n_seeds)
+            ("mica", v, base.with_(energy_price=v), n_seeds)
             for v in (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3)
         ],
         "pareto_tv": [
-            ("adaptive_tv", v, base.with_(energy_price=v), n_seeds)
+            ("mica_tv", v, base.with_(energy_price=v), n_seeds)
             for v in (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2)
         ],
     }
@@ -83,7 +83,7 @@ def main():
             json.dump({"config": Config().__dict__, "rows": rows}, f)
         print(f"{name}: {len(rows)} episodes in {time.time() - t0:.0f}s", flush=True)
     # one recorded episode for the trajectory illustration
-    traj = {s: run_episode(Config(), s, 0, record_traj=True) for s in ("sem", "adaptive")}
+    traj = {s: run_episode(Config(), s, 0, record_traj=True) for s in ("sem", "mica")}
     with open(os.path.join(OUT, "trajectories.json"), "w") as f:
         json.dump(
             {

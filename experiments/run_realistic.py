@@ -5,11 +5,11 @@ seeds 0-99).
 
   noise     imperfect semantic values: log-normal errors, order-of-magnitude values,
             content-independent (permuted) values, with and without the relevance
-            filter; AdaptiveScheduler's price is swept in every setting
+            filter; MicaScheduler's price is swept in every setting
   shared    a network-wide uplink budget B shared by all agents (K=6): price-
-            coordinated AdaptiveScheduler vs the periodic family with max-min fair grants
+            coordinated MicaScheduler vs the periodic family with max-min fair grants
   overhead  a fixed per-packet overhead of 16/32/64 bits on every uplink packet, for
-            AdaptiveScheduler and the full periodic family in the six evaluation settings
+            MicaScheduler and the full periodic family in the six evaluation settings
 
 Every mission is appended to results/<name>.jsonl (the run can be resumed).
 """
@@ -53,13 +53,13 @@ PERIODIC = (
     + [("sem_ras", k, th) for k in (1, 2, 4, 8) for th in THETAS]
 )
 ARMS = {  # value-estimation arms of the noise experiment
-    "exact": ("adaptive", {}),  # rescue only (search: identical main-evaluation runs)
-    "ln0.5": ("adaptive", dict(value_mode="lognormal", value_sigma=0.5)),
-    "ln1": ("adaptive", dict(value_mode="lognormal", value_sigma=1.0)),
-    "ln2": ("adaptive", dict(value_mode="lognormal", value_sigma=2.0)),
-    "quant": ("adaptive", dict(value_mode="quantized")),
-    "perm": ("adaptive", dict(value_mode="permuted")),
-    "perm_nofilter": ("adaptive_nofilter", dict(value_mode="permuted")),
+    "exact": ("mica", {}),  # rescue only (search: identical main-evaluation runs)
+    "ln0.5": ("mica", dict(value_mode="lognormal", value_sigma=0.5)),
+    "ln1": ("mica", dict(value_mode="lognormal", value_sigma=1.0)),
+    "ln2": ("mica", dict(value_mode="lognormal", value_sigma=2.0)),
+    "quant": ("mica", dict(value_mode="quantized")),
+    "perm": ("mica", dict(value_mode="permuted")),
+    "perm_nofilter": ("mica_nofilter", dict(value_mode="permuted")),
 }
 SHARED = {
     "search-B600": (B, 600),
@@ -117,7 +117,7 @@ def experiments():
                 rows.append(
                     dict(
                         setting=st,
-                        family="adaptive",
+                        family="mica",
                         arm=arm,
                         scheme=scheme,
                         point=f"eta{e}",
@@ -132,8 +132,8 @@ def experiments():
             rows.append(
                 dict(
                     setting=st,
-                    family="adaptive",
-                    scheme="adaptive",
+                    family="mica",
+                    scheme="mica",
                     point=f"eta{e}",
                     cfg=c.with_(energy_price=e),
                 )
@@ -149,8 +149,8 @@ def experiments():
                 rows.append(
                     dict(
                         setting=st,
-                        family="adaptive",
-                        scheme="adaptive",
+                        family="mica",
+                        scheme="mica",
                         point=f"eta{e}",
                         H=H,
                         cfg=c.with_(energy_price=e),

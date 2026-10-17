@@ -40,12 +40,12 @@ def main():
             for line in f:
                 r = json.loads(line)
                 done.add((r["team"], r["scheme"], r["seed"]))
-    schemes = ["sem", "adaptive"] + (["genie"] if args.genie else [])
+    schemes = ["sem", "mica"] + (["genie"] if args.genie else [])
     plan = []
     for i in range(args.seeds):  # interleaved: partial runs stay balanced
         plan += [("mixed_large", s, i) for s in schemes]
         if args.alt_from + i < args.seeds:
-            plan += [("mixed_alt", s, args.alt_from + i) for s in ("sem", "adaptive", "genie")]
+            plan += [("mixed_alt", s, args.alt_from + i) for s in ("sem", "mica", "genie")]
     for team, scheme, seed in plan:
         if (team, scheme, seed) in done or team not in args.teams:
             continue

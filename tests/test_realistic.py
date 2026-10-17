@@ -9,8 +9,8 @@ from mosaic_comm.schemes import Option
 
 KEYS = ("completion_time", "symbols", "bits", "delivered_bits", "dl_symbols", "found")
 SCHEMES = (
-    "adaptive",
-    "adaptive_bits",
+    "mica",
+    "mica_bits",
     "sem",
     "sem_ra",
     "sem_raf",
@@ -31,7 +31,7 @@ def test_reproduces_base(scheme, seed):
     assert {k: a[k] for k in KEYS} == {k: b[k] for k in KEYS}
 
 
-@pytest.mark.parametrize("scheme", ("adaptive", "sem_ra"))
+@pytest.mark.parametrize("scheme", ("mica", "sem_ra"))
 def test_reproduces_base_rescue_w50(scheme):
     kw = dict(task="rescue", deadline_min=60, deadline_max=180, symbols_per_slot=50)
     a = run_episode(Config().with_(**kw), scheme, 3)
@@ -40,7 +40,7 @@ def test_reproduces_base_rescue_w50(scheme):
 
 
 def test_base_regression_episode():
-    o = run_realistic(Config(), "adaptive", 0)
+    o = run_realistic(Config(), "mica", 0)
     assert (o["completion_time"], o["symbols"], o["bits"]) == (122, 13304, 17186)
 
 
@@ -48,25 +48,25 @@ def test_overhead_is_charged():
     base = run_realistic(Config(), "sem_ra", 0)
     oh = run_realistic(Config(overhead_bits=32), "sem_ra", 0)
     assert oh["ul_overhead_bits"] == 32 * oh["ul_tx"]
-    g = run_realistic(Config(overhead_bits=32), "adaptive", 0)
+    g = run_realistic(Config(overhead_bits=32), "mica", 0)
     assert g["bits"] >= 32 * g["ul_tx"] and g["ul_tx"] > 0
     assert base["ul_overhead_bits"] == 0
 
 
 def test_zero_noise_equals_exact():
-    a = run_realistic(Config(), "adaptive", 1)
-    b = run_realistic(Config(value_mode="lognormal", value_sigma=0.0), "adaptive", 1)
+    a = run_realistic(Config(), "mica", 1)
+    b = run_realistic(Config(value_mode="lognormal", value_sigma=0.0), "mica", 1)
     assert a["completion_time"] == b["completion_time"] and a["symbols"] == b["symbols"]
 
 
 def test_noise_changes_decisions_and_is_logged():
-    o = run_realistic(Config(value_mode="lognormal", value_sigma=2.0), "adaptive", 1)
+    o = run_realistic(Config(value_mode="lognormal", value_sigma=2.0), "mica", 1)
     assert "value_pairs" in o and len(o["value_pairs"]) > 10
-    p = run_realistic(Config(value_mode="permuted"), "adaptive", 1)
+    p = run_realistic(Config(value_mode="permuted"), "mica", 1)
     assert p["completed"]
 
 
-@pytest.mark.parametrize("scheme", ("adaptive", "sem_ra"))
+@pytest.mark.parametrize("scheme", ("mica", "sem_ra"))
 def test_shared_budget_respected(scheme):
     from mosaic_comm.realistic import RealisticSimulation
 

@@ -1,4 +1,4 @@
-"""Adaptive message scheduling and conventional communication baselines.
+"""MICA message scheduling and conventional communication baselines.
 
 Every scheme decides, for one agent and one slot, which packets are put on the
 uplink, at which rate, and returns the packets that were decoded by the edge.
@@ -163,7 +163,7 @@ class SemanticPeriodic(FifoScheme):
 
 class SemanticAggregated(FifoScheme):
     """Strong periodic baseline: every `sem_interval` slots, one packet carries the
-    records of the interval with the same lossless aggregated encoding as AdaptiveScheduler,
+    records of the interval with the same lossless aggregated encoding as MicaScheduler,
     plus the current intention; FIFO queue and conventional link adaptation."""
 
     name = "sem_agg"
@@ -182,7 +182,7 @@ class SemanticAggregated(FifoScheme):
 
 
 class SemanticRateAwareFiltered(SemanticAggregated):
-    """Rate-aware periodic scheduler with AdaptiveScheduler's semantic source filter: records that
+    """Rate-aware periodic scheduler with MicaScheduler's semantic source filter: records that
     would move the team belief (given what is already queued) by less than
     filter_eps are not queued.  Isolates the effect of value-priced scheduling."""
 
@@ -231,7 +231,7 @@ class SemanticRateAwareSuppress(SemanticRateAwareFiltered):
     """Information-suppressing periodic baseline (send-on-delta with periodic timing):
     a record is retained only if it would move the team belief (given what is already
     queued) by at least the suppression threshold `filter_eps`, which is swept like
-    AdaptiveScheduler's price.  Every `sem_interval` slots it sends the retained records plus the
+    MicaScheduler's price.  Every `sem_interval` slots it sends the retained records plus the
     intention; with no retained record it sends a short intent-only packet if the
     intention changed, and nothing otherwise.  Goodput-optimal rate, fragmentation."""
 
@@ -288,7 +288,7 @@ class SemanticRateAware(SemanticAggregated):
 
 
 # --------------------------------------------------------------------------
-# Adaptive message selection and rate allocation
+# MICA message selection and rate allocation
 # --------------------------------------------------------------------------
 @dataclass
 class Option:
@@ -355,7 +355,7 @@ def lagrangian_select(groups: List[Group], budget: int, price: float):
 PRIORITY = 1e6  # confirmation value under the non-goal valuation rules (strict priority)
 
 
-class AdaptiveScheduler(Scheme):
+class MicaScheduler(Scheme):
     """Value-of-information scheduling with importance-aware rate selection.
 
     voi_mode selects the valuation rule, all on the same aggregation/transport:
@@ -368,7 +368,7 @@ class AdaptiveScheduler(Scheme):
     use_uep=False restricts every packet to the conventional link-adaptation rate.
     """
 
-    name = "adaptive"
+    name = "mica"
 
     def __init__(
         self, cfg, channel, use_voi=True, use_uep=True, voi_mode="tom", name=None, use_filter=None
@@ -564,7 +564,7 @@ class AdaptiveScheduler(Scheme):
         return res
 
 
-class Genie(AdaptiveScheduler):
+class Genie(MicaScheduler):
     """Ideal reference: every update reaches the team instantly and error-free."""
 
     name = "genie"
@@ -597,9 +597,9 @@ def sim_tasks(sim, agent):
 
 
 def _joint():
-    from .joint import JointAdaptiveScheduler
+    from .joint import JointMicaScheduler
 
-    return JointAdaptiveScheduler
+    return JointMicaScheduler
 
 
 SCHEMES = {
@@ -607,26 +607,18 @@ SCHEMES = {
     "raw": lambda cfg, ch: RawShare(cfg, ch),
     "nl": lambda cfg, ch: NaturalLanguage(cfg, ch),
     "sem": lambda cfg, ch: SemanticPeriodic(cfg, ch),
-    "adaptive": lambda cfg, ch: AdaptiveScheduler(cfg, ch),
-    "adaptive_nouep": lambda cfg, ch: AdaptiveScheduler(
-        cfg, ch, use_uep=False, name="adaptive_nouep"
-    ),
-    "adaptive_novoi": lambda cfg, ch: AdaptiveScheduler(
-        cfg, ch, use_voi=False, name="adaptive_novoi"
-    ),
-    "adaptive_tv": lambda cfg, ch: AdaptiveScheduler(cfg, ch, voi_mode="tv", name="adaptive_tv"),
-    "adaptive_nofilter": lambda cfg, ch: AdaptiveScheduler(
-        cfg, ch, use_filter=False, name="adaptive_nofilter"
-    ),
-    "adaptive_bits": lambda cfg, ch: AdaptiveScheduler(
-        cfg, ch, voi_mode="bits", name="adaptive_bits"
-    ),
-    "adaptive_aoi": lambda cfg, ch: AdaptiveScheduler(cfg, ch, voi_mode="aoi", name="adaptive_aoi"),
+    "mica": lambda cfg, ch: MicaScheduler(cfg, ch),
+    "mica_nouep": lambda cfg, ch: MicaScheduler(cfg, ch, use_uep=False, name="mica_nouep"),
+    "mica_novoi": lambda cfg, ch: MicaScheduler(cfg, ch, use_voi=False, name="mica_novoi"),
+    "mica_tv": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="tv", name="mica_tv"),
+    "mica_nofilter": lambda cfg, ch: MicaScheduler(cfg, ch, use_filter=False, name="mica_nofilter"),
+    "mica_bits": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="bits", name="mica_bits"),
+    "mica_aoi": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="aoi", name="mica_aoi"),
     "sem_agg": lambda cfg, ch: SemanticAggregated(cfg, ch),
     "sem_ra": lambda cfg, ch: SemanticRateAware(cfg, ch),
     "sem_raf": lambda cfg, ch: SemanticRateAwareFiltered(cfg, ch),
     "sem_ras": lambda cfg, ch: SemanticRateAwareSuppress(cfg, ch),
-    "adaptive_joint": lambda cfg, ch: _joint()(cfg, ch),
-    "adaptive_joint_nb": lambda cfg, ch: _joint()(cfg, ch, bundle=False, name="adaptive_joint_nb"),
+    "mica_joint": lambda cfg, ch: _joint()(cfg, ch),
+    "mica_joint_nb": lambda cfg, ch: _joint()(cfg, ch, bundle=False, name="mica_joint_nb"),
     "genie": lambda cfg, ch: Genie(cfg, ch),
 }

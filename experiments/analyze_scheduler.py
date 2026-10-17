@@ -1,6 +1,6 @@
-"""Scheduler optimality gap and VoI additivity on logged AdaptiveScheduler decisions.
+"""Scheduler optimality gap and VoI additivity on logged MicaScheduler decisions.
 
-For every scheduling instance of AdaptiveScheduler missions, compares the Lagrangian + greedy
+For every scheduling instance of MicaScheduler missions, compares the Lagrangian + greedy
 solution of the multiple-choice knapsack with the exact optimum found by
 enumeration, and, whenever an intent and an evidence message compete, compares the
 joint VoI of sending both with the sum of their individual VoIs.
@@ -18,7 +18,7 @@ import numpy as np
 
 from mosaic_comm import Config, Simulation
 from mosaic_comm.paths import RESULTS_DIR
-from mosaic_comm.schemes import AdaptiveScheduler
+from mosaic_comm.schemes import MicaScheduler
 from mosaic_comm.voi import TeamModel
 
 OUT = RESULTS_DIR / "robustness_scheduler.json"
@@ -36,11 +36,11 @@ def exact(groups, budget, price):
 def run(args):
     W, seed = args
     cfg = Config().with_(symbols_per_slot=W)
-    sim = Simulation(cfg, "adaptive", seed)
+    sim = Simulation(cfg, "mica", seed)
     sched = sim.scheme
     sched.log = []
     additivity = []
-    orig = AdaptiveScheduler.build_groups
+    orig = MicaScheduler.build_groups
 
     def build(agent, snr_mean, view):
         groups = orig(sched, agent, snr_mean, view)

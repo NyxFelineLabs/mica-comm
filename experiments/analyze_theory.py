@@ -1,6 +1,6 @@
 """Measure scheduler thresholds, duality bounds, and transmission efficiency.
 
-On logged AdaptiveScheduler scheduling instances (search task, default price, seeds 0-29, W=100
+On logged MicaScheduler scheduling instances (search task, default price, seeds 0-29, W=100
 and W=50, as in the optimality-gap analysis of experiments/analyze_scheduler.py) it measures
   * how often the price alone makes the budget slack (mu* = 0), in which case the
     decoupled Lagrangian solution is exactly optimal;
@@ -84,7 +84,7 @@ def exact(groups, budget, price):
 def run(args):
     W, seed = args
     cfg = Config().with_(symbols_per_slot=W)
-    sim = Simulation(cfg, "adaptive", seed)
+    sim = Simulation(cfg, "mica", seed)
     sched = sim.scheme
     sched.log = []
     rates_ps = {}

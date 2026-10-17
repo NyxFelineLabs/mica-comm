@@ -5,7 +5,7 @@ The deterministic simulator does not need an LLM or a network connection.
 ```bash
 python -m pip install -e ".[dev]"
 python -m pytest -q
-python -m mosaic_comm.simulator --scheme adaptive --seed 0
+python -m mosaic_comm.simulator --scheme mica --seed 0
 python -m experiments.run_all --only default --seeds 2
 ```
 
@@ -43,7 +43,7 @@ Keep the same seed set and `Config` values for every policy. The simulator uses
 common random numbers: a seed fixes the world, launch positions, sensing draws,
 and channel draws shared by policies in that mission.
 
-The default seed-0 `adaptive` mission completes in 122 slots and uses 13,304 uplink
+The default seed-0 `mica` mission completes in 122 slots and uses 13,304 uplink
 symbols. Use these values as a software regression check.
 
 Report completion rate, completion slots, uplink symbols, and rescue outcomes as
@@ -64,7 +64,7 @@ Keep previous runs in a separate directory and give new campaigns their own
 output directory, for example:
 
 ```bash
-export MOSAIC_RESULTS_DIR="$PWD/results/adaptive-evaluation"
-export MOSAIC_FIGURES_DIR="$PWD/figures/adaptive-evaluation"
+export MOSAIC_RESULTS_DIR="$PWD/results/mica-evaluation"
+export MOSAIC_FIGURES_DIR="$PWD/figures/mica-evaluation"
 python -m experiments.run_robustness --only ablation --seeds 2
 ```

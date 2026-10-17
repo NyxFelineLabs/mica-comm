@@ -1,4 +1,4 @@
-﻿# MOSAIC-Comm
+# MOSAIC-Comm
 
 MOSAIC-Comm is an experiment platform for communication and collaboration in
 heterogeneous agent teams. Search-and-rescue missions combine local sensing,
@@ -7,6 +7,11 @@ shared beliefs, wireless links, and optional LLM planners.
 Use it to develop communication policies, compare model backends, and measure
 task outcomes under limited bandwidth. The package includes deterministic
 simulation, baseline policies, ablations, and analysis tools.
+
+The communication framework is **MICA** (**M**ultiagent **I**nformation
+**C**oordination **A**rchitecture). MOSAIC-Comm is the software project; MICA is
+the framework name used in publications, documentation, and figure labels. Its
+command-line policy ID is `mica`.
 
 ## Quick start
 
@@ -21,7 +26,7 @@ python -m venv .venv
 Run one deterministic mission:
 
 ```bash
-.venv/bin/python -m mosaic_comm.simulator --scheme adaptive --seed 0
+.venv/bin/python -m mosaic_comm.simulator --scheme mica --seed 0
 ```
 
 On Windows, use `.venv\Scripts\python.exe` in the same commands. The package
@@ -32,17 +37,17 @@ available to the experiment scripts.
 
 | Policy ID | Behavior |
 | --- | --- |
-| `adaptive` | Select messages and transmission rates using estimated task value |
-| `adaptive_tv` | Score messages by their effect on the shared belief |
-| `adaptive_bits` | Score messages by payload size |
-| `adaptive_aoi` | Score messages by information freshness |
-| `adaptive_joint` | Value evidence and intent together |
+| `mica` | Select messages and transmission rates using estimated task value |
+| `mica_tv` | Score messages by their effect on the shared belief |
+| `mica_bits` | Score messages by payload size |
+| `mica_aoi` | Score messages by information freshness |
+| `mica_joint` | Value evidence and intent together |
 | `sem`, `sem_agg` | Periodic semantic reporting, with optional aggregation |
 | `sem_ra`, `sem_raf`, `sem_ras` | Rate-aware periodic reporting and filtering variants |
 | `raw`, `nl`, `report` | Raw-data, text-message, and confirmation-only baselines |
 | `genie` | Ideal delivery reference |
 
-`adaptive_nofilter`, `adaptive_novoi`, `adaptive_nouep`, and `adaptive_joint_nb`
+`mica_nofilter`, `mica_novoi`, `mica_nouep`, and `mica_joint_nb`
 disable source filtering, task valuation, importance-aware rate selection, and
 joint bundling, respectively. List all available IDs with
 `python -m mosaic_comm.simulator --help`.

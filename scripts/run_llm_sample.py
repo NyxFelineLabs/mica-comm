@@ -16,7 +16,7 @@ def main():
     ap.add_argument(
         "--seeds", type=int, default=1, help="number of consecutive seeds starting at --seed"
     )
-    ap.add_argument("--schemes", nargs="+", default=["sem", "adaptive"])
+    ap.add_argument("--schemes", nargs="+", default=["sem", "mica"])
     ap.add_argument(
         "--planner", action="store_true", help="run the planner-only reference with the same seeds"
     )

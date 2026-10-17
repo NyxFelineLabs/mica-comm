@@ -18,10 +18,10 @@ from mosaic_comm.paths import RESULTS_DIR
 OUT = RESULTS_DIR
 
 ETAS = {
-    "adaptive": (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3),
-    "adaptive_tv": (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2),
-    "adaptive_bits": (0.0, 0.1, 0.3, 1.0, 2.0, 3.0, 4.0),
-    "adaptive_aoi": (0.0, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0),
+    "mica": (0.0, 3e-6, 1e-5, 3e-5, 1e-4, 3e-4, 1e-3),
+    "mica_tv": (0.0, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2),
+    "mica_bits": (0.0, 0.1, 0.3, 1.0, 2.0, 3.0, 4.0),
+    "mica_aoi": (0.0, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0),
 }
 
 
@@ -41,16 +41,16 @@ def experiments():
         (s, f"W{W}", b.with_(symbols_per_slot=W))
         for W in (100, 50)
         for s in (
-            "adaptive",
-            "adaptive_nofilter",
-            "adaptive_bits",
-            "adaptive_novoi",
-            "adaptive_nouep",
+            "mica",
+            "mica_nofilter",
+            "mica_bits",
+            "mica_novoi",
+            "mica_nouep",
         )
     ]
     ex["private"] = [
         (
-            "adaptive",
+            "mica",
             f"{name}/{'oracle' if o else 'shared'}",
             cfg.with_(tom_oracle=o, log_private=True),
         )
@@ -62,7 +62,7 @@ def experiments():
         for o in (False, True)
     ]
     dl = []
-    for s in ("sem", "adaptive", "genie"):
+    for s in ("sem", "mica", "genie"):
         for p in (0.0, 0.1, 0.3, 0.5):
             dl.append((s, f"loss{p}", b.with_(dl_loss=p)))
         for d in (1, 3, 5, 10):
@@ -72,10 +72,10 @@ def experiments():
         (s, f"gap{g}/snr{v}", b.with_(error_model="fbl", code_gap_db=g, snr_ref_db=v))
         for g in (0.0, 2.0)
         for v in (-10, -5, 0, 5, 10, 15, 20)
-        for s in ("raw", "nl", "sem", "adaptive")
+        for s in ("raw", "nl", "sem", "mica")
     ]
     where = []
-    for scheme in ("adaptive", "adaptive_bits", "adaptive_aoi"):
+    for scheme in ("mica", "mica_bits", "mica_aoi"):
         for e in ETAS[scheme]:
             where.append((scheme, f"K10/eta{e}", b.with_(n_agents=10, energy_price=e)))
             where.append(
@@ -97,11 +97,11 @@ def experiments():
         for k in (1, 2, 4, 8, 16):
             resc.append(("sem_ra", f"{name}/k{k}", cfg.with_(sem_interval=k)))
         for e in (0.0, 3e-6, 1e-5, 3e-5, 1e-4):
-            resc.append(("adaptive", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("mica", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for e in (0.0, 0.1, 0.3, 1.0, 2.0):
-            resc.append(("adaptive_bits", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("mica_bits", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for e in (0.0, 0.01, 0.03, 0.1, 0.3):
-            resc.append(("adaptive_aoi", f"{name}/eta{e}", cfg.with_(energy_price=e)))
+            resc.append(("mica_aoi", f"{name}/eta{e}", cfg.with_(energy_price=e)))
         for sch in ("sem", "raw", "nl", "report", "genie"):
             resc.append((sch, f"{name}/ref", cfg))
     ex["rescue"] = resc

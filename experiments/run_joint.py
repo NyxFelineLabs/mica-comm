@@ -30,7 +30,7 @@ def main():
         (s, f"W{W}/eta{e}", b.with_(symbols_per_slot=W, energy_price=e))
         for W in (100, 50)
         for e in (0.0, 1e-5, 3e-5)
-        for s in ("adaptive", "adaptive_joint", "adaptive_joint_nb")
+        for s in ("mica", "mica_joint", "mica_joint_nb")
     ]
     jobs = [(s, p, cfg, seed) for s, p, cfg in rows for seed in range(args.seeds)]
     t0 = time.time()

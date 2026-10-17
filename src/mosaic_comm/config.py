@@ -52,7 +52,7 @@ class Config:
     hysteresis: float = 1.2
     repulsion_sigma: float = 5.0
 
-    # --- adaptive message scheduling ---------------------------------------
+    # --- MICA message scheduling -------------------------------------------
     energy_price: float = 1e-5  # eta: value units per channel use
     confirm_value: float = 5.0  # value of a survivor confirmation
     intent_value: float = 0.5  # value of a fully changed intent

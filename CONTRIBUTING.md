@@ -26,6 +26,7 @@ python -m pytest -q
 - Preserve existing scheme names unless a migration path is documented.
 - Describe policies by their behavior; document module, ID, and result-key changes together.
 - Retain copyright notices and record source attribution in `NOTICE.md`.
+- Use `MICA` for the framework in prose and figures, `mica` in policy IDs, and `Mica` in class names.
 
 Use short comments for non-obvious algorithmic choices. Public classes and
 functions should have docstrings that describe inputs, outputs, and side effects.

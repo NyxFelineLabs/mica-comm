@@ -121,7 +121,7 @@ def test_genie_delivers_everything():
 
 def test_episode_is_deterministic():
     cfg = Config().with_(max_steps=80)
-    assert run_episode(cfg, "adaptive", 5) == run_episode(cfg, "adaptive", 5)
+    assert run_episode(cfg, "mica", 5) == run_episode(cfg, "mica", 5)
 
 
 def test_all_schemes_complete_easy_mission():

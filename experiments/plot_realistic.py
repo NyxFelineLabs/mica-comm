@@ -146,9 +146,9 @@ def noise():
         pm = np.array(jv[st]["periodic"]["metric_per_seed"])
         for arm in ARM_ORDER:
             if arm == "exact" and v.get(f"{st}/exact") is None:
-                g = np.array(jv[st]["adaptive"]["ksym_per_seed"]) * 1e3
-                gm = np.array(jv[st]["adaptive"]["metric_per_seed"])
-                pt = jv[st]["adaptive"]["point"].split("/", 1)[1]
+                g = np.array(jv[st]["mica"]["ksym_per_seed"]) * 1e3
+                gm = np.array(jv[st]["mica"]["metric_per_seed"])
+                pt = jv[st]["mica"]["point"].split("/", 1)[1]
             else:
                 e = v.get(f"{st}/{arm}")
                 if e is None:
@@ -226,7 +226,7 @@ def noise():
         "perm.,\nno filt.",
     ]
     ax.set_xticklabels([f"{t}\n$\\rho$={rho[a]:.2f}" for t, a in zip(ticks, ARM_ORDER)], fontsize=6)
-    ax.set_ylabel("Channel uses, periodic / adaptive")
+    ax.set_ylabel("Channel uses, periodic / MICA")
     ax.set_xlabel("Value estimate (accuracy decreases to the right)")
     ax.legend(frameon=False, fontsize=5.8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.22))
     fig.tight_layout()
@@ -243,20 +243,20 @@ def overhead():
         for H in (0, 16, 32, 64):
             e = v[f"{st}/H{H}"]
             metric, target = e["metric"], e["target"]
-            if e.get("adaptive") and not e.get("periodic"):
-                gm = np.array(e["adaptive"][metric], float)
+            if e.get("mica") and not e.get("periodic"):
+                gm = np.array(e["mica"][metric], float)
                 res[(st, H)] = {
-                    "only_adaptive": True,
+                    "only_mica": True,
                     "margin_g": margin(metric, gm, target),
                     "g_meets": bool(
                         gm.mean() <= target if metric == "completion_time" else gm.mean() >= target
                     ),
                 }
                 continue
-            if not e.get("adaptive") or not e.get("periodic"):
+            if not e.get("mica") or not e.get("periodic"):
                 res[(st, H)] = None
                 continue
-            g, p = e["adaptive"], e["periodic"]
+            g, p = e["mica"], e["periodic"]
             ul = boot_ratio(p["symbols"], g["symbols"])
             tot = boot_ratio(p["total_symbols"], g["total_symbols"])
             gm, pm = np.array(g[metric], float), np.array(p[metric], float)
@@ -282,7 +282,7 @@ def overhead():
     lines = []
     for block, key in (("Uplink", "ul"), ("Uplink + downlink", "tot")):
         lines.append(
-            f"\\multicolumn{{5}}{{@{{}}l}}{{\\emph{{{block} channel uses, periodic / adaptive}}}}\\\\"
+            f"\\multicolumn{{5}}{{@{{}}l}}{{\\emph{{{block} channel uses, periodic / MICA}}}}\\\\"
         )
         for st in EVALUATION_SETTINGS:
             cells = []
@@ -291,8 +291,8 @@ def overhead():
                 if e is None:
                     cells.append("--")
                     continue
-                if e.get("only_adaptive"):
-                    cells.append("only adaptive" + ("" if e["g_meets"] else "$^\\dagger$"))
+                if e.get("only_mica"):
+                    cells.append("only MICA" + ("" if e["g_meets"] else "$^\\dagger$"))
                     continue
                 c = f"{e[key][0]:.2f}\\,{{\\scriptsize[{e[key][1]:.2f}, {e[key][2]:.2f}]}}"
                 if not e["g_meets"]:
@@ -323,7 +323,7 @@ def overhead():
             "sem_ras": "suppressing",
         }[e["periodic"]["scheme"]]
         ent.append((f"Best periodic ({pname})", e["periodic"]))
-        ent.append(("\\textbf{Adaptive}", e["adaptive"]))
+        ent.append(("\\textbf{MICA}", e["mica"]))
         for name, d in ent:
             T = np.mean(d["completion_time"])
             if name.startswith("\\textbf") and T > e["target"]:
@@ -360,13 +360,13 @@ def shared():
         e = v[st]
         metric, target = e["metric"], e["target"]
         sc = 1.0 if metric == "completion_time" else 100.0
-        if not e.get("adaptive") or not e.get("periodic"):
+        if not e.get("mica") or not e.get("periodic"):
             lines.append(
                 f"{nm} & {sc * target:.1f} & \\multicolumn{{8}}{{c}}{{target not reached}} \\\\"
             )
             res[st] = None
             continue
-        g, p = e["adaptive"], e["periodic"]
+        g, p = e["mica"], e["periodic"]
         gul = np.array(g["symbols"], float) + np.array(g["ul_ctrl_symbols"], float)
         pul = np.array(p["symbols"], float) + np.array(p["ul_ctrl_symbols"], float)
         gm, pm = np.array(g[metric], float), np.array(p[metric], float)
@@ -405,14 +405,14 @@ def shared():
                 np.mean([r["completion_time"] for r in rs]),
             )
 
-        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "adaptive" and len(rs) >= 100)
+        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "mica" and len(rs) >= 100)
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
             color="#2a78d6",
             marker="o",
             markersize=3,
-            label="Adaptive, price-coordinated (each $\\eta$)",
+            label="MICA, price-coordinated (each $\\eta$)",
         )
         per = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "periodic" and len(rs) >= 100)
         env, best = [], None
@@ -488,7 +488,7 @@ def shared_column(rows):
                 np.mean([r["completion_time"] for r in rs]),
             )
 
-        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "adaptive" and len(rs) >= 100)
+        g = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "mica" and len(rs) >= 100)
         per = sorted(xy(rs) for (f, s, p), rs in tab.items() if f == "periodic" and len(rs) >= 100)
         env, best = [], None
         for a, b in per:
@@ -502,7 +502,7 @@ def shared_column(rows):
             marker="o",
             markersize=2.5,
             linewidth=1.0,
-            label="Adaptive ($\\eta$ swept)",
+            label="MICA ($\\eta$ swept)",
         )
         ax.plot(
             [a for a, _ in env],
@@ -558,20 +558,18 @@ def llm():
         for r in rows:
             if r["team"] == team:
                 by.setdefault(r["scheme"], {})[r["seed"]] = r
-        seeds = sorted(set(by.get("sem", {})) & set(by.get("adaptive", {})))
+        seeds = sorted(set(by.get("sem", {})) & set(by.get("mica", {})))
         if not seeds:
             continue
         s = np.array([by["sem"][i]["completion_time"] for i in seeds], float)
-        g = np.array([by["adaptive"][i]["completion_time"] for i in seeds], float)
+        g = np.array([by["mica"][i]["completion_time"] for i in seeds], float)
         ys = np.array([by["sem"][i]["symbols"] for i in seeds], float)
-        yg = np.array([by["adaptive"][i]["symbols"] for i in seeds], float)
+        yg = np.array([by["mica"][i]["symbols"] for i in seeds], float)
         d = boot_mean(s - g)
         rt = boot_ratio(ys, yg)
         o = {"n": len(seeds), "dT": d, "ratio": rt}
         gen = [by["genie"][i]["completion_time"] for i in seeds if i in by.get("genie", {})]
-        agree = [
-            by[sc][i] for sc in ("sem", "adaptive") for i in seeds if "llm_decisions" in by[sc][i]
-        ]
+        agree = [by[sc][i] for sc in ("sem", "mica") for i in seeds if "llm_decisions" in by[sc][i]]
         if agree:
             o["agree"] = sum(r["llm_agree"] for r in agree) / sum(r["llm_decisions"] for r in agree)
             o["fallbacks"] = sum(r["llm_fallbacks"] for r in agree)
@@ -585,7 +583,7 @@ def llm():
             f"{ys.mean() / 1e3:.1f} & \\multirow{{2}}{{*}}{{{fs(d)}}} & \\multirow{{2}}{{*}}{{{rt[0]:.2f}}}\\\\"
         )
         lines.append(
-            f" & \\textbf{{Adaptive}} & {ci(g)[0]:.1f} $\\pm$ {ci(g)[1]:.1f} & {yg.mean() / 1e3:.1f} & & \\\\"
+            f" & \\textbf{{MICA}} & {ci(g)[0]:.1f} $\\pm$ {ci(g)[1]:.1f} & {yg.mean() / 1e3:.1f} & & \\\\"
         )
         if len(gen) == len(seeds):
             lines.append(f" & Genie & {ci(gen)[0]:.1f} $\\pm$ {ci(gen)[1]:.1f} & -- & & \\\\")
@@ -598,18 +596,18 @@ def llm():
     for r in rows:
         by.setdefault((r["team"], r["scheme"]), {})[r["seed"]] = r["completion_time"]
     for team in ("mixed", "mixed_alt", "mixed_large"):
-        if team not in out or (team, "adaptive") not in by:
+        if team not in out or (team, "mica") not in by:
             continue
         seeds = sorted(
             set(by[(team, "sem")])
-            & set(by[(team, "adaptive")])
+            & set(by[(team, "mica")])
             & set(by[("planner", "sem")])
-            & set(by[("planner", "adaptive")])
+            & set(by[("planner", "mica")])
         )
         x = np.array(
             [
                 (by[(team, "sem")][i] - by[("planner", "sem")][i])
-                - (by[(team, "adaptive")][i] - by[("planner", "adaptive")][i])
+                - (by[(team, "mica")][i] - by[("planner", "mica")][i])
                 for i in seeds
             ],
             float,
