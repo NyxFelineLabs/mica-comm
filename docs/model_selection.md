@@ -3,17 +3,33 @@
 ## Recommendation
 
 Keep **Qwen3 8B, Llama 3.1 8B, and Gemma 3 12B** for the current main study.
-Describe them as **three model families with different measured inference
-costs and team behaviours**. Parameter counts of 8B/8B/12B do not define a
-low/medium/high intelligence ladder. This choice keeps the existing experiment
-intact and tests whether communication conclusions transfer across backends.
+Describe them as **two approximately 8B backends and one larger approximately
+12B backend, across three families**. Their sizes do not define a low/medium/high
+intelligence ladder. This is a backend-robustness study: both family and size
+change in the Gemma comparison, so a pure model-family effect is not identified.
+Model quality and resource efficiency require separate measurements.
 
-For development on the RTX 3090, use Llama 3.1 8B as a provisional primary
-backend: its MICA mission mean is between the other two and its observed
-server time per request is lower than Gemma's. Keep Qwen3 as the cheaper
-inference alternative and Gemma as the larger-model validation backend.
-These are practical roles for this workload, not established quality tiers.
-No configuration defaults or model tags are changed by the plotting refactor.
+The exact positioning, checked against the installed Ollama `/api/show` metadata
+on 2026-10-18, is:
+
+| Installed tag | Main GGUF parameter count | Transformer blocks | Quantization | Experimental role |
+| --- | ---: | ---: | --- | --- |
+| `llama3.1:8b` | 8,030,261,312 (8.030B) | 32 | Q4_K_M | Approximately 8B comparison backend |
+| `qwen3:8b` | 8,190,735,360 (8.191B) | 36 | Q4_K_M | Approximately 8B comparison backend; thinking disabled |
+| `gemma3:12b` | 11,765,792,256 (11.766B) | 48 | Q4_K_M | Larger backend for validation across size and family |
+
+Qwen has about 2.0% more parameters than Llama. Gemma has about 46.5% more
+than Llama and 43.6% more than Qwen. Counts describe the main GGUF model;
+Gemma's separate vision projector is not added to this table, and the current
+task uses text only. Disk size, parameter count, runtime VRAM and latency are
+different quantities. Matching Q4_K_M labels does not equalize the architectures
+or runtime costs. In particular, Qwen is not the smallest model in this set.
+
+Do not assign Qwen a generic cheap/low-resource label, or designate Llama the
+primary scientific backend based on these twelve test seeds. Report all three.
+The lower observed Qwen request duration below is a workload-specific timing
+observation, not its experimental role. No configuration defaults or model tags
+are changed by this analysis.
 
 ## What the current evidence says
 
@@ -58,8 +74,9 @@ shared information. The present data identify this interaction pattern, but
 do not isolate its mechanism.
 
 Qwen3's reasoning is disabled (`think: false`) under the shared 12-output-token
-budget. These results describe that constrained mode. Gemma has 12B parameters
-and an actual 2048-token context allocation, versus 8B and 1024 for the others;
+budget. These results describe that constrained mode. Gemma has approximately
+11.77B parameters and an actual 2048-token context allocation, versus roughly
+8B and 1024 for the others;
 all prompts fit. Neither model-family effects nor parameter efficiency can be
 isolated by this comparison.
 
