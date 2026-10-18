@@ -85,6 +85,7 @@ print(result["completion_time"], result["symbols"])
 | 基线小规模检查 | `python -m experiments.run_all --only default --seeds 2` |
 | 通信模块消融 | `python -m experiments.run_robustness --only ablation --seeds 2` |
 | 三模型团队主实验 | `python -m experiments.run_team_benchmark --seeds 12` |
+| 重绘完整 17 张图 | `python -m experiments.plot_suite --input results/restored_suite` |
 | 重新生成主实验图表 | `python -m experiments.plot_team_benchmark --input docs/data/team_benchmark` |
 | 传统规划器的队友行为校准 | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM 团队的队友行为校准 | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
@@ -136,12 +137,21 @@ figures/    生成的分析图表
 实验协议与结果表格见 [三模型团队实验](docs/team_benchmark.md)。
 缓存回放耗时不能作为在线推理加速的证据。
 
-![任务与通信开销实测结果](docs/assets/mission_outcomes.png)
+![任务与通信开销实测结果](docs/assets/team_benchmark/mission_outcomes.png)
 
 浅色点为逐任务观测，大标记和误差线为 12 个种子的均值与 95% bootstrap 区间。
 三个后端用于验证模型家族差异，不预设低、中、高能力等级。
 模型间的配对比较及后续搭配建议见 [模型选择](docs/model_selection.md)，
 可编辑图表、公开源数据和复绘方法见 [科研绘图](docs/figures.md)。
+
+## 完整实验图集
+
+[查看全部 17 张 PDF](docs/assets/figure_suite/README.md)，涵盖团队规模、预算、SNR、
+资源前沿、鲁棒性、共享预算和轨迹。这批图由历史实验记录重绘；上方三模型表格
+来自我们单独运行的实测任务。数据导入与复绘方法见 [绘图说明](docs/figures.md)，
+本地完整预览入口为 `figures/index.html`。
+
+![SNR 与通信资源](docs/assets/figure_suite/fig_snr_pair.png)
 
 ## 项目结构
 

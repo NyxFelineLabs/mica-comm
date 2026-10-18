@@ -33,7 +33,7 @@ are changed by this analysis.
 
 ## What the current evidence says
 
-![Paired model contrasts](assets/model_contrasts.png)
+![Paired model contrasts](assets/team_benchmark/model_contrasts.png)
 
 Each entry averages twelve default-scene missions. Lower slots are better.
 

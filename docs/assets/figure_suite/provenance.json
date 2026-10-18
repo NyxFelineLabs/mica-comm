@@ -1,0 +1,365 @@
+{
+  "input_provenance": {
+    "kind": "historical-figure-restoration",
+    "origin": "Existing experiment records accompanying the reference figure suite",
+    "fresh_inference": false,
+    "changes": "rev_ filenames become robustness_; method token translated to mica; numeric observations unchanged",
+    "files": [
+      {
+        "source_name": "agents.json",
+        "imported_name": "agents.json",
+        "records": 3000,
+        "source_sha256": "107120de3d9ad1aafd2ce8f1cf54af23ae2b4460d7af0bfe707865681d5b48e2",
+        "imported_sha256": "0e4ff4d1f2dc3d22ebcd3e045c6405fa3a497933d9f40c8b5ae812037697273d"
+      },
+      {
+        "source_name": "budget.json",
+        "imported_name": "budget.json",
+        "records": 3000,
+        "source_sha256": "d7c816e99a0670ab638b5eb7c73047e83c68f83c089c0193c09ebcbda07ac78b",
+        "imported_sha256": "e29d73c5f97e96042fba9d9853d6498da9238a2f2c58133c51a88a88521fbf25"
+      },
+      {
+        "source_name": "default.json",
+        "imported_name": "default.json",
+        "records": 900,
+        "source_sha256": "5c677722a08ecf537c3d8edd78dadf8a9ffa3ee5673100b41d916d9658314066",
+        "imported_sha256": "fecd2e9e995e7ef1d1dcd0e8f67b994ea9d198488cf3282b19cf38b1c6f88292"
+      },
+      {
+        "source_name": "pareto.json",
+        "imported_name": "pareto.json",
+        "records": 700,
+        "source_sha256": "b3a173d5655d7887663aa2c68a1708cf7c89c71ae998511bd16c76feb29a6a9d",
+        "imported_sha256": "9fe9a1cd55a493b0b11568b79f83889189ef13ae9e79c40da48e5f8cb33565f4"
+      },
+      {
+        "source_name": "pareto_tv.json",
+        "imported_name": "pareto_tv.json",
+        "records": 700,
+        "source_sha256": "efb7c732269183aef12a0294f732f6c80c73b57d3c38821d09fd2e380ee37ce5",
+        "imported_sha256": "4ae19124b304fe7ad0786b6e7b443266e40923b20300e82a7e57235d7d1aca5b"
+      },
+      {
+        "source_name": "snr.json",
+        "imported_name": "snr.json",
+        "records": 4200,
+        "source_sha256": "3f18237e4de1152119084d8d8f804dabedc9e56b5adb683e2cae0fe1d331bc53",
+        "imported_sha256": "4bb9250e7bfe85c6bebb6e6e98be3f9c681e10c5bd2f3d09cb4dd6cbdbea58a5"
+      },
+      {
+        "source_name": "trajectories.json",
+        "imported_name": "trajectories.json",
+        "records": null,
+        "source_sha256": "5b03e889bc418aeee8852c368855c1b24a945554839139b1eba879cf4d4761f6",
+        "imported_sha256": "fc96b5ca7a44821a0f0c2f50dbc266d7e53ddb4e6a4e49771902131574fdc635"
+      },
+      {
+        "source_name": "theory.json",
+        "imported_name": "theory.json",
+        "records": null,
+        "source_sha256": "9724276df6a11504b3506d1d904d9e793869ddbfbfdc91eaadbe72dd21074558",
+        "imported_sha256": "a35c8663a30a43a179c8ef1c6b4ffc50f722030b33aa81711571a1a7900b920f"
+      },
+      {
+        "source_name": "validate_noise.json",
+        "imported_name": "validate_noise.json",
+        "records": null,
+        "source_sha256": "1a0541fa36cea7ed21da32305300228cd0e0c280001bdcd13cbd5591b464a206",
+        "imported_sha256": "293823c2717b19a458d05941bb205b22c5a8fc91f6919de20598d2e91158b93e"
+      },
+      {
+        "source_name": "validate_overhead.json",
+        "imported_name": "validate_overhead.json",
+        "records": null,
+        "source_sha256": "0cd50d5e449f4f0ea93f80166bcbd43f33c00b781d1144cfb8761fc7f30ef9de",
+        "imported_sha256": "b31c3126a5919441c41a28eb3fa08d8a5eb5d566b1dc5f83c27ae1d175b7a4e0"
+      },
+      {
+        "source_name": "validate_shared.json",
+        "imported_name": "validate_shared.json",
+        "records": null,
+        "source_sha256": "2e8488de6c8276b37bda961ee9b449bba0aab34470f7d27c3341344417ed59fe",
+        "imported_sha256": "8ed6310dbe35e404717a87c41072348c7d4827d70cd8642e4edb118745051341"
+      },
+      {
+        "source_name": "rev_ablation.json",
+        "imported_name": "robustness_ablation.json",
+        "records": 1000,
+        "source_sha256": "5df61e54b151b03f9e50afd7811dd8770dd8842cf22680cf6e140fac647a0412",
+        "imported_sha256": "82d574ab595f74c00becb5f85117e2503652836a465e290e290b63af892f36d9"
+      },
+      {
+        "source_name": "rev_downlink.json",
+        "imported_name": "robustness_downlink.json",
+        "records": 2400,
+        "source_sha256": "7e70a128942a4215f685fabbc415a8f0b7fd76df5ef3041ba6d2b93fd8ef846b",
+        "imported_sha256": "479fd2d4ecf16d5429ed69d71a94364e171d34ea6f636ca35b1715d5d3793c98"
+      },
+      {
+        "source_name": "rev_fbl.json",
+        "imported_name": "robustness_fbl.json",
+        "records": 5600,
+        "source_sha256": "c34cffd72c782e43ae82ae400a8efddbbe341b4df78b3772e505729db7336a54",
+        "imported_sha256": "1acdec318af893ed95e163f8c108755df0c67a1d44a81c4648f95c053909c5d7"
+      },
+      {
+        "source_name": "rev_fidelity_analysis.json",
+        "imported_name": "robustness_fidelity_analysis.json",
+        "records": null,
+        "source_sha256": "d65cb8f06fdb8950835f01af6238fec7e0be36187312b5e07a80de72b8698084",
+        "imported_sha256": "ef0c2c2104958e554e3f9498241ef28c6218563fc34fa24c884dc8280e883976"
+      },
+      {
+        "source_name": "rev_filtered_periodic.json",
+        "imported_name": "robustness_filtered_periodic.json",
+        "records": 3500,
+        "source_sha256": "86569d1bed0017767f7371fb16f70331ea9557b20f6f4741ca40ab3cda9481a2",
+        "imported_sha256": "36a4c6ac1707e505d6696b1256c46e39b8c74698c5bfd47a0085c87bb632d114"
+      },
+      {
+        "source_name": "rev_frontier.json",
+        "imported_name": "robustness_frontier.json",
+        "records": 6800,
+        "source_sha256": "4c16e142322e66dd69ad22daa2121378e78de40bc0023294e6c2570150ef4302",
+        "imported_sha256": "7844dfeff0cdad1a8d334a7a6de7bbd75b0392961dd5e25de06a0209b1cd0fc8"
+      },
+      {
+        "source_name": "rev_genie_ref.json",
+        "imported_name": "robustness_genie_ref.json",
+        "records": 300,
+        "source_sha256": "b53d3bc0f4e3a3e245bcb3d5a6493bdef36c387fb0a592910b0ab328c8bbeec6",
+        "imported_sha256": "3ed22c1f42325d7c544ab18f7c70f0e6e2a5986d00ee371f40691123f922375f"
+      },
+      {
+        "source_name": "rev_joint.json",
+        "imported_name": "robustness_joint.json",
+        "records": 1800,
+        "source_sha256": "ee3d5d44c8ffa2588080f43827ac6e7e4b59d586f3b3b72030f9810b547d9115",
+        "imported_sha256": "0c43f3e4b030e0bf013234e0f6f8faa96470ce352902647d9c83fd912e61a25e"
+      },
+      {
+        "source_name": "rev_private.json",
+        "imported_name": "robustness_private.json",
+        "records": 600,
+        "source_sha256": "55833a23af5032eea9c9c2f890fc9ecea4ccfbec35d0875cdca6da2765772487",
+        "imported_sha256": "c01c279ef22efca5d4d2120487d6f4f2bad966d8b9a19af876a61f1b1e957091"
+      },
+      {
+        "source_name": "rev_rate_aware.json",
+        "imported_name": "robustness_rate_aware.json",
+        "records": 1600,
+        "source_sha256": "d83904de38f035e50994d9331c6aac3d9297f21c9f7b749e1029cc53d007b560",
+        "imported_sha256": "37169718efd8c03329a2b85aa9b1e902fbefa14590a9ec4d481f0c8d6056de24"
+      },
+      {
+        "source_name": "rev_rescue.json",
+        "imported_name": "robustness_rescue.json",
+        "records": 7500,
+        "source_sha256": "a9c0e4b4bf2ae873262426a2fda5939936c78e95ae7753aab206ba844dddc4af",
+        "imported_sha256": "b5cfadd1257465b8ca43bb916d31b89c3ef00e6bc03496770d7c53209370d92d"
+      },
+      {
+        "source_name": "rev_scheduler.json",
+        "imported_name": "robustness_scheduler.json",
+        "records": null,
+        "source_sha256": "c72dd56b7a95a2956b32d9e8188999f56f772e8c4650c1282ddec1bd9c3bf51b",
+        "imported_sha256": "6768f09c6b16396f51913d752836a034e42006f47f73316d0e36cdfdb79d79d0"
+      },
+      {
+        "source_name": "rev_suppress_periodic.json",
+        "imported_name": "robustness_suppress_periodic.json",
+        "records": 19600,
+        "source_sha256": "f6e2be65cb098dac8c41a7ac9c72210058554d1cdac5a960e5a05ea94e3f0a95",
+        "imported_sha256": "cf3ad56f9048c1795178d0a35ec5880caa491e89fad42a4df385356080e46649"
+      },
+      {
+        "source_name": "rev_validation.json",
+        "imported_name": "robustness_validation.json",
+        "records": null,
+        "source_sha256": "fa251d355b0d50fa8092e2b67a7f7d310c6f632c39c55ab4cedca8f95e92039f",
+        "imported_sha256": "f5c52efad73f969ba3d99a8463203a6901fe1d60182a2208d123c50de7c0d110"
+      },
+      {
+        "source_name": "rev_value_fidelity.json",
+        "imported_name": "robustness_value_fidelity.json",
+        "records": null,
+        "source_sha256": "333088e4624ad0d69d60eccc6223eac82a6b2a8e3f65383958c5a32ad578752c",
+        "imported_sha256": "4c0767d3dedb9e94bf2e00df016a6502cb64f84ad298545f5a353b53d0ca004a"
+      },
+      {
+        "source_name": "rev_where_tom.json",
+        "imported_name": "robustness_where_tom.json",
+        "records": 5000,
+        "source_sha256": "ecc68ae52ba3683ab06c0a9e7ac75c42cc766dc619990ba8d6e971f25670e734",
+        "imported_sha256": "b4f423893074329330160f40612cf40333c62672ea782005456812cec2f69efe"
+      },
+      {
+        "source_name": "noise.jsonl",
+        "imported_name": "noise.jsonl",
+        "records": 23975,
+        "source_sha256": "131ca5e5b34246c2e2a1810983ac6d36a31306688455b0d1cf4d84382ff27457",
+        "imported_sha256": "34a2aefc8f2374a9d96f343470a060bf7e57ff5e4502e34845b6739fc23339e7"
+      },
+      {
+        "source_name": "overhead.jsonl",
+        "imported_name": "overhead.jsonl",
+        "records": 82600,
+        "source_sha256": "e8fd9f6fa5d3fd2c4987a7c81b00b2af7679dffca3abee18ab44dfe763365ea5",
+        "imported_sha256": "298a657ce2b59e48c670f52aa5f487f6516eea2ed000835bc522da0220f71f3d"
+      },
+      {
+        "source_name": "shared.jsonl",
+        "imported_name": "shared.jsonl",
+        "records": 18400,
+        "source_sha256": "ae7c6a32d3a735ed2dfbb7e93cb77287d959ef3558576f5c963147e61ad1e25f",
+        "imported_sha256": "6bfbefc3ca89b5f22775a90b8c31553ee3c98378810ef403c764506291936c9b"
+      }
+    ]
+  },
+  "inputs": {
+    "agents.json": "0e4ff4d1f2dc3d22ebcd3e045c6405fa3a497933d9f40c8b5ae812037697273d",
+    "budget.json": "e29d73c5f97e96042fba9d9853d6498da9238a2f2c58133c51a88a88521fbf25",
+    "default.json": "fecd2e9e995e7ef1d1dcd0e8f67b994ea9d198488cf3282b19cf38b1c6f88292",
+    "noise.jsonl": "34a2aefc8f2374a9d96f343470a060bf7e57ff5e4502e34845b6739fc23339e7",
+    "pareto.json": "9fe9a1cd55a493b0b11568b79f83889189ef13ae9e79c40da48e5f8cb33565f4",
+    "pareto_tv.json": "4ae19124b304fe7ad0786b6e7b443266e40923b20300e82a7e57235d7d1aca5b",
+    "robustness_downlink.json": "479fd2d4ecf16d5429ed69d71a94364e171d34ea6f636ca35b1715d5d3793c98",
+    "robustness_fbl.json": "1acdec318af893ed95e163f8c108755df0c67a1d44a81c4648f95c053909c5d7",
+    "robustness_filtered_periodic.json": "36a4c6ac1707e505d6696b1256c46e39b8c74698c5bfd47a0085c87bb632d114",
+    "robustness_frontier.json": "7844dfeff0cdad1a8d334a7a6de7bbd75b0392961dd5e25de06a0209b1cd0fc8",
+    "robustness_genie_ref.json": "3ed22c1f42325d7c544ab18f7c70f0e6e2a5986d00ee371f40691123f922375f",
+    "robustness_rate_aware.json": "37169718efd8c03329a2b85aa9b1e902fbefa14590a9ec4d481f0c8d6056de24",
+    "robustness_rescue.json": "b5cfadd1257465b8ca43bb916d31b89c3ef00e6bc03496770d7c53209370d92d",
+    "robustness_suppress_periodic.json": "cf3ad56f9048c1795178d0a35ec5880caa491e89fad42a4df385356080e46649",
+    "robustness_validation.json": "f5c52efad73f969ba3d99a8463203a6901fe1d60182a2208d123c50de7c0d110",
+    "robustness_where_tom.json": "b4f423893074329330160f40612cf40333c62672ea782005456812cec2f69efe",
+    "shared.jsonl": "6bfbefc3ca89b5f22775a90b8c31553ee3c98378810ef403c764506291936c9b",
+    "snr.json": "4bb9250e7bfe85c6bebb6e6e98be3f9c681e10c5bd2f3d09cb4dd6cbdbea58a5",
+    "trajectories.json": "fc96b5ca7a44821a0f0c2f50dbc266d7e53ddb4e6a4e49771902131574fdc635",
+    "validate_noise.json": "293823c2717b19a458d05941bb205b22c5a8fc91f6919de20598d2e91158b93e",
+    "validate_shared.json": "8ed6310dbe35e404717a87c41072348c7d4827d70cd8642e4edb118745051341"
+  },
+  "figures": {
+    "fig_agents": {
+      "title": "Team-size sweep",
+      "inputs": [
+        "agents.json"
+      ]
+    },
+    "fig_budget": {
+      "title": "Per-agent communication budget",
+      "inputs": [
+        "budget.json"
+      ]
+    },
+    "fig_curve": {
+      "title": "Search progress over time",
+      "inputs": [
+        "default.json"
+      ]
+    },
+    "fig_downlink": {
+      "title": "Downlink loss and delay",
+      "inputs": [
+        "robustness_downlink.json"
+      ]
+    },
+    "fig_efficiency": {
+      "title": "Task performance versus uplink resources",
+      "inputs": [
+        "robustness_frontier.json",
+        "robustness_rate_aware.json",
+        "robustness_rescue.json",
+        "robustness_filtered_periodic.json",
+        "robustness_suppress_periodic.json",
+        "robustness_genie_ref.json"
+      ]
+    },
+    "fig_fbl": {
+      "title": "Finite-blocklength channel model",
+      "inputs": [
+        "robustness_fbl.json"
+      ]
+    },
+    "fig_frontier": {
+      "title": "Value-rule resource frontiers",
+      "inputs": [
+        "robustness_frontier.json"
+      ]
+    },
+    "fig_noise": {
+      "title": "Sensitivity to value-estimation errors",
+      "inputs": [
+        "validate_noise.json",
+        "robustness_validation.json",
+        "noise.jsonl",
+        "robustness_genie_ref.json",
+        "robustness_rescue.json"
+      ]
+    },
+    "fig_pareto": {
+      "title": "Communication price trade-off",
+      "inputs": [
+        "pareto.json",
+        "pareto_tv.json",
+        "default.json"
+      ]
+    },
+    "fig_rescue": {
+      "title": "Rescue success versus uplink resources",
+      "inputs": [
+        "robustness_rescue.json",
+        "robustness_filtered_periodic.json",
+        "robustness_suppress_periodic.json"
+      ]
+    },
+    "fig_shared_col": {
+      "title": "Shared-budget frontiers, single column",
+      "inputs": [
+        "shared.jsonl",
+        "robustness_genie_ref.json",
+        "robustness_rescue.json"
+      ]
+    },
+    "fig_shared": {
+      "title": "Shared-budget frontiers",
+      "inputs": [
+        "validate_shared.json",
+        "shared.jsonl",
+        "robustness_genie_ref.json",
+        "robustness_rescue.json"
+      ]
+    },
+    "fig_snr_pair": {
+      "title": "SNR: task performance and channel use",
+      "inputs": [
+        "snr.json"
+      ]
+    },
+    "fig_snr_sym": {
+      "title": "SNR: channel use",
+      "inputs": [
+        "snr.json"
+      ]
+    },
+    "fig_snr": {
+      "title": "SNR: task performance",
+      "inputs": [
+        "snr.json"
+      ]
+    },
+    "fig_traj": {
+      "title": "Example agent trajectories",
+      "inputs": [
+        "trajectories.json"
+      ]
+    },
+    "fig_where_tom": {
+      "title": "Larger teams and clustered survivors",
+      "inputs": [
+        "robustness_where_tom.json"
+      ]
+    }
+  }
+}

@@ -22,6 +22,7 @@ from mica_comm.paths import FIGURES_DIR as FIG
 from mica_comm.paths import RESULTS_DIR
 
 RES = RESULTS_DIR
+TABLES = FIG / "tables"
 NB = 4000
 MACROS = {}
 
@@ -182,11 +183,11 @@ def noise():
         lines.append(f"{ARM_NAMES[arm]} & {r:.2f} & " + " & ".join(cells) + " \\\\")
         if arm == "exact":
             lines.append("\\midrule")
-    with open(os.path.join(FIG, "table_noise.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_noise.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     # figure
-    fig, ax = plt.subplots(figsize=(W1, 2.9))
-    cols = ["#0F4D92", "#42949E", "#9A4D8E", "#B64342", "#9A4D8E", "#767676"]
+    fig, ax = plt.subplots(figsize=(4.6, 3.0))
+    cols = ["#2a78d6", "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#eb6834"]
     mks = ["o", "s", "D", "^", "v", "P"]
     xs = np.arange(len(ARM_ORDER))
     for st, col, mk in zip(EVALUATION_SETTINGS, cols, mks):
@@ -213,19 +214,19 @@ def noise():
                 markerfacecolor=col if m else "white",
                 markeredgewidth=1.0,
             )
-    ax.axhline(1.0, color="#B64342", linestyle="--", linewidth=0.8)
+    ax.axhline(1.0, color="#7a7974", linestyle="--", linewidth=0.8)
     ax.set_yscale("log")
     ax.set_xticks(xs)
     ticks = [
         "exact",
         "$\\sigma$=0.5",
         "$\\sigma$=1",
-        "$10^{k}$",
+        "Decade",
         "$\\sigma$=2",
         "perm.",
         "perm.,\nno filt.",
     ]
-    ax.set_xticklabels([f"{t}\n$\\rho$={rho[a]:.2f}" for t, a in zip(ticks, ARM_ORDER)], fontsize=6)
+    ax.set_xticklabels([f"{t}\nρ={rho[a]:.2f}" for t, a in zip(ticks, ARM_ORDER)], fontsize=7)
     ax.set_ylabel("Channel uses, periodic / MICA")
     ax.set_xlabel("Value estimate (accuracy decreases to the right)")
     ax.legend(frameon=False, fontsize=5.8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.22))
@@ -303,7 +304,7 @@ def overhead():
             lines.append(f"\\quad {NAMES[st]} & " + " & ".join(cells) + " \\\\")
         if key == "ul":
             lines.append("\\midrule")
-    with open(os.path.join(FIG, "table_overhead.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_overhead.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     # cost breakdown, search default, fresh seeds
     lines = []
@@ -338,7 +339,7 @@ def overhead():
             )
             if name.startswith("\\textbf") and H == 0:
                 lines.append("\\midrule")
-    with open(os.path.join(FIG, "table_cost.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_cost.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return res, v
 
@@ -389,7 +390,7 @@ def shared():
         )
         if st == "search-B150":
             lines.append("\\midrule")
-    with open(os.path.join(FIG, "table_shared.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_shared.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     # figure: search frontiers under shared budgets (uplink data + control)
     fig, axes = plt.subplots(1, 3, figsize=(W2, 2.3), sharey=True)
@@ -409,7 +410,7 @@ def shared():
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
-            color="#0F4D92",
+            color="#2a78d6",
             marker="o",
             markersize=3,
             label="MICA, price-coordinated (each $\\eta$)",
@@ -425,14 +426,14 @@ def shared():
             [b for _, b in per],
             linestyle="none",
             marker=".",
-            color="#767676",
+            color="#eb6834",
             alpha=0.35,
             markersize=3,
         )
         ax.plot(
             [a for a, _ in env],
             [b for _, b in env],
-            color="#767676",
+            color="#eb6834",
             marker="s",
             markersize=3,
             label="Periodic family, best envelope (fair grants)",
@@ -443,14 +444,14 @@ def shared():
                 [sem[0][0]],
                 [sem[0][1]],
                 marker="D",
-                color="#9A4D8E",
+                color="#eda100",
                 linestyle="none",
                 label="Semantic periodic, every slot",
             )
         metric, target = reference(st)
         ax.axhline(
             target,
-            color="#B64342",
+            color="#7a7974",
             linestyle=":",
             linewidth=0.8,
             label="Target $1.25\\,T_{\\mathrm{g}}$",
@@ -474,8 +475,8 @@ def shared():
 
 
 def shared_column(rows):
-    """Single-column version of the shared-budget frontiers."""
-    fig, axes = plt.subplots(1, 3, figsize=(W1, 1.85), sharey=True)
+    """Single-column frontiers, stacked to keep axes and labels readable."""
+    fig, axes = plt.subplots(3, 1, figsize=(W1, 5.8), sharex=True, sharey=True)
     for ax, st in zip(axes, ("search-B600", "search-B300", "search-B150")):
         tab = {}
         for r in rows:
@@ -498,7 +499,7 @@ def shared_column(rows):
         ax.plot(
             [a for a, _ in g],
             [b for _, b in g],
-            color="#0F4D92",
+            color="#2a78d6",
             marker="o",
             markersize=2.5,
             linewidth=1.0,
@@ -507,7 +508,7 @@ def shared_column(rows):
         ax.plot(
             [a for a, _ in env],
             [b for _, b in env],
-            color="#767676",
+            color="#eb6834",
             marker="s",
             markersize=2.5,
             linewidth=1.0,
@@ -515,7 +516,7 @@ def shared_column(rows):
         )
         ax.axhline(
             reference(st)[1],
-            color="#B64342",
+            color="#7a7974",
             linestyle=":",
             linewidth=0.8,
             label="Target $1.25\\,T_{\\mathrm{g}}$",
@@ -525,14 +526,14 @@ def shared_column(rows):
         ax.set_xticklabels(["1", "3", "10", "30"], fontsize=6)
         ax.minorticks_off()
         ax.tick_params(axis="y", labelsize=6)
-        ax.set_title(f"$B={st.split('B')[1]}$", fontsize=7)
-    axes[1].set_xlabel("Uplink channel uses ($\\times10^3$)", fontsize=7)
-    axes[0].set_ylabel("Completion time (slots)", fontsize=7)
+        ax.set_title(f"Shared budget B = {st.split('B')[1]}", fontsize=8, loc="left")
+    axes[-1].set_xlabel("Uplink channel uses (×10³)", fontsize=8)
+    axes[1].set_ylabel("Completion time (slots)", fontsize=8)
     h, lb = axes[0].get_legend_handles_labels()
     fig.legend(
         h, lb, frameon=False, fontsize=5.8, ncol=3, loc="lower center", bbox_to_anchor=(0.5, 0.0)
     )
-    fig.tight_layout(rect=(0, 0.1, 1, 1), w_pad=0.4)
+    fig.tight_layout(h_pad=1.2)
     export_figure(fig, os.path.join(FIG, "fig_shared_col.pdf"))
     plt.close(fig)
 
@@ -589,7 +590,7 @@ def llm():
             lines.append(f" & Genie & {ci(gen)[0]:.1f} $\\pm$ {ci(gen)[1]:.1f} & -- & & \\\\")
         lines.append("\\midrule")
     lines = lines[:-1]
-    with open(os.path.join(FIG, "table_llm_extended.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_llm_extended.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     # interaction with the planner team (same seeds): does periodic degrade more?
     by = {}
@@ -659,6 +660,7 @@ def llm():
 @publication_style()
 def main():
     FIG.mkdir(parents=True, exist_ok=True)
+    TABLES.mkdir(parents=True, exist_ok=True)
     summary = {}
     theory()
     for name, fn in (("noise", noise), ("overhead", overhead), ("shared", shared), ("llm", llm)):
@@ -666,7 +668,7 @@ def main():
             summary[name] = fn()
         except FileNotFoundError as e:
             print("skip", name, e)
-    with open(os.path.join(FIG, "numbers.tex"), "w") as f:
+    with open(os.path.join(TABLES, "numbers.tex"), "w") as f:
         for k, v in MACROS.items():
             f.write(f"\\newcommand{{\\{k}}}{{{v}}}\n")
 

@@ -17,7 +17,9 @@ import numpy as np  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
 from experiments.figure_style import (  # noqa: E402
-    STYLE,
+    STYLE as POLICY_STYLE,
+)
+from experiments.figure_style import (  # noqa: E402
     W2,
     export_figure,
     panel_label,
@@ -31,6 +33,10 @@ from experiments.team_analysis import (  # noqa: E402
     write_source_csv,
 )
 from mica_comm.paths import FIGURES_DIR, RESULTS_DIR  # noqa: E402
+
+# Ideal delivery needs a marker in these categorical plots, while line sweeps
+# retain the reference suite's neutral dashed line without repeated markers.
+STYLE = {**POLICY_STYLE, "genie": {**POLICY_STYLE["genie"], "marker": "^"}}
 
 
 def _legend(fig):
@@ -181,17 +187,17 @@ def contrasts(report, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=RESULTS_DIR / "team_benchmark")
-    parser.add_argument("--output", type=Path, default=FIGURES_DIR / "team_benchmark")
+    parser.add_argument("--output", type=Path, default=FIGURES_DIR / "supplemental/team_benchmark")
     parser.add_argument("--scenario", default="default")
     args = parser.parse_args()
     rows, manifests = load_campaign(args.input)
     report = analyze(rows, manifests, args.scenario)
     args.output.mkdir(parents=True, exist_ok=True)
-    write_source_csv(rows, args.output / "source_data.csv")
+    analysis = args.output / "analysis"
+    analysis.mkdir(exist_ok=True)
+    write_source_csv(rows, analysis / "source_data.csv")
     report["manifests"] = manifests
-    (args.output / "statistics.json").write_text(
-        json.dumps(report, indent=2) + "\n", encoding="utf-8"
-    )
+    (analysis / "statistics.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     outcomes(rows, report, args.output)
     contrasts(report, args.output)
     print(f"Rendered {report['rows_selected']}/{report['rows_total']} missions to {args.output}")

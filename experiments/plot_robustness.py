@@ -17,16 +17,17 @@ from experiments.plot import fmt  # noqa: E402
 from mica_comm.paths import FIGURES_DIR as FIG  # noqa: E402
 from mica_comm.paths import RESULTS_DIR as RES  # noqa: E402
 
+TABLES = FIG / "tables"
 RNG = np.random.default_rng(0)
 NBOOT = 4000
 
 RULES = {
-    "mica": dict(color="#0F4D92", marker="o", label="MICA, theory-of-mind value"),
-    "mica_tv": dict(color="#9A4D8E", marker="X", label="Belief-divergence value"),
-    "mica_bits": dict(color="#42949E", marker="P", label="Throughput value (bits)"),
-    "mica_aoi": dict(color="#B64342", marker="v", label="Age-of-information value"),
+    "mica": dict(color="#2a78d6", marker="o", label="MICA, theory-of-mind value"),
+    "mica_tv": dict(color="#4a3aa7", marker="X", label="Belief-divergence value"),
+    "mica_bits": dict(color="#008300", marker="P", label="Throughput value (bits)"),
+    "mica_aoi": dict(color="#e34948", marker="v", label="Age-of-information value"),
     "sem_agg": dict(
-        color="#767676", marker="s", label="Periodic aggregated, interval $k$", linestyle="--"
+        color="#eb6834", marker="s", label="Periodic aggregated, interval $k$", linestyle="--"
     ),
 }
 RULE_NAMES = {
@@ -74,7 +75,7 @@ def fmt_ci(m, lo, hi, d=1):
 
 
 # ------------------------------------------------------------------------------
-def frontier():
+def frontier(*, with_statistics=True):
     tab = table(load("frontier"))
     curves = {}
     for (s, p), rs in tab.items():
@@ -99,14 +100,15 @@ def frontier():
                 [arr(rs, "completion_time").mean()],
                 linestyle="none",
                 marker="D",
-                color="#9A4D8E",
+                color="#eda100",
                 label="Periodic semantic (default setting)",
             )
         ax.set_xscale("log")
         ax.set_title(f"$W={W[1:]}$ channel uses per slot")
         ax.set_xlabel("Channel uses per mission ($\\times 10^3$, log scale)")
-        stats[W] = matched(curves, W)
-        stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
+        if with_statistics:
+            stats[W] = matched(curves, W)
+            stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.05, -0.28))
     export_figure(fig, os.path.join(FIG, "fig_frontier.pdf"))
@@ -212,11 +214,11 @@ def frontier_table(stats):
             )
         if W == "W100":
             lines.append(r"\midrule")
-    with open(os.path.join(FIG, "table_frontier.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_frontier.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
 
 
-def where_tom():
+def where_tom(*, with_statistics=True):
     """Frontiers where a decision-aware value could plausibly matter: a larger team
     (K=10) and clustered survivors."""
     tab = table(load("where_tom"))
@@ -238,12 +240,15 @@ def where_tom():
         ax.set_xscale("log")
         ax.set_title(title)
         ax.set_xlabel("Channel uses per mission ($\\times 10^3$, log scale)")
-        stats[W] = matched(curves, W)
-        stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
+        if with_statistics:
+            stats[W] = matched(curves, W)
+            stats[W]["periodic"] = best_periodic_vs_mica(tab, W)
     axes[0].set_ylabel("Completion time (slots)")
     axes[0].legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(1.05, -0.28))
     export_figure(fig, os.path.join(FIG, "fig_where_tom.pdf"))
     plt.close(fig)
+    if not with_statistics:
+        return stats
     lines = []
     for W, name in (("K10", "$K=10$"), ("clustered", "Clustered")):
         for B, row in stats[W].items():
@@ -263,7 +268,7 @@ def where_tom():
             )
         if W == "K10":
             lines.append(r"\midrule")
-    with open(os.path.join(FIG, "table_where_tom.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_where_tom.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return stats
 
@@ -296,7 +301,7 @@ def ablation():
             lines.append(f"{lab} & {nm} & {fmt(m)} $\\pm$ {fmt(h)} & {fmt(sym, 1)} & {dcell} \\\\")
         if W == "W100":
             lines.append(r"\midrule")
-    with open(os.path.join(FIG, "table_ablation.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_ablation.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return out
 
@@ -323,7 +328,7 @@ def private():
             f"{names[sc]} & {ptv:.2f} & {fmt(ms)} $\\pm$ {fmt(hs)} & {fmt(mo)} $\\pm$ {fmt(ho)} & "
             f"{fmt_ci(*d)} \\\\"
         )
-    with open(os.path.join(FIG, "table_private.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_private.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return out
 
@@ -458,7 +463,7 @@ def rate_aware():
             f"{names[st]} & {best} & {fmt(row['T'])} & {fmt(row['ksym'], 1)} & "
             f"{fmt_ci(*g0['diff'])} & {g0['sym_ratio']:.2f} & {fmt_ci(*g1['diff'])} & {g1['sym_ratio']:.2f} \\\\"
         )
-    with open(os.path.join(FIG, "table_rate_aware.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_rate_aware.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return out
 
@@ -555,7 +560,7 @@ def efficiency(
     return out
 
 
-def rescue():
+def rescue(*, with_statistics=True):
     tab = table(load("rescue"))
     fig, axes = plt.subplots(1, 3, figsize=(W2, 1.85), sharey=True)
     out = {}
@@ -564,7 +569,7 @@ def rescue():
     styles["mica_bits"] = dict(RULES["mica_bits"], label="MICA transport, throughput value")
     styles["mica_aoi"] = dict(RULES["mica_aoi"], label="MICA transport, AoI value")
     styles["sem_ra"] = dict(
-        color="#767676", marker="s", label="Periodic, rate-aware ($k$ swept)", linestyle="none"
+        color="#eb6834", marker="s", label="Periodic, rate-aware ($k$ swept)", linestyle="none"
     )
     ftab = table(load("filtered_periodic"))
     for ax, (st, title) in zip(
@@ -587,7 +592,7 @@ def rescue():
         ax.plot(
             [x for x, _ in env],
             [y for _, y in env],
-            color="#9A4D8E",
+            color="#4a3aa7",
             marker="X",
             linestyle="-",
             label="Periodic, suppressing (best envelope)",
@@ -598,13 +603,13 @@ def rescue():
             [100 * arr(v, "saved_fraction").mean() for _, v in fp],
             linestyle="none",
             marker="D",
-            color="#9A4D8E",
+            color="#eda100",
             label="Periodic, rate-aware + filter ($k$ swept)",
         )
         for r, mk, col in (
-            ("sem", "P", "#9A4D8E"),
-            ("raw", "^", "#42949E"),
-            ("report", "v", "#B64342"),
+            ("sem", "P", "#4a3aa7"),
+            ("raw", "^", "#1baf7a"),
+            ("report", "v", "#e87ba4"),
         ):
             rs = tab[(r, f"{st}/ref")]
             ax.plot(
@@ -618,7 +623,7 @@ def rescue():
         g = tab[("genie", f"{st}/ref")]
         ax.axhline(
             100 * arr(g, "saved_fraction").mean(),
-            color="#B64342",
+            color="#7a7974",
             linestyle="--",
             linewidth=1.0,
             label="Ideal-communication reference (genie)",
@@ -647,11 +652,12 @@ def rescue():
                 for p, rs in _curve(tab, r, st)
             },
         }
-        add_periodic_best(tab, st, "rescue-" + st)
-        for frac in (0.90, 0.95, 1.0):
-            out[st][f"eff_{int(frac * 100)}"] = efficiency(
-                tab, st, "saved_fraction", frac * genie_saved, True
-            )
+        if with_statistics:
+            add_periodic_best(tab, st, "rescue-" + st)
+            for frac in (0.90, 0.95, 1.0):
+                out[st][f"eff_{int(frac * 100)}"] = efficiency(
+                    tab, st, "saved_fraction", frac * genie_saved, True
+                )
     axes[0].set_ylabel("Survivors saved (%)")
     axes[0].legend(
         frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(1.65, -0.28), fontsize=6.5
@@ -701,14 +707,12 @@ def _envelope(pts, metric, higher, scale=1.0):
     return env
 
 
-def efficiency_outputs(summary):
-    """Main-result figure and tables: resource efficiency at matched outcomes."""
-    # ---- figure: search (default) and rescue (default) frontiers
+def efficiency_plot():
+    """Draw search-resource frontiers without recomputing statistical tables."""
     fr = table(load("frontier"))
     ra = table(load("rate_aware"))
-    rs = table(load("rescue"))
     ft = table(load("filtered_periodic"))
-    fig, ax0 = plt.subplots(figsize=(W1, 2.1))
+    fig, ax0 = plt.subplots(figsize=(W1, 2.6))
     panels = (
         (
             ax0,
@@ -737,8 +741,8 @@ def efficiency_outputs(summary):
             st["label"] = lab[r]
             ax.plot(xs[o], ys[o], **st)
         for name, t2, pp, mk, col, lb in (
-            ("sem_ra", ratab, pre, "s", "#767676", "Periodic, rate-aware ($k$ swept)"),
-            ("sem_raf", ft, fpre, "D", "#9A4D8E", "Periodic, rate-aware + filter ($k$ swept)"),
+            ("sem_ra", ratab, pre, "s", "#eb6834", "Periodic, rate-aware ($k$ swept)"),
+            ("sem_raf", ft, fpre, "D", "#eda100", "Periodic, rate-aware + filter ($k$ swept)"),
         ):
             pts = _curve(t2, name, pp)
             xs = np.array([arr(v, "symbols").mean() / 1e3 for _, v in pts])
@@ -751,7 +755,7 @@ def efficiency_outputs(summary):
         ax.plot(
             [x for x, _ in env],
             [y for _, y in env],
-            color="#9A4D8E",
+            color="#4a3aa7",
             marker="X",
             linestyle="-",
             label="Periodic, suppressing (best envelope over $k$, $\\theta$)",
@@ -763,7 +767,7 @@ def efficiency_outputs(summary):
     g = table(load("genie_ref"))[("genie", "W100")]
     ax0.axhline(
         arr(g, "completion_time").mean(),
-        color="#B64342",
+        color="#7a7974",
         linestyle="--",
         linewidth=1.0,
         label="Ideal-communication reference (genie)",
@@ -771,6 +775,12 @@ def efficiency_outputs(summary):
     ax0.legend(frameon=False, ncol=1, loc="upper center", bbox_to_anchor=(0.5, -0.30), fontsize=6.0)
     export_figure(fig, os.path.join(FIG, "fig_efficiency.pdf"))
     plt.close(fig)
+
+
+def efficiency_outputs(summary):
+    """Write the efficiency plot and its associated statistical tables."""
+    efficiency_plot()
+    rs = table(load("rescue"))
 
     # ---- efficiency table
     def cell(e, r):
@@ -832,7 +842,7 @@ def efficiency_outputs(summary):
                 f"{name} & {tgt} & {need(e, 'periodic')} & {need(e, 'mica')} & {cellc(e, 'mica', rs, st)} & "
                 f"{cellc(e, 'mica_bits', rs, st)} \\\\"
             )
-    with open(os.path.join(FIG, "table_efficiency.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_efficiency.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
 
     # ---- value-fidelity table
@@ -871,7 +881,7 @@ def efficiency_outputs(summary):
         a, b, c = f3(cl[f"E/{e}/gt_gain"]), f3(cl[f"E/{e}/dT"]), f3(cl[f"EI/{e}/dT"])
         lines.append(f"{nm} & {a} & {b} & {c} \\\\")
         fid[e] = (a, b, c)
-    with open(os.path.join(FIG, "table_fidelity.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_fidelity.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     fid["n"] = {"E": len(E), "EI": len(EI), "I": sum(1 for r in rows if r["kind"] == "I")}
     fid["changed"] = {
@@ -956,7 +966,7 @@ def validation_table():
         )
         if k == "search-clustered":
             lines.append("\\midrule")
-    with open(os.path.join(FIG, "table_validation.tex"), "w") as fh:
+    with open(os.path.join(TABLES, "table_validation.tex"), "w") as fh:
         fh.write("\n".join(lines) + "\n")
     # fixed operating points for held-out evaluation
     conf = []
@@ -977,7 +987,7 @@ def validation_table():
         ]
         pp = pp.replace("k", "$k{=}").replace("/th", "$, $\\theta{=}") + "$"
         conf.append(f"{nm} & $\\eta={gp}$ & {sch}, {pp} \\\\")
-    with open(os.path.join(FIG, "table_frozen.tex"), "w") as fh:
+    with open(os.path.join(TABLES, "table_frozen.tex"), "w") as fh:
         fh.write("\n".join(conf) + "\n")
     return out
 
@@ -1028,13 +1038,14 @@ def merge_value_tables():
         c = [x.strip() for x in ln.split("&")]
         c[-1] = c[-1].replace(r"\\", "").strip()
         out.append(f"{c[0]} & {c[1]} & {c[2]} & n/e & {c[3]} & {c[4]} " + r"\\")
-    with open(os.path.join(FIG, "table_values.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_values.tex"), "w") as f:
         f.write("\n".join(out) + "\n")
 
 
 @publication_style()
 def main():
     FIG.mkdir(parents=True, exist_ok=True)
+    TABLES.mkdir(parents=True, exist_ok=True)
     summary = {}
     for name, fn in (
         ("frontier", frontier),

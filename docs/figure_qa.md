@@ -1,78 +1,85 @@
-# Figure review — 2026-10-18
+# Figure review - 2026-10-18
 
 ## Scope and provenance
 
-The two benchmark figures were rendered with the existing WSL Python environment
-(matplotlib 3.10.9, NumPy 1.26.4) from all **108 measured missions**: three
-models, three policies and twelve seeds (`8000..8011`). No observations were
-discarded. No LLM inference was rerun for these figures. The public CSV and
-original manifests reproduce the same analysis as the local JSONL records.
-Statistics resample mission seeds 10,000 times with generator seed 5821.
+All **17 primary PDFs** have been rebuilt in the existing WSL environment
+(matplotlib 3.10.9, NumPy 1.26.4). They use the complete historical records
+imported from the existing reference checkout: 30 source files, with numeric
+observations preserved. This restoration performs no new simulation or LLM
+inference. The importer records original and translated SHA256 hashes and
+marks `fresh_inference: false`. See the tracked
+[provenance manifest](assets/figure_suite/provenance.json).
 
-This is an original implementation using style and integrity guidance from
-`nature-figure` at revision `f8797feed6405035e7d57f59cb8ba393c6a98802`.
-Existing scripts receive style/export changes; their analysis estimators are
-preserved. New benchmark contrasts are implemented separately and do not
-replace historical policy-comparison summaries.
+The two three-model benchmark plots remain separate under
+`figures/supplemental/team_benchmark/`. They use our 108 measured missions,
+including all twelve seeds per model/policy cell and zero backend fallbacks.
+Their bootstrap analysis is unchanged. Moving and redrawing these plots does
+not add new observations or establish a general model ranking.
 
-## Evidence and rendered review
+## Visual changes and review
 
-| Figure / panel | Role | Summary / uncertainty | Review |
-| --- | --- | --- | --- |
-| Mission outcomes, a | Establish task performance under three policies | All seed points, means, 95% percentile-bootstrap intervals | All 108 outcomes shown, zero-based axis, canonical model labels, no clipped intervals |
-| Mission outcomes, b | Bound task performance by physical resource use | All applicable seed points, means, same interval definition | All 72 wireless-policy outcomes shown; 36 ideal-delivery costs are inapplicable and explicitly disclosed |
-| Model contrasts | Directly check ranking and policy dependence | Mean paired difference and 95% seed-bootstrap interval | All nine model/policy contrasts shown; sign and exploratory scope stated; intervals include zero |
+The reference PDFs and source plotting routines were inspected before revision.
+All 17 filenames, comparisons, curve coordinates and metric definitions are
+retained. Distinct categorical colours and markers have been restored. Figure
+legends are measured and placed below the axes, away from data. Typography and
+unit labels are consistent; the SNR pair has a wider inter-panel gutter.
+Pareto parameter labels use explicit offsets and leader lines where needed.
+The shared-budget single-column triptych is stacked vertically; the horizontal
+version remains available as `fig_shared.pdf`.
 
-Both complete previews and each panel were visually inspected. Marker shapes
-distinguish policies in addition to colour. Large mean markers intentionally
-overlay the lighter raw observations; no observations are masked by a white
-annotation box. Within-model offsets have no metric meaning.
+The full gallery and individual panels were visually reviewed for curves,
+uncertainty bands, axis labels, parameter labels and legends. Overlapping data
+curves remain where the measurements coincide. No data were jittered to improve
+policy separation. The trajectory example still shows its particular seed's
+outcomes and does not imply that one policy always wins.
 
-Final page dimensions are **183 × 90 mm** for mission outcomes and
-**183 × 85 mm** for model contrasts. PDF text is embedded TrueType; SVG text
-remains editable. PNG previews are 600 dpi. There is no logarithmic transform,
-normalization or interpolation; symbol counts are divided by 1,000 solely for
-axis units. Ideal-delivery resource values remain in source data but are `null`
-in physical-cost summaries.
+Previous local outputs are preserved in `figures/_archive/before-restoration/`;
+unchanged reference PDFs are in `figures/_archive/reference-original/`.
 
-## Automated checks
+## Final checks
 
-The upstream `require_matplotlib_panel_alignment()` ran before export:
-mission outcomes **PASS**, no findings, tolerance 1.5 pt; the single-axis model
-contrast figure was **NOT APPLICABLE**. Measured rectangles and reports remain
-alongside local figures. The repository's lightweight row/column gate also ran.
+- All **17/17 primary PDFs** passed the final PDF text audit. The smallest
+  detected glyph is **5.25 pt**, above the 5 pt floor.
+- All **17/17 primary PDFs** passed collision checks with **zero failures and
+  zero warnings** after the final annotation/layout changes.
+- Final rendered comparable panels passed the upstream alignment gate at
+  **1.5 pt** tolerance. Single-axis figures are marked not applicable.
+- Both supplemental benchmark PDFs passed text and collision checks, with
+  zero collision failures or warnings.
+- All **110 tests** passed, including observation-preserving imports,
+  provenance hashes, key-collision rejection and overwrite prevention.
+  Black and Ruff passed.
 
-Both final PDFs passed the upstream text audit: minimum glyph size **6.5 pt**,
-above the 5 pt floor. Both passed the final PDF collision audit with **zero
-failures and zero warnings**. Audit overlays are diagnostics, not publication
-assets.
+The committed [QA snapshot](assets/figure_suite/qa.json) contains per-PDF
+hashes, glyph sizes, collision summaries and final panel-alignment records.
+Local detailed reports remain in `figures/audit/`. PDFs use TrueType fonts,
+SVG text stays editable and PNG previews use 600 dpi.
 
-Source preflight passed with zero failures after inspecting the shared style
-module and plotting entry point together. Its three warnings were reviewed:
+The combined primary-source preflight reported **16 passes, 5 warnings and no
+failures**. Each warning was reviewed:
 
-- PNG is a preview, while editable PDF/SVG are the primary outputs; no journal
-  TIFF requirement is claimed.
-- The static scanner cannot resolve the export helper's `dpi` dictionary;
-  runtime PNG dimensions confirm the configured 600 dpi.
-- The scanner cannot resolve imported widths; rendered page dimensions and
-  alignment reports confirm 183 mm.
+- Mathtext can shrink glyphs: the final PDF audits establish the actual
+  minimum size; compact unit superscripts use Unicode where appropriate.
+- TIFF is absent: PNG is a preview and PDF/SVG are the vector deliverables.
+- The static scanner cannot resolve the export helper's DPI dictionary:
+  the helper sets 600 dpi for PNG exports.
+- The noise figure uses 116.8 mm width to accommodate its seven conditions.
+  This is intentional; no specific journal width compliance is claimed.
+- Random generators are used for bootstrap statistics, not fabricated data.
+  Every plotted campaign is loaded from explicit result files.
 
-All **106 tests** passed, including new checks for paired model differences,
-missing/duplicate cells, backend fallbacks, incompatible configurations, capped
-failures and identical statistics from the compact source snapshot. Black and
-Ruff passed. A separate smoke check generated eighteen fresh classical
-missions and rendered the legacy completion curve, trajectories and default
-table. The complete robustness/realistic plotting campaigns were not rerun:
-their full current-format input datasets are absent from this checkout.
+These checks follow the Python route of
+[nature-figure](https://github.com/Yuan1z0825/nature-skills/tree/main/skills/nature-figure)
+at revision `f8797feed6405035e7d57f59cb8ba393c6a98802`. Automated geometric
+checks supplement visual review and do not validate scientific conclusions.
 
-## Recheck after changes
+## Recheck
 
 ```bash
 export MICA_FIGURE_AUDIT_SCRIPTS=/path/to/nature-skills/skills/nature-figure/scripts
-python -m experiments.plot_team_benchmark --input docs/data/team_benchmark
+python -m experiments.plot_suite --input results/restored_suite
 python scripts/audit_figures.py --nature-scripts "$MICA_FIGURE_AUDIT_SCRIPTS"
 ```
 
-The audit wrapper builds a non-executable combined source file for file-local
-static inspection; the real entry point still imports the shared module.
-Repeat rendered checks after any layout, text, data or font changes.
+Repeat rendered checks after changing data, layout, text, fonts or annotations.
+The audit wrapper's combined source file is non-executable QA input only.

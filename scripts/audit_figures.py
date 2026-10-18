@@ -15,11 +15,16 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--nature-scripts", required=True, type=Path)
-    parser.add_argument("--source", type=Path, default=ROOT / "experiments/plot_team_benchmark.py")
-    parser.add_argument("--figures", type=Path, default=ROOT / "figures/team_benchmark")
+    parser.add_argument("--source", type=Path, nargs="+")
+    parser.add_argument("--figures", type=Path, default=ROOT / "figures")
     args = parser.parse_args()
-    sources = [ROOT / "experiments/figure_style.py", args.source]
-    combined = args.figures / "source-preflight.py"
+    audit = args.figures / "audit"
+    audit.mkdir(parents=True, exist_ok=True)
+    sources = [ROOT / "experiments/figure_style.py"] + (
+        args.source or [ROOT / "experiments" / name for name in
+                        ("plot.py", "plot_robustness.py", "plot_realistic.py")]
+    )
+    combined = audit / "source-preflight.py"
     combined.write_text(
         "\n".join(
             p.read_text(encoding="utf-8").replace("from __future__ import annotations", "")
@@ -39,9 +44,9 @@ def main():
                     [
                         str(pdf),
                         "--json-out",
-                        str(pdf.with_suffix(".collision-audit.json")),
+                        str(audit / f"{pdf.stem}.collision-audit.json"),
                         "--overlay-pdf",
-                        str(pdf.with_suffix(".collision-audit.pdf")),
+                        str(audit / f"{pdf.stem}.collision-audit.pdf"),
                     ],
                 ),
             ]

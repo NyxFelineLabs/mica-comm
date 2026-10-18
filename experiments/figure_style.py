@@ -13,36 +13,39 @@ from pathlib import Path
 
 import matplotlib as mpl
 
-W1 = 89 / 25.4
-W2 = 183 / 25.4
+W1 = 3.45
+W2 = 7.0
 
 STYLE = {
-    "mica": dict(color="#0F4D92", marker="o", label="MICA"),
-    "sem": dict(color="#767676", marker="s", label="Periodic semantic"),
-    "raw": dict(color="#42949E", marker="^", label="Raw sensor data"),
-    "nl": dict(color="#9A4D8E", marker="D", label="Natural language"),
-    "report": dict(color="#B64342", marker="v", label="Report only"),
-    "mica_novoi": dict(color="#42949E", marker="P", label="MICA w/o VoI"),
-    "mica_tv": dict(color="#9A4D8E", marker="X", label="MICA, belief-div. VoI"),
-    "genie": dict(color="#B64342", marker="^", label="Ideal reference", linestyle="--"),
+    "mica": dict(color="#2a78d6", marker="o", label="MICA"),
+    "sem": dict(color="#eb6834", marker="s", label="Semantic, periodic"),
+    "raw": dict(color="#1baf7a", marker="^", label="Raw sensor data"),
+    "nl": dict(color="#eda100", marker="D", label="Natural language"),
+    "report": dict(color="#e87ba4", marker="v", label="Report only"),
+    "mica_novoi": dict(color="#008300", marker="P", label="MICA w/o VoI"),
+    "mica_tv": dict(color="#4a3aa7", marker="X", label="MICA, belief-div. VoI"),
+    "genie": dict(color="#7a7974", marker="", label="Ideal reference", linestyle="--"),
 }
 
 RCPARAMS = {
     "font.family": "sans-serif",
     "font.sans-serif": ["Arial", "DejaVu Sans", "Liberation Sans"],
-    "font.size": 7,
+    "font.size": 8,
     "axes.titlesize": 8,
-    "axes.labelsize": 7,
-    "legend.fontsize": 6.5,
-    "xtick.labelsize": 6.5,
-    "ytick.labelsize": 6.5,
+    "axes.labelsize": 8,
+    "legend.fontsize": 7,
+    "xtick.labelsize": 7.5,
+    "ytick.labelsize": 7.5,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "axes.linewidth": 0.6,
     "axes.edgecolor": "#4D4D4D",
-    "axes.grid": False,
+    "axes.grid": True,
+    "grid.color": "#e4e3de",
+    "grid.linewidth": 0.5,
+    "axes.axisbelow": True,
     "legend.frameon": False,
-    "lines.linewidth": 1.2,
+    "lines.linewidth": 1.4,
     "lines.markersize": 4,
     "xtick.direction": "out",
     "ytick.direction": "out",
@@ -71,6 +74,75 @@ def panel_label(ax, label):
         fontweight="bold",
         annotation_clip=False,
     )
+
+
+def _readable_legend(fig):
+    """Keep the original comparisons and place one legend below the plot area.
+
+    Measure the actual legend width rather than assuming a fixed column count
+    fits. Descriptive method names are retained in the surrounding figure guide.
+    """
+    aliases = {
+        "Ideal-communication reference (genie)": "Ideal communication",
+        "Ideal reference": "Ideal communication",
+        "MICA, theory-of-mind value": "MICA (ToM value)",
+        "MICA transport, throughput value": "Throughput value",
+        "MICA transport, AoI value": "Age-of-information value",
+        "Belief-divergence value": "Belief-divergence value",
+        "Periodic aggregated, interval $k$": "Periodic aggregated ($k$ swept)",
+        "Periodic semantic (default setting)": "Semantic periodic (default)",
+        "Periodic, rate-aware ($k$ swept)": "Periodic, rate-aware",
+        "Periodic, rate-aware + filter ($k$ swept)": "Periodic, rate-aware + filter",
+        "Periodic, suppressing (best envelope over $k$, $\\theta$)": "Periodic, suppressing envelope",
+        "Periodic, suppressing (best envelope)": "Periodic, suppressing envelope",
+        "MICA, price-coordinated (each $\\eta$)": "MICA (price swept)",
+        "Periodic family, best envelope (fair grants)": "Periodic family, envelope",
+        "MICA, belief-div. VoI": "Belief-divergence VoI",
+    }
+    entries = {}
+    for legend in fig.legends:
+        handles = getattr(legend, "legend_handles", None)
+        if handles is None:
+            handles = legend.legendHandles
+        for handle, text in zip(handles, legend.get_texts()):
+            entries.setdefault(text.get_text(), handle)
+    for ax in fig.axes:
+        handles, labels = ax.get_legend_handles_labels()
+        for handle, label in zip(handles, labels):
+            entries.setdefault(label, handle)
+        legend = ax.get_legend()
+        if legend is not None:
+            legend.remove()
+    for legend in list(fig.legends):
+        legend.remove()
+    if not entries:
+        return
+    labels = [aliases.get(label, label) for label in entries]
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    # The lowest tight axes extent includes tick labels and axis titles.
+    bottom = min(ax.get_tightbbox(renderer).y0 for ax in fig.axes)
+    anchor = fig.transFigure.inverted().transform((0, bottom - 10 * fig.dpi / 72))[1]
+    max_columns = 3 if fig.get_figwidth() < 4 else 4
+    for columns in range(min(max_columns, len(labels)), 0, -1):
+        legend = fig.legend(
+            list(entries.values()),
+            labels,
+            ncol=columns,
+            fontsize=8,
+            loc="upper center",
+            bbox_to_anchor=(0.52, anchor),
+            frameon=False,
+            columnspacing=1.3,
+            handlelength=2.0,
+            handletextpad=0.55,
+            labelspacing=0.5,
+            borderaxespad=0,
+        )
+        fig.canvas.draw()
+        if legend.get_window_extent(renderer).width <= fig.bbox.width * 0.98 or columns == 1:
+            break
+        legend.remove()
 
 
 def _check_grid_alignment(fig, path):
@@ -128,7 +200,20 @@ def export_figure(fig, path, *, fixed_size=False):
     path = Path(path)
     stem = path.with_suffix("") if path.suffix.lower() in {".pdf", ".svg", ".png"} else path
     stem.parent.mkdir(parents=True, exist_ok=True)
-    _check_grid_alignment(fig, Path(f"{stem}.layout.json"))
+    if stem.name.startswith("fig_"):
+        for ax in fig.axes:
+            for getter, setter in ((ax.get_xlabel, ax.set_xlabel), (ax.get_ylabel, ax.set_ylabel)):
+                label = getter()
+                label = label.replace(" ($\\times 10^3$, log scale)", " (×10³)")
+                label = label.replace(" ($\\times 10^3$, log)", " (×10³)")
+                label = label.replace(" ($\\times 10^3$)", " (×10³)")
+                label = label.replace(" ($\\times10^3$)", " (×10³)")
+                label = label.replace("Uplink channel uses per mission", "Uplink channel uses")
+                setter(label)
+        _readable_legend(fig)
+    audit = stem.parent / "audit"
+    audit.mkdir(exist_ok=True)
+    _check_grid_alignment(fig, audit / f"{stem.name}.layout.json")
     audit_dir = os.environ.get("MICA_FIGURE_AUDIT_SCRIPTS")
     if audit_dir:
         source = Path(audit_dir) / "audit_panel_alignment.py"
@@ -136,9 +221,11 @@ def export_figure(fig, path, *, fixed_size=False):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         module.require_matplotlib_panel_alignment(
-            fig, json_out=f"{stem}.alignment.json", tolerance_pt=1.5, strict=True
+            fig, json_out=audit / f"{stem.name}.alignment.json", tolerance_pt=1.5, strict=True
         )
     options = {"bbox_inches": None if fixed_size else "tight", "dpi": 600}
     fig.savefig(f"{stem}.pdf", **options)
-    fig.savefig(f"{stem}.svg", **options)
-    fig.savefig(f"{stem}.png", **options)
+    for extension in ("svg", "png"):
+        directory = stem.parent / extension
+        directory.mkdir(exist_ok=True)
+        fig.savefig(directory / f"{stem.name}.{extension}", **options)

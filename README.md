@@ -87,6 +87,7 @@ Run these commands from the repository root with the environment activated.
 | Baseline smoke run | `python -m experiments.run_all --only default --seeds 2` |
 | Communication ablations | `python -m experiments.run_robustness --only ablation --seeds 2` |
 | Three-model team benchmark | `python -m experiments.run_team_benchmark --seeds 12` |
+| Rebuild complete 17-figure suite | `python -m experiments.plot_suite --input results/restored_suite` |
 | Rebuild benchmark figures | `python -m experiments.plot_team_benchmark --input docs/data/team_benchmark` |
 | Classical teammate calibration | `python -m experiments.run_behavior_calibration --train-seeds 16 --eval-seeds 30 --workers 4` |
 | LLM teammate calibration | `python -m experiments.run_llm_calibration --models qwen3:8b llama3.1:8b` |
@@ -142,13 +143,23 @@ exploratory means; simulated slots do not measure online inference latency.
 See [team benchmark](docs/team_benchmark.md) for the protocol and result tables.
 Cached execution does not measure online inference speedup.
 
-![Measured mission outcomes](docs/assets/mission_outcomes.png)
+![Measured mission outcomes](docs/assets/team_benchmark/mission_outcomes.png)
 
 Points show individual missions; large markers and error bars show means and
 95% bootstrap intervals over twelve seeds. The three backends test model-family
 diversity; they are not fixed low/medium/high capability tiers. See
 [model selection](docs/model_selection.md) and the [figure workflow](docs/figures.md)
 for paired comparisons, limitations, editable exports and public source data.
+
+## Complete Figure Suite
+
+[Browse all 17 PDFs](docs/assets/figure_suite/README.md), covering team size,
+budget, SNR, resource frontiers, robustness, shared budgets and trajectories.
+These snapshots redraw historical experiment records; the three-model results
+above are our separate measured benchmark. See the [figure workflow](docs/figures.md)
+for importing records and rebuilding the local `figures/index.html` gallery.
+
+![SNR and communication resources](docs/assets/figure_suite/fig_snr_pair.png)
 
 ## Project Structure
 

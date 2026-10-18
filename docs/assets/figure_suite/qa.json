@@ -1,0 +1,1809 @@
+{
+  "kind": "historical-figure-restoration",
+  "fresh_inference": false,
+  "figures": {
+    "fig_agents": {
+      "pdf_sha256": "fc0849ed0696ba371a165f670fc628835d115c5cc67dd84c58e09450fdcaa566",
+      "minimum_glyph_pt": 7.5,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              15.839999999999998,
+              223.56000000000003,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                15.839999999999998,
+                223.56,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_budget": {
+      "pdf_sha256": "5d36c55dc869cf2c59f30a58d5f1eca7962f91e71665b8dce5d5c662e40a1b9a",
+      "minimum_glyph_pt": 7.5,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              15.839999999999998,
+              223.56000000000003,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                15.839999999999998,
+                223.56,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_curve": {
+      "pdf_sha256": "c5f1c9056b42e3296dcd3b1d153bd6d408b764692eda151b5d4ceba57480b8cd",
+      "minimum_glyph_pt": 7.5,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              15.839999999999998,
+              223.56000000000003,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                15.839999999999998,
+                223.56,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_downlink": {
+      "pdf_sha256": "d2bf54b4a248b3500c59b4ef01d5c612f46dfd880f473466275902d657b9da25",
+      "minimum_glyph_pt": 5.6,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              14.652,
+              240.54545454545453,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              276.0545454545454,
+              14.652,
+              453.5999999999999,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 133.20000000000002
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                14.652,
+                240.54545454545453,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                276.0545454545454,
+                14.652,
+                453.59999999999997,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_efficiency": {
+      "pdf_sha256": "d0cd34a6137f4aa24057a300cd413f6d57ba3b2379e0811a97ff5cbff92e5e47",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              20.592,
+              223.56000000000003,
+              164.73600000000002
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 187.20000000000002
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                20.592,
+                223.56,
+                164.73600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_fbl": {
+      "pdf_sha256": "49059c9c1c5ee7295000823064d704cb19d3fd38b67c4bc09e4922fdd6da08fe",
+      "minimum_glyph_pt": 7.5,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              14.652,
+              240.54545454545453,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              276.0545454545454,
+              14.652,
+              453.5999999999999,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 133.20000000000002
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                14.652,
+                240.54545454545453,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                276.0545454545454,
+                14.652,
+                453.59999999999997,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_frontier": {
+      "pdf_sha256": "83874bfe71b236fa3f2c93849f73bd1e928549abd9da83d7f031dc2c41ce12f3",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              15.047999999999998,
+              240.54545454545453,
+              120.384
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              276.0545454545454,
+              15.047999999999998,
+              453.5999999999999,
+              120.384
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 136.79999999999998
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                15.047999999999996,
+                240.54545454545453,
+                120.38399999999999
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                276.0545454545454,
+                15.047999999999996,
+                453.59999999999997,
+                120.38399999999999
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_noise": {
+      "pdf_sha256": "a154e2e5f7e36efd3b41385f649c3c2c9d422bb00d5ab7ca905b0c73be06495c",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              40.830883203125005,
+              50.744000000000014,
+              321.3572727272727,
+              173.66959999999997
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 331.2,
+            "height_pt": 216.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                40.830883203125005,
+                50.744000000000014,
+                321.3572727272727,
+                173.66959999999997
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_pareto": {
+      "pdf_sha256": "41f417e6547cd4c1548bd8e30f79473f82baf6eb1d2c80aee65516e2733b4c7d",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              23.759999999999998,
+              223.56000000000003,
+              190.08
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 216.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                23.759999999999998,
+                223.56,
+                190.08
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_rescue": {
+      "pdf_sha256": "77f57387d9eb8c8695bc6fd59498400634a3d3df98b5048c0203d9b8178480da",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              14.652,
+              177.88235294117644,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              200.85882352941178,
+              14.652,
+              315.7411764705882,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          },
+          {
+            "bounds_pt": [
+              338.71764705882356,
+              14.652,
+              453.59999999999997,
+              117.21600000000001
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              2,
+              3
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 2,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 133.20000000000002
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                14.652,
+                177.88235294117646,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                200.85882352941178,
+                14.652,
+                315.74117647058824,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            },
+            {
+              "id": "c",
+              "bbox_pt": [
+                338.71764705882356,
+                14.652,
+                453.6,
+                117.21600000000002
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 2,
+              "col_stop": 3
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_shared": {
+      "pdf_sha256": "fa3e42442b558edb34ed6ed44c10d23e1b8a95d20a47c8619543665e37da7d15",
+      "minimum_glyph_pt": 5.6,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              41.06000000000001,
+              56.792,
+              179.67500000000004,
+              143.75999999999996
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              196.53999999999996,
+              56.792,
+              335.155,
+              143.75999999999996
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          },
+          {
+            "bounds_pt": [
+              352.02,
+              56.792,
+              490.635,
+              143.75999999999996
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              2,
+              3
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 2,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 165.6
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                41.06000000000001,
+                56.79200000000001,
+                179.67500000000004,
+                143.75999999999996
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                196.53999999999996,
+                56.79200000000001,
+                335.155,
+                143.75999999999996
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            },
+            {
+              "id": "c",
+              "bbox_pt": [
+                352.0199999999999,
+                56.79200000000001,
+                490.635,
+                143.75999999999996
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 2,
+              "col_stop": 3
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_shared_col": {
+      "pdf_sha256": "2aa2f581ad7b21248b87e3323454ecaa75b66f790798649bcb8c82253f21269b",
+      "minimum_glyph_pt": 5.6,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              38.18000000000001,
+              292.4799999999999,
+              239.76,
+              397.19999999999993
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              38.18000000000001,
+              162.89999999999995,
+              239.76,
+              267.61999999999995
+            ],
+            "row": [
+              1,
+              2
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              38.18000000000001,
+              33.31999999999995,
+              239.76,
+              138.03999999999996
+            ],
+            "row": [
+              2,
+              3
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 417.59999999999997
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                38.18,
+                292.4799999999999,
+                239.76,
+                397.19999999999993
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                38.18,
+                162.89999999999995,
+                239.76,
+                267.61999999999995
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 1,
+              "row_stop": 2,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "c",
+              "bbox_pt": [
+                38.18,
+                33.31999999999995,
+                239.76,
+                138.03999999999996
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 2,
+              "row_stop": 3,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [
+            {
+              "id": "inferred-column-1",
+              "panels": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_snr": {
+      "pdf_sha256": "59d556b190bc6a318d83e9481750d491a90fff2a9b8a76a18acc35c9cae32d4b",
+      "minimum_glyph_pt": 7.5,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              15.839999999999998,
+              223.56000000000003,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                15.839999999999998,
+                223.56,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_snr_pair": {
+      "pdf_sha256": "e504055b51ae7bfa6acecaaa87ecdf945e6cb98bd1fc1a709c741d859a6b81df",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              15.839999999999998,
+              224.40495867768595,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              292.19504132231407,
+              15.839999999999998,
+              453.6,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                15.839999999999998,
+                224.40495867768598,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                292.19504132231407,
+                15.839999999999998,
+                453.6000000000001,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_snr_sym": {
+      "pdf_sha256": "a257fc73232241a7e1f99f173e6bc3e3ee71346f1919975378b0897e8a170338",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "NOT APPLICABLE",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              15.839999999999998,
+              223.56000000000003,
+              126.72
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": false,
+        "auditable": false,
+        "verdict": "NOT APPLICABLE",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 0,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "errors": [],
+        "findings": [],
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 144.0
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                15.839999999999998,
+                223.56,
+                126.72
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            }
+          ],
+          "row_groups": [],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        }
+      }
+    },
+    "fig_traj": {
+      "pdf_sha256": "eed616549cc7cc450e8dea744245786a8ac88c15739a7da88a49ed716ba88766",
+      "minimum_glyph_pt": 7.0,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              31.05,
+              22.181727272727283,
+              118.55454545454545,
+              109.68627272727274
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              136.05545454545452,
+              22.181727272727272,
+              223.56,
+              109.68627272727274
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 248.4,
+            "height_pt": 133.20000000000002
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                31.05,
+                22.181727272727283,
+                118.55454545454545,
+                109.68627272727274
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                136.05545454545452,
+                22.181727272727276,
+                223.55999999999997,
+                109.68627272727275
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    },
+    "fig_where_tom": {
+      "pdf_sha256": "df0aa631bc18490f2c9ff09b126c5f4a34feea88ed7d0ef787e3af693cb0ae20",
+      "minimum_glyph_pt": 5.25,
+      "collisions": {
+        "fail": 0,
+        "warn": 0,
+        "contained_fill_overlays": 0,
+        "contained_image_overlays": 0
+      },
+      "layout": {
+        "status": "PASS",
+        "scope": "Equal-span subplot row/column edges",
+        "tolerance_pt": 1.5,
+        "panels": [
+          {
+            "bounds_pt": [
+              63.0,
+              15.047999999999998,
+              240.54545454545453,
+              120.384
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              0,
+              1
+            ]
+          },
+          {
+            "bounds_pt": [
+              276.0545454545454,
+              15.047999999999998,
+              453.5999999999999,
+              120.384
+            ],
+            "row": [
+              0,
+              1
+            ],
+            "column": [
+              1,
+              2
+            ]
+          }
+        ],
+        "failures": []
+      },
+      "alignment": {
+        "schema_version": 1,
+        "applicable": true,
+        "auditable": true,
+        "verdict": "PASS",
+        "backend": "python-matplotlib",
+        "summary": {
+          "fail": 0,
+          "warn": 0,
+          "comparisons": 1,
+          "exemptions": 0
+        },
+        "tolerances": {
+          "alignment_pt": 1.5,
+          "gutter_pt": 1.5
+        },
+        "layout": {
+          "schema_version": 1,
+          "backend": "python-matplotlib",
+          "figure": {
+            "width_pt": 504.0,
+            "height_pt": 136.79999999999998
+          },
+          "panels": [
+            {
+              "id": "a",
+              "bbox_pt": [
+                63.0,
+                15.047999999999996,
+                240.54545454545453,
+                120.38399999999999
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 0,
+              "col_stop": 1
+            },
+            {
+              "id": "b",
+              "bbox_pt": [
+                276.0545454545454,
+                15.047999999999996,
+                453.59999999999997,
+                120.38399999999999
+              ],
+              "grid_id": "matplotlib-grid-1",
+              "row_start": 0,
+              "row_stop": 1,
+              "col_start": 1,
+              "col_stop": 2
+            }
+          ],
+          "row_groups": [
+            {
+              "id": "inferred-row-1",
+              "panels": [
+                "a",
+                "b"
+              ]
+            }
+          ],
+          "column_groups": [],
+          "boundary_groups": [],
+          "exemptions": []
+        },
+        "findings": []
+      }
+    }
+  }
+}

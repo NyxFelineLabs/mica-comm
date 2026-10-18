@@ -1,76 +1,104 @@
-# Scientific figures
+# Experiment figures
 
-The plotting layer follows the Python route of
-[nature-figure](https://github.com/Yuan1z0825/nature-skills/tree/main/skills/nature-figure)
-(reference revision `f8797feed6405035e7d57f59cb8ba393c6a98802`). Its guidance
-informs our original plotting code; no third-party plotting implementation is
-vendored. This is a visual and reproducibility convention, not a claim of
-compliance with a particular journal's submission rules.
+The primary entry point rebuilds the complete **17-figure suite**, preserving
+reference curves, metrics, uncertainty calculations and policy distinctions.
+Changes address typography, external legends, panel spacing and annotation
+placement. The narrow shared-budget triptych is stacked vertically in
+`fig_shared_col`; `fig_shared` retains the horizontal comparison.
 
-## Figure contract
+## Complete catalogue
 
-The team benchmark asks whether a model's mission performance can be ranked
-independently of the communication policy. The bounded claim is that observed
-rankings depend on the policy, and twelve paired seeds leave substantial
-uncertainty. All scheduled missions, including capped failures, remain in the
-analysis. Seed is the resampling unit; individual LLM decisions are not
-independent mission replicates.
+[Browse all 17 committed PDFs](assets/figure_suite/README.md).
+These are **replots of historical experiment records**, not newly measured
+MICA or LLM results. Attribution remains in [NOTICE](../NOTICE.md).
 
-Two quantitative figures answer complementary questions:
+| PDF | Content |
+| --- | --- |
+| `fig_agents.pdf` | Team-size sweep |
+| `fig_budget.pdf` | Per-agent uplink budget |
+| `fig_curve.pdf` | Search progress over time |
+| `fig_downlink.pdf` | Broadcast loss and delay |
+| `fig_efficiency.pdf` | Task performance versus uplink resources |
+| `fig_fbl.pdf` | Finite-blocklength channel assumptions |
+| `fig_frontier.pdf` | Value-rule resource frontiers |
+| `fig_noise.pdf` | Sensitivity to value-estimation errors |
+| `fig_pareto.pdf` | Communication-price trade-off |
+| `fig_rescue.pdf` | Rescue success versus uplink use |
+| `fig_shared_col.pdf` | Shared-budget frontiers, stacked |
+| `fig_shared.pdf` | Shared-budget frontiers, horizontal |
+| `fig_snr_pair.pdf` | SNR versus completion and resource use |
+| `fig_snr_sym.pdf` | SNR versus channel use |
+| `fig_snr.pdf` | SNR versus completion |
+| `fig_traj.pdf` | Example agent trajectories |
+| `fig_where_tom.pdf` | Larger teams and clustered survivors |
 
-1. **Mission outcomes:** completion slots establish task performance; uplink
-   symbols establish its communication cost. Means, raw seed observations and
-   95% percentile-bootstrap intervals use the same definition in both panels.
-   Ideal delivery has no comparable physical symbol cost.
-2. **Model contrasts:** within-seed completion differences directly check model
-   rankings under each policy. Negative differences favour the first model.
-   Intervals are exploratory and unadjusted for multiple comparisons; no
-   significance stars or general model-quality claims are made.
+## Restore and rebuild
 
-The Python/matplotlib workflow uses sans-serif fonts, editable SVG text,
-TrueType PDF fonts, restrained colours with distinct markers, and 89/183 mm
-column widths. PNG previews use 600 dpi. Fixed final page dimensions are used
-for the new benchmark figures; older plots retain tight export to accommodate
-their existing external legends.
-
-## Rebuild
+Use the existing historical results directory:
 
 ```bash
-python -m experiments.plot_team_benchmark
+python scripts/import_plot_results.py --source ../gosc-agentic-teams/results --output results/restored_suite
+python -m experiments.plot_suite --input results/restored_suite
 ```
 
-This reads local mission records and manifests, validates all model/policy/seed
-cells, and writes figures, source CSV, statistical JSON and provenance below
-`figures/team_benchmark/`. It does not contact Ollama. A public, compact source
-snapshot is also available in `docs/data/team_benchmark/` so a fresh checkout can
-rebuild the documented figures without model weights or response caches:
+The importer preserves numerical observations, translates method IDs and
+`rev_` filenames to the current namespace, and records source/imported SHA256
+hashes in `provenance.json`. It refuses overwrites and does not import model
+response caches or run inference. Historical raw datasets are not bundled in
+Git. Select a complete new campaign's result directory explicitly to plot its
+measurements. Required inputs are checked before drawing; missing records are
+never replaced with historical or synthetic observations.
+
+For an individual figure:
+
+```bash
+python -m experiments.plot_suite --input results/restored_suite --only fig_snr_pair
+```
+
+`--only` writes an index and manifest for that selection. Run without it to
+rebuild the complete gallery and manifest.
+
+```text
+figures/
+├── index.html          Local preview gallery with PDF/SVG links
+├── fig_*.pdf           All 17 primary figures
+├── png/                600 dpi previews
+├── svg/                Editable vector exports
+├── audit/              Input provenance, layout and QA reports
+├── tables/             Tables emitted by plotting routines
+├── supplemental/       Separate three-model benchmark analysis
+└── _archive/           Preserved earlier outputs and reference PDFs (local)
+```
+
+## Three-model benchmark
+
+These separate figures use **our 108 measured missions** and do not replace the
+17-figure suite. Rebuild offline from the compact tracked snapshot:
 
 ```bash
 python -m experiments.plot_team_benchmark --input docs/data/team_benchmark
 ```
 
-Legacy entry points remain `experiments.plot`, `experiments.plot_robustness`
-and `experiments.plot_realistic`. They share the same style and export helper;
-their statistical estimators are unchanged. Historical input files must be
-provided through `MICA_RESULTS_DIR`; these scripts never substitute example
-data for missing experiments.
+Outputs go to `figures/supplemental/team_benchmark/`, with source CSV and
+bootstrap statistics under `analysis/`. All capped failures remain in the
+analysis. Resampling uses mission seeds, not individual LLM decisions. Ideal
+delivery has no comparable physical wireless cost. See [model selection](model_selection.md).
 
-## Quality checks
+## Style and checks
 
-Every export measures final axes rectangles and checks comparable grid edges
-within 1.5 pt, recording an alignment JSON. For the upstream Nature audits, clone
-`nature-skills` separately and set `MICA_FIGURE_AUDIT_SCRIPTS` to its
-`skills/nature-figure/scripts` directory before plotting. This additionally calls
-`require_matplotlib_panel_alignment()` before export. Then run the upstream
-source, PDF-text and PDF-collision audits on the final scripts/PDF files. The
-collision auditor requires PyMuPDF only for QA, not normal plotting.
+The Python/matplotlib workflow follows adaptation and QA guidance in
+[nature-figure](https://github.com/Yuan1z0825/nature-skills/tree/main/skills/nature-figure)
+at revision `f8797feed6405035e7d57f59cb8ba393c6a98802`. It uses distinct
+colours and markers, sans-serif text, TrueType PDF fonts and editable SVG text.
+This is not a journal acceptance claim.
 
 ```bash
 export MICA_FIGURE_AUDIT_SCRIPTS=/path/to/nature-skills/skills/nature-figure/scripts
-python -m experiments.plot_team_benchmark --input docs/data/team_benchmark
+python -m experiments.plot_suite --input results/restored_suite
 python scripts/audit_figures.py --nature-scripts "$MICA_FIGURE_AUDIT_SCRIPTS"
 ```
 
-Review raw observations, interval extents, legends, panel spacing and the full
-figure at final size even after automated checks pass. Review notes for the
-published snapshot are in [figure QA](figure_qa.md).
+The environment variable enables the upstream final panel-alignment gate before
+export. The audit command checks source conventions, PDF text and collisions.
+Inspect curves, uncertainty, annotations and legends visually as well.
+See [review notes](figure_qa.md).

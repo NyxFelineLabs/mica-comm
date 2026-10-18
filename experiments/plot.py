@@ -17,6 +17,7 @@ from mica_comm.paths import FIGURES_DIR, RESULTS_DIR
 
 RES = RESULTS_DIR
 FIG = FIGURES_DIR
+TABLES = FIG / "tables"
 NAMES = {
     "report": "Report only",
     "raw": "Raw sensor data",
@@ -116,6 +117,7 @@ def sweep_pair_plot(name, xlabel, fname):
     rows = load(name)
     params = sorted({r["param"] for r in rows})
     fig, axes = plt.subplots(1, 2, figsize=(W2, 2.0))
+    fig.subplots_adjust(wspace=0.42)
     for s in MAIN:
         st = dict(STYLE[s])
         mu, hw = zip(*(ci([r["completion_time"] for r in by(rows, s, p)]) for p in params))
@@ -162,7 +164,8 @@ def pareto_plot():
     rows = load("pareto")
     tv = load("pareto_tv")
     dflt = load("default")
-    fig, ax = plt.subplots(figsize=(W1, 2.5))
+    fig, ax = plt.subplots(figsize=(W1, 3.0))
+    ax.xaxis.grid(False)
 
     def front(data, scheme):
         etas = sorted({r["param"] for r in data})
@@ -177,15 +180,20 @@ def pareto_plot():
     for e, x, y in zip(etas, xs, ys):
         if e in (0.0, 1e-5, 1e-4, 1e-3):
             lab = r"$\eta$=0" if e == 0 else rf"$\eta$={e:.0e}".replace("e-0", "e-")
-            off = (-5, 4) if e == 0 else (-4, -9)
+            off = {0.0: (-7, 30), 1e-5: (-4, -12), 1e-4: (0, 30), 1e-3: (6, -16)}[e]
             ax.annotate(
                 lab,
                 (x, y),
                 textcoords="offset points",
                 xytext=off,
-                fontsize=5.5,
-                color="#0F4D92",
-                ha="right",
+                fontsize=8,
+                color="#2a78d6",
+                ha="left" if e in (1e-4, 1e-3) else "right",
+                arrowprops=(
+                    dict(arrowstyle="-", color=STYLE["mica"]["color"], linewidth=0.5)
+                    if e in (0, 1e-4)
+                    else None
+                ),
             )
     _, xt, yt = front(tv, "mica_tv")
     ax.plot(xt, yt, **STYLE["mica_tv"])
@@ -216,7 +224,7 @@ def traj_plot():
     with open(os.path.join(RES, "trajectories.json")) as f:
         tr = json.load(f)
     fig, axes = plt.subplots(1, 2, figsize=(W1, 1.85), sharey=True)
-    agent_colors = ["#0F4D92", "#767676", "#42949E", "#9A4D8E", "#B64342", "#8BCF8B"]
+    agent_colors = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"]
     for ax, s in zip(axes, ["sem", "mica"]):
         d = tr[s]
         for k, path in enumerate(d["trajectories"]):
@@ -272,7 +280,7 @@ def default_table():
             f"{fmt(m['kbits'], 2)} & {fmt(m['ksym'], 2)} & {fmt(m['latency'], 2)} & "
             f"{fmt(m['false'], 2)} \\\\"
         )
-    with open(os.path.join(FIG, "table_default.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_default.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return summ
 
@@ -382,7 +390,7 @@ def llm_table():
             )
     if lines and lines[-1] == r"\midrule":
         lines.pop()
-    with open(os.path.join(FIG, "table_llm.tex"), "w") as f:
+    with open(os.path.join(TABLES, "table_llm.tex"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return out
 
@@ -390,6 +398,7 @@ def llm_table():
 @publication_style()
 def main():
     os.makedirs(FIG, exist_ok=True)
+    TABLES.mkdir(parents=True, exist_ok=True)
     summary = {"default": default_table()}
     curve_plot()
     summary["snr"] = sweep_plot("snr", "Reference SNR at 100 m (dB)", "fig_snr.pdf")
