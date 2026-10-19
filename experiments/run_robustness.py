@@ -52,7 +52,7 @@ def experiments():
         (
             "mica",
             f"{name}/{'oracle' if o else 'shared'}",
-            cfg.with_(tom_oracle=o, log_private=True),
+            cfg.with_(etom_oracle=o, log_private=True),
         )
         for name, cfg in (
             ("default", b),

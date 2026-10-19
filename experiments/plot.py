@@ -215,7 +215,7 @@ def pareto_plot():
     export_figure(fig, os.path.join(FIG, "fig_pareto.pdf"))
     plt.close(fig)
     return {
-        "tom": {e: summarize(by(rows, "mica", e)) for e in etas},
+        "etom": {e: summarize(by(rows, "mica", e)) for e in etas},
         "tv": {e: summarize(by(tv, "mica_tv", e)) for e in sorted({r["param"] for r in tv})},
     }
 

@@ -126,7 +126,7 @@ def test_new_schemes_complete_easy_mission(scheme):
 
 
 def test_oracle_teammate_model_runs():
-    out = run_episode(Config().with_(tom_oracle=True, log_private=True, max_steps=60), "mica", 1)
+    out = run_episode(Config().with_(etom_oracle=True, log_private=True, max_steps=60), "mica", 1)
     assert out["private_tv"] >= 0
 
 
@@ -143,17 +143,14 @@ def exact_select(groups, budget, price):
     return best_val
 
 
-def test_lagrangian_close_to_exact_on_logged_instances():
+def test_scheduler_exact_on_logged_instances():
     sim = Simulation(Config().with_(symbols_per_slot=50, max_steps=60), "mica", 2)
     sim.scheme.log = []
     sim.run()
-    gaps = []
     for groups, chosen, price, budget in sim.scheme.log:
         if not groups:
             continue
         opt = exact_select(groups, budget, price)
         got = sum(o.value - price * o.symbols for _, o in chosen)
-        assert got <= opt + 1e-9
+        assert got == pytest.approx(opt)
         assert sum(o.symbols for _, o in chosen) <= budget
-        gaps.append(0.0 if opt <= 0 else (opt - got) / opt)
-    assert gaps and np.mean(gaps) < 0.1

@@ -1,0 +1,86 @@
+{
+  "input": "E:\\Project\\NyxFelineLabs\\real_research\\mica-comm\\results\\current_mixed_20261019",
+  "source_sha256": "d70d0aaefc2562f8cfa9a56439da1fa2ec9ccd281fdf1d724df114a02dc39e24",
+  "missions": 1380,
+  "language": "zh",
+  "figures": [
+    {
+      "name": "01_primary",
+      "title": "三个 planner + 三个不同模型 LLM"
+    },
+    {
+      "name": "02_progress",
+      "title": "搜索进度"
+    },
+    {
+      "name": "15_trajectory",
+      "title": "MICA 轨迹，种子 9000"
+    },
+    {
+      "name": "17_agent_behavior",
+      "title": "混编团队内的模型行为"
+    },
+    {
+      "name": "03_team_size",
+      "title": "团队规模"
+    },
+    {
+      "name": "04_budget",
+      "title": "静态共享上行预算"
+    },
+    {
+      "name": "05_snr_time",
+      "title": "SNR 与任务时长"
+    },
+    {
+      "name": "06_snr_cost",
+      "title": "SNR 与通信开销"
+    },
+    {
+      "name": "08_broadcast_loss",
+      "title": "广播丢失"
+    },
+    {
+      "name": "09_broadcast_delay",
+      "title": "广播延迟"
+    },
+    {
+      "name": "10_shared_budget",
+      "title": "价格协调的共享上行"
+    },
+    {
+      "name": "11_finite_blocklength",
+      "title": "有限码长信道"
+    },
+    {
+      "name": "12_rescue",
+      "title": "截止时间前救援"
+    },
+    {
+      "name": "18_value_noise",
+      "title": "语义价值噪声"
+    },
+    {
+      "name": "07_paired_snr",
+      "title": "配对时长差：正值表示 MICA 更快"
+    },
+    {
+      "name": "14_components",
+      "title": "调度器消融"
+    },
+    {
+      "name": "19_coordinator",
+      "title": "上行协调模式"
+    },
+    {
+      "name": "16_table_xii",
+      "title": "Table XII 扩展：三个模型在同一团队"
+    },
+    {
+      "name": "13_budget_tradeoff",
+      "title": "预算点均值：标注为每 agent 符号份额"
+    }
+  ],
+  "records_sha256": "27c6744c58766aaee23ff02c6d8829c067c0a303a0361fa6b477ecddf0e696b6",
+  "plot_source_sha256": "2b3f5816765330b8a21a87804fd7be8f50835087b791d604bab3ad4b11077279"
+}

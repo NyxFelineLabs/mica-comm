@@ -102,6 +102,7 @@ class LLMClient:
             "prompt": prompt,
             "format": schema,
             "stream": False,
+            "think": False,
             "options": {"temperature": 0, "seed": 0, "num_predict": 12, "num_ctx": 1024},
             "keep_alive": "60m",
         }

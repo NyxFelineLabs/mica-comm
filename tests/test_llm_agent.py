@@ -63,3 +63,34 @@ def test_invalid_output_falls_back_to_planner(client_factory):
     cfg = Config().with_(llm_agents=(0,), llm_model="fake-model", max_steps=15)
     out = Simulation(cfg, "mica", seed=0).run()
     assert out["llm_fallbacks"] == out["llm_decisions"] > 0
+
+
+def test_three_models_are_used_by_the_scheduled_agents(tmp_path, monkeypatch):
+    models = ("qwen-test", "llama-test", "gemma-test")
+    for model, choice in zip(models, ("A", "B", "C")):
+        client = LLMClient(model, cache_dir=str(tmp_path), transport=fake_transport(choice))
+        monkeypatch.setitem(llm_agent._CLIENTS, model, client)
+    cfg = Config(llm_agents=(0, 2, 4), llm_models=models, max_steps=10)
+    sim = Simulation(cfg, "mica", seed=1)
+    result = sim.run()
+    assert [a.client.model for a in sim.agents if isinstance(a, LLMAgent)] == list(models)
+    assert sum(isinstance(a, LLMAgent) for a in sim.agents) == 3
+    assert result["llm_fallbacks"] == 0
+    assert {k: v["model"] for k, v in result["llm_by_agent"].items()} == dict(
+        zip(("0", "2", "4"), models)
+    )
+    assert all(v["decisions"] > 0 for v in result["llm_by_agent"].values())
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"llm_agents": (0, 2, 4), "llm_models": ("one",)},
+        {"llm_agents": (0, 0)},
+        {"llm_agents": (6,)},
+        {"llm_agents": (-1,)},
+    ],
+)
+def test_invalid_llm_assignment_rejected(kwargs):
+    with pytest.raises(ValueError):
+        Simulation(Config(**kwargs), "mica", 0)

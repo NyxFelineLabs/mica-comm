@@ -1,4 +1,4 @@
-"""Realistic radio resources and imperfect message values.
+﻿"""Realistic radio resources and imperfect message values.
 
 Extends the simulator by subclassing, so that the default Config reproduces the base
 model exactly (tests/test_realistic.py):
@@ -8,10 +8,11 @@ model exactly (tests/test_realistic.py):
     uplink + downlink cost account (broadcast, HARQ feedback, grants);
   * a shared, network-wide uplink budget for which the agents compete.
 
-Shared mode (Config.shared_budget = B > 0): MICA agents apply the decoupled rule at a
-broadcast network price and request their selection; periodic/FIFO baselines send a
-buffer status report and receive max-min fair grants.  Requests are counted as uplink
-control bits (1 bit per channel use) and grants as downlink control bits.
+Shared mode (Config.shared_budget = B > 0): dynamic MICA coordination uses a broadcast
+network price or central selection. Static coordination reserves floor(B/K) channel
+uses per agent, requiring no requests or grants. Periodic/FIFO baselines use max-min
+fair grants in dynamic mode. Requests count as uplink control bits (1 bit per channel
+use), and grants count as downlink control bits.
 """
 
 import math
@@ -19,7 +20,6 @@ from collections import defaultdict
 
 import numpy as np
 
-from mica_comm.agents.voi import TeamModel
 from mica_comm.communication.messages import Packet, confirm_bits, evidence_sizes, intent_bits
 from mica_comm.communication.schemes import (
     PRIORITY,
@@ -36,7 +36,7 @@ from mica_comm.communication.schemes import (
     SemanticRateAwareFiltered,
     SemanticRateAwareSuppress,
     TxResult,
-    lagrangian_select,
+    exact_select,
     sim_tasks,
 )
 from mica_comm.simulation.simulator import Simulation
@@ -111,14 +111,14 @@ class ResourceAwareMicaScheduler(MicaScheduler):
         acked_confirms = getattr(agent, "acked_confirms", set())
         groups = []
         mode = self.voi_mode
-        team = TeamModel(sim, agent, c.tom_temperature) if mode == "tom" else None
+        team = self.value_model(sim, agent)
         for cell in sorted(agent.confirmed_pending - acked_confirms):
             b = confirm_bits(c)
             if not self.use_uep:
                 rates = self._fixed_rates(b, snr_mean)
             if not self.use_voi:
                 v = b
-            elif mode in ("tom", "tv"):
+            elif mode in ("etom", "twig", "ig", "ptr", "tv"):
                 v = c.confirm_value
             else:
                 v = PRIORITY
@@ -174,7 +174,7 @@ class ResourceAwareMicaScheduler(MicaScheduler):
             if fits:
                 vals = (
                     self.evidence_voi(sim, recs, fits.values(), team)
-                    if mode in ("tom", "tv", "aoi")
+                    if mode in ("etom", "twig", "ig", "ptr", "tv", "aoi")
                     else {n: float(sizes[n - 1]) for n in fits.values()}
                 )
                 vals = self._estimate("EVID", vals, sizes)
@@ -213,7 +213,7 @@ class ResourceAwareMicaScheduler(MicaScheduler):
 
     def transmit(self, agent, t, snr_mean, snr_inst, sim):
         groups = self.build_groups(agent, snr_mean, sim)
-        chosen = lagrangian_select(groups, self.cfg.symbols_per_slot, self.price)
+        chosen = exact_select(groups, self.cfg.symbols_per_slot, self.price)
         if self.log is not None:
             self.log.append((groups, chosen, self.price, self.cfg.symbols_per_slot))
         return self.apply(agent, chosen, t, snr_inst, sim)
@@ -332,6 +332,13 @@ REALISTIC_SCHEMES = {
     "sem_raf": XSemRAF,
     "sem_ras": XSemRAS,
     "mica": lambda cfg, ch: ResourceAwareMicaScheduler(cfg, ch),
+    "mica_twig": lambda cfg, ch: ResourceAwareMicaScheduler(
+        cfg, ch, voi_mode="twig", name="mica_twig"
+    ),
+    "mica_ig": lambda cfg, ch: ResourceAwareMicaScheduler(cfg, ch, voi_mode="ig", name="mica_ig"),
+    "mica_ptr": lambda cfg, ch: ResourceAwareMicaScheduler(
+        cfg, ch, voi_mode="ptr", name="mica_ptr"
+    ),
     "mica_bits": lambda cfg, ch: ResourceAwareMicaScheduler(
         cfg, ch, voi_mode="bits", name="mica_bits"
     ),
@@ -407,7 +414,13 @@ def waterfill(needs, total, min_useful, offset=0):
 class RealisticSimulation(Simulation):
     def __init__(self, cfg, scheme, seed, record_traj=False):
         super().__init__(cfg, scheme if scheme in SCHEMES else "report", seed, record_traj)
-        self.scheme = REALISTIC_SCHEMES[scheme](cfg, self.channel)
+        static = cfg.shared_budget > 0 and cfg.shared_mode == "static"
+        if static and cfg.shared_budget < cfg.n_agents:
+            raise ValueError("shared_budget must give each agent at least one channel use")
+        radio_cfg = (
+            cfg.with_(symbols_per_slot=cfg.shared_budget // cfg.n_agents) if static else cfg
+        )
+        self.scheme = REALISTIC_SCHEMES[scheme](radio_cfg, self.channel)
         if hasattr(self.scheme, "rng"):
             self.scheme.rng = np.random.default_rng([seed, 7])
         self.req_bits = 0
@@ -416,6 +429,8 @@ class RealisticSimulation(Simulation):
     # ------------------------------------------------------------------
     def phase_communicate(self, t):
         cfg = self.cfg
+        if cfg.shared_budget and cfg.shared_mode == "static":
+            return super().phase_communicate(t)
         if not cfg.shared_budget or not isinstance(
             self.scheme, (ResourceAwareMicaScheduler, FifoRealistic)
         ):
@@ -464,7 +479,7 @@ class RealisticSimulation(Simulation):
             for g in gs:
                 g.agent = a.idx
             groups += gs
-        chosen = lagrangian_select(groups, cfg.shared_budget, sch.price)
+        chosen = exact_select(groups, cfg.shared_budget, sch.price)
         by_agent = defaultdict(list)
         for g, o in chosen:
             by_agent[g.agent].append((g, o))

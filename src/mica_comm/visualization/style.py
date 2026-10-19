@@ -87,7 +87,7 @@ def _readable_legend(fig):
     aliases = {
         "Ideal-communication reference (genie)": "Ideal communication",
         "Ideal reference": "Ideal communication",
-        "MICA, theory-of-mind value": "MICA (ToM value)",
+        "MICA, efficient theory-of-mind value": "MICA (EToM value)",
         "MICA transport, throughput value": "Throughput value",
         "MICA transport, AoI value": "Age-of-information value",
         "Belief-divergence value": "Belief-divergence value",

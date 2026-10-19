@@ -35,7 +35,7 @@ NAMES = {
     "rescue-snr-5": "Rescue, $-5$\\,dB",
 }
 ARM_NAMES = {
-    "exact": "Exact ToM value",
+    "exact": "Exact EToM value",
     "ln0.5": "Log-normal error, $\\sigma{=}0.5$",
     "ln1": "Log-normal error, $\\sigma{=}1$",
     "ln2": "Log-normal error, $\\sigma{=}2$",

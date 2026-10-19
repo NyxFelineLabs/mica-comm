@@ -1,7 +1,7 @@
-"""Compare communication policies with three installed LLM team configurations.
+"""Compare communication policies with a three-planner, three-model team.
 
-Each mission has three agents using one selected LLM and three classical
-planners. Default MICA parameters are used without receiver calibration.
+The default mixes Qwen, Llama and Gemma in one mission. The historical
+single-model-per-team comparison is available with --team-mode single_model.
 """
 
 import argparse
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import numpy as np
 
-from experiments.run_behavior_calibration import SCENARIOS, paired_interval, save
+from experiments.run_etom_calibration import SCENARIOS, paired_interval, save
 from experiments.run_llm_calibration import (
     OllamaTransport,
     check_manifest,
@@ -74,7 +74,7 @@ def campaign(args, model, digest, transport):
     files = sorted((root / "src/mica_comm").rglob("*.py")) + [
         Path(__file__).resolve(),
         root / "experiments/run_llm_calibration.py",
-        root / "experiments/run_behavior_calibration.py",
+        root / "experiments/run_etom_calibration.py",
     ]
     manifest = {
         "protocol": "team-benchmark-v1",
@@ -145,10 +145,12 @@ def campaign(args, model, digest, transport):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--models", nargs="+", default=list(MODELS))
+    parser.add_argument("--team-mode", choices=("mixed", "single_model"), default="mixed")
+    parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--seeds", type=int, default=12)
     parser.add_argument("--seed-start", type=int, default=8000)
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=["default"])
-    parser.add_argument("--output", type=Path, default=RESULTS_DIR / "team_benchmark")
+    parser.add_argument("--output", type=Path, default=RESULTS_DIR / "team_benchmark_mixed")
     parser.add_argument("--url", default="http://127.0.0.1:11434")
     parser.add_argument("--windows-python", help="WSL path to Windows python.exe")
     args = parser.parse_args()
@@ -156,6 +158,30 @@ def main():
         parser.error("seed count must be positive")
     if len(set(args.models)) != len(args.models) or len(set(args.scenarios)) != len(args.scenarios):
         parser.error("models and scenarios must not contain duplicates")
+    if args.team_mode == "mixed":
+        if tuple(args.models) != MODELS or args.scenarios != ["default"] or args.windows_python:
+            parser.error(
+                "Mixed mode uses all three default models and the default search scenario; use a reachable --url"
+            )
+        from experiments.run_current import main as run_current
+
+        return run_current(
+            [
+                "--table-xii",
+                "--only",
+                "table_xii",
+                "--seeds",
+                str(args.seeds),
+                "--seed-start",
+                str(args.seed_start),
+                "--workers",
+                str(args.workers),
+                "--url",
+                args.url,
+                "--output",
+                str(args.output),
+            ]
+        )
     transport = OllamaTransport(args.url, args.windows_python)
     try:
         installed = {m["name"]: m["digest"] for m in transport.request("/api/tags")["models"]}

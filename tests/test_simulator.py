@@ -1,12 +1,19 @@
 """Core simulation, communication, and belief-accounting invariants."""
 
+import itertools
+
 import numpy as np
 import pytest
 
 from mica_comm import Config, Simulation, run_episode
 from mica_comm.communication.channel import Channel
 from mica_comm.communication.messages import evidence_bits, evidence_sizes
-from mica_comm.communication.schemes import SCHEMES, Group, Option, lagrangian_select
+from mica_comm.communication.schemes import (
+    SCHEMES,
+    Group,
+    Option,
+    exact_select,
+)
 from mica_comm.world.belief import Obs, SensorModel, box_sum, logit
 
 
@@ -65,15 +72,45 @@ def test_evidence_sizes_monotone_and_jump_cost():
     assert sizes[-1] == evidence_bits(4, 0, cfg, n_jumps=1)
 
 
-def test_lagrangian_respects_budget_and_prefers_value():
+def test_exact_scheduler_matches_enumeration():
+    rng = np.random.default_rng(7)
+    for _ in range(100):
+        groups = [
+            Group(
+                str(i),
+                [
+                    Option(1.0, 1, int(rng.integers(1, 12)), float(rng.random() * 2))
+                    for _ in range(int(rng.integers(1, 4)))
+                ],
+            )
+            for i in range(int(rng.integers(0, 5)))
+        ]
+        budget = int(rng.integers(0, 20))
+        price = float(rng.random() / 10)
+        chosen = exact_select(groups, budget, price)
+        got = sum(o.value - price * o.symbols for _, o in chosen)
+        expected = max(
+            sum(o.value - price * o.symbols for o in combo if o is not None)
+            for combo in itertools.product(*[[None] + g.options for g in groups])
+            if sum(o.symbols for o in combo if o is not None) <= budget
+        )
+        assert got == pytest.approx(expected)
+        assert sum(o.symbols for _, o in chosen) <= budget
+
+
+def test_mica_transmit_uses_exact_scheduler(monkeypatch):
+    sim = Simulation(Config(), "mica", seed=0)
+    agent = sim.agents[0]
     groups = [
-        Group("A", [Option(1.0, 60, 60, 5.0), Option(2.0, 60, 30, 4.0)]),
-        Group("B", [Option(1.0, 60, 60, 0.5), Option(2.0, 60, 30, 0.4)]),
-        Group("C", [Option(1.0, 80, 80, 0.05)]),
+        Group("CONF", [Option(1.0, 1, 60, 10.0)]),
+        Group("INTENT", [Option(1.0, 1, 50, 9.0)]),
+        Group("EVID", [Option(1.0, 1, 50, 9.0)]),
     ]
-    chosen = lagrangian_select(groups, budget=70, price=0.0)
-    assert sum(o.symbols for _, o in chosen) <= 70
-    assert "A" in {g.kind for g, _ in chosen}
+    monkeypatch.setattr(sim.scheme, "build_groups", lambda *args: groups)
+    monkeypatch.setattr(sim.channel, "decodes", lambda *args, **kwargs: False)
+    result = sim.scheme.transmit(agent, 0, 1.0, 1.0, sim)
+    assert result.symbols == 100
+    assert sum(o.value for _, o in exact_select(groups, 100, 0.0)) == 18.0
 
 
 @pytest.mark.parametrize("scheme", sorted(SCHEMES))

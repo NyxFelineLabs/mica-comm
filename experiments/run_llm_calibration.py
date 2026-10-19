@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from experiments.run_behavior_calibration import (
+from experiments.run_etom_calibration import (
     PARAMETERS,
     SCENARIOS,
     fit,
@@ -215,7 +215,7 @@ def campaign(args, model, digest, transport):
     root = Path(__file__).resolve().parents[1]
     source_files = sorted((root / "src/mica_comm").rglob("*.py")) + [
         Path(__file__).resolve(),
-        root / "experiments/run_behavior_calibration.py",
+        root / "experiments/run_etom_calibration.py",
     ]
     source_digest = hashlib.sha256(b"".join(p.read_bytes() for p in source_files)).hexdigest()
     manifest = {
@@ -281,8 +281,8 @@ def campaign(args, model, digest, transport):
                     overrides = dict(SCENARIOS[scenario])
                     if variant == "calibrated":
                         overrides.update(
-                            tom_temperatures=tuple(PARAMETERS[i][0] for i in selected[variant]),
-                            tom_persistence=tuple(PARAMETERS[i][1] for i in selected[variant]),
+                            etom_receiver_temperatures=tuple(PARAMETERS[i][0] for i in selected[variant]),
+                            etom_intent_persistences=tuple(PARAMETERS[i][1] for i in selected[variant]),
                         )
                     row = mission(
                         cfg.with_(**overrides),

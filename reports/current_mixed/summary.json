@@ -1,0 +1,3243 @@
+{
+  "protocol": "mica-current-mixed-v2",
+  "source_sha256": "d70d0aaefc2562f8cfa9a56439da1fa2ec9ccd281fdf1d724df114a02dc39e24",
+  "team": "mixed",
+  "llm_agents": [
+    0,
+    2,
+    4
+  ],
+  "llm_models": [
+    "qwen3:8b",
+    "llama3.1:8b",
+    "gemma3:12b"
+  ],
+  "missions": 1380,
+  "expected_missions": 1380,
+  "llm_fallbacks": 0,
+  "statistics": "95% percentile bootstrap over paired mission seeds, 10000 resamples; exploratory",
+  "results": [
+    {
+      "experiment": "ablation",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      }
+    },
+    {
+      "experiment": "ablation",
+      "parameter": 0,
+      "scheme": "mica_aoi",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 954,
+      "completion_time": {
+        "mean": 91.75,
+        "low": 70.75,
+        "high": 114.41666666666667
+      },
+      "symbols": {
+        "mean": 20116.916666666668,
+        "low": 15957.372916666665,
+        "high": 24391.002083333333
+      },
+      "total_symbols": {
+        "mean": 25914.25,
+        "low": 20812.697916666668,
+        "high": 31134.0125
+      }
+    },
+    {
+      "experiment": "ablation",
+      "parameter": 0,
+      "scheme": "mica_bits",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 921,
+      "completion_time": {
+        "mean": 89.0,
+        "low": 70.5,
+        "high": 107.25
+      },
+      "symbols": {
+        "mean": 19374.0,
+        "low": 15523.7875,
+        "high": 23010.75833333333
+      },
+      "total_symbols": {
+        "mean": 25291.333333333332,
+        "low": 20543.76875,
+        "high": 29753.83125
+      }
+    },
+    {
+      "experiment": "ablation",
+      "parameter": 0,
+      "scheme": "mica_nofilter",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1057,
+      "completion_time": {
+        "mean": 109.41666666666667,
+        "low": 74.33333333333333,
+        "high": 154.91666666666666
+      },
+      "symbols": {
+        "mean": 8345.75,
+        "low": 7139.297916666666,
+        "high": 9567.595833333333
+      },
+      "total_symbols": {
+        "mean": 11960.083333333334,
+        "low": 10304.293749999999,
+        "high": 13597.925
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 10,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 641,
+      "completion_time": {
+        "mean": 51.833333333333336,
+        "low": 44.583333333333336,
+        "high": 60.0
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 12720.75,
+        "low": 10975.81875,
+        "high": 14696.677083333332
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 10,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 602,
+      "completion_time": {
+        "mean": 58.75,
+        "low": 49.083333333333336,
+        "high": 69.75
+      },
+      "symbols": {
+        "mean": 5902.5,
+        "low": 5319.916666666667,
+        "high": 6517.920833333334
+      },
+      "total_symbols": {
+        "mean": 8870.5,
+        "low": 8044.816666666667,
+        "high": 9775.133333333333
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 6.25,
+        "low": -6.3354166666666645,
+        "high": 17.833333333333332
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.903981363828886,
+        "low": 2.2580096405356103,
+        "high": 3.639679599992967
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 10,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 664,
+      "completion_time": {
+        "mean": 65.0,
+        "low": 51.916666666666664,
+        "high": 80.41666666666667
+      },
+      "symbols": {
+        "mean": 17140.75,
+        "low": 13463.404166666665,
+        "high": 21479.708333333332
+      },
+      "total_symbols": {
+        "mean": 20884.0,
+        "low": 16998.108333333334,
+        "high": 25498.72708333333
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 12,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 619,
+      "completion_time": {
+        "mean": 47.0,
+        "low": 40.166666666666664,
+        "high": 55.333333333333336
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 14153.0,
+        "low": 12120.658333333333,
+        "high": 16625.541666666664
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 12,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 753,
+      "completion_time": {
+        "mean": 76.0,
+        "low": 57.833333333333336,
+        "high": 96.83333333333333
+      },
+      "symbols": {
+        "mean": 7267.416666666667,
+        "low": 6027.831249999999,
+        "high": 8845.322916666666
+      },
+      "total_symbols": {
+        "mean": 10827.75,
+        "low": 9221.056250000001,
+        "high": 12806.964583333332
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -27.583333333333332,
+        "low": -50.25,
+        "high": -6.75
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 1.749119930282425,
+        "low": 1.3616104465654555,
+        "high": 2.2702565360347124
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 12,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 513,
+      "completion_time": {
+        "mean": 48.416666666666664,
+        "low": 42.833333333333336,
+        "high": 53.75
+      },
+      "symbols": {
+        "mean": 12711.583333333334,
+        "low": 11101.245833333332,
+        "high": 14240.13125
+      },
+      "total_symbols": {
+        "mean": 16634.0,
+        "low": 14866.710416666667,
+        "high": 18348.379166666666
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 14,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 599,
+      "completion_time": {
+        "mean": 45.916666666666664,
+        "low": 40.083333333333336,
+        "high": 52.166666666666664
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 16425.25,
+        "low": 14334.491666666667,
+        "high": 18668.18125
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 14,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 488,
+      "completion_time": {
+        "mean": 47.833333333333336,
+        "low": 40.666666666666664,
+        "high": 56.833333333333336
+      },
+      "symbols": {
+        "mean": 5176.25,
+        "low": 4742.075,
+        "high": 5706.2625
+      },
+      "total_symbols": {
+        "mean": 8336.416666666666,
+        "low": 7734.833333333333,
+        "high": 9094.877083333333
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 17.083333333333332,
+        "low": 3.9166666666666665,
+        "high": 31.166666666666668
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.344715447154471,
+        "low": 2.616634463842855,
+        "high": 4.1397345806017976
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 14,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 665,
+      "completion_time": {
+        "mean": 64.91666666666667,
+        "low": 51.66458333333333,
+        "high": 79.25
+      },
+      "symbols": {
+        "mean": 17313.083333333332,
+        "low": 13577.802083333334,
+        "high": 21339.67916666667
+      },
+      "total_symbols": {
+        "mean": 21647.666666666668,
+        "low": 17699.583333333332,
+        "high": 25876.35833333333
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 6,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 6,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 6,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 8,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 667,
+      "completion_time": {
+        "mean": 56.416666666666664,
+        "low": 47.49791666666667,
+        "high": 67.0
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10868.083333333334,
+        "low": 9188.625,
+        "high": 12889.266666666666
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 8,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 678,
+      "completion_time": {
+        "mean": 67.33333333333333,
+        "low": 49.25,
+        "high": 87.5020833333333
+      },
+      "symbols": {
+        "mean": 7063.75,
+        "low": 5636.379166666667,
+        "high": 8626.283333333333
+      },
+      "total_symbols": {
+        "mean": 10070.75,
+        "low": 8168.266666666667,
+        "high": 12183.672916666666
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -3.8333333333333335,
+        "low": -27.583333333333332,
+        "high": 18.333333333333332
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.3959653158732968,
+        "low": 1.7813698910647806,
+        "high": 3.238449825246505
+      }
+    },
+    {
+      "experiment": "agents",
+      "parameter": 8,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 655,
+      "completion_time": {
+        "mean": 63.5,
+        "low": 52.833333333333336,
+        "high": 76.58333333333333
+      },
+      "symbols": {
+        "mean": 16924.5,
+        "low": 13784.389583333334,
+        "high": 20770.04583333333
+      },
+      "total_symbols": {
+        "mean": 19974.416666666668,
+        "low": 16797.214583333334,
+        "high": 23800.78958333333
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 100,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 100,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 838,
+      "completion_time": {
+        "mean": 83.08333333333333,
+        "low": 67.5,
+        "high": 101.0020833333333
+      },
+      "symbols": {
+        "mean": 12924.25,
+        "low": 11212.822916666668,
+        "high": 14651.983333333332
+      },
+      "total_symbols": {
+        "mean": 16943.166666666668,
+        "low": 14734.560416666667,
+        "high": 19218.760416666668
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 8.666666666666666,
+        "low": -20.0,
+        "high": 38.33541666666664
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.7131555022535156,
+        "low": 2.6461960791410712,
+        "high": 5.050677223954442
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 100,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 969,
+      "completion_time": {
+        "mean": 91.75,
+        "low": 69.08333333333333,
+        "high": 117.0
+      },
+      "symbols": {
+        "mean": 47989.75,
+        "low": 34571.81041666667,
+        "high": 62981.09791666666
+      },
+      "total_symbols": {
+        "mean": 55429.833333333336,
+        "low": 40582.26666666667,
+        "high": 71877.04583333334
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 200,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 200,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1098,
+      "completion_time": {
+        "mean": 111.83333333333333,
+        "low": 81.74791666666667,
+        "high": 156.0
+      },
+      "symbols": {
+        "mean": 17454.25,
+        "low": 15480.306250000001,
+        "high": 19610.845833333333
+      },
+      "total_symbols": {
+        "mean": 22311.666666666668,
+        "low": 19952.245833333334,
+        "high": 24923.691666666666
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -30.916666666666668,
+        "low": -76.41666666666667,
+        "high": 1.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.714458274250302,
+        "low": 3.072021701237995,
+        "high": 4.455088700882132
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 200,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 877,
+      "completion_time": {
+        "mean": 80.91666666666667,
+        "low": 68.83333333333333,
+        "high": 92.0
+      },
+      "symbols": {
+        "mean": 64833.083333333336,
+        "low": 54081.972916666666,
+        "high": 74313.65208333332
+      },
+      "total_symbols": {
+        "mean": 74764.5,
+        "low": 62565.58125,
+        "high": 85592.72291666667
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 25,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 25,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1295,
+      "completion_time": {
+        "mean": 133.58333333333334,
+        "low": 103.41458333333334,
+        "high": 166.7520833333333
+      },
+      "symbols": {
+        "mean": 4245.5,
+        "low": 3729.5770833333336,
+        "high": 4812.170833333334
+      },
+      "total_symbols": {
+        "mean": 6431.0,
+        "low": 5720.831249999999,
+        "high": 7209.0895833333325
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -38.833333333333336,
+        "low": -72.75,
+        "high": -8.0
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.1123738860754524,
+        "low": 2.297122340156956,
+        "high": 4.063478057942226
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 25,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 948,
+      "completion_time": {
+        "mean": 94.75,
+        "low": 67.66666666666667,
+        "high": 131.08333333333334
+      },
+      "symbols": {
+        "mean": 13213.583333333334,
+        "low": 9316.604166666666,
+        "high": 18426.12083333333
+      },
+      "total_symbols": {
+        "mean": 15260.25,
+        "low": 11250.90625,
+        "high": 20645.78958333333
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 50,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 50,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "budget",
+      "parameter": 50,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "rescue_central",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.8333333333333334,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1142,
+      "completion_time": {
+        "mean": 90.58333333333333,
+        "low": 77.49791666666667,
+        "high": 105.16666666666667
+      },
+      "symbols": {
+        "mean": 12703.583333333334,
+        "low": 10962.475,
+        "high": 14429.670833333334
+      },
+      "total_symbols": {
+        "mean": 31087.916666666668,
+        "low": 27258.30625,
+        "high": 34897.941666666666
+      },
+      "saved_fraction": {
+        "mean": 0.90625,
+        "low": 0.8333333333333334,
+        "high": 0.96875
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "rescue_price",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.75,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1165,
+      "completion_time": {
+        "mean": 93.41666666666667,
+        "low": 85.25,
+        "high": 101.25
+      },
+      "symbols": {
+        "mean": 12222.583333333334,
+        "low": 11265.947916666666,
+        "high": 13134.333333333334
+      },
+      "total_symbols": {
+        "mean": 22775.166666666668,
+        "low": 21107.127083333333,
+        "high": 24366.58958333333
+      },
+      "saved_fraction": {
+        "mean": 0.9166666666666666,
+        "low": 0.875,
+        "high": 0.9583333333333334
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "rescue_static",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.75,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1289,
+      "completion_time": {
+        "mean": 106.58333333333333,
+        "low": 91.5,
+        "high": 121.58333333333333
+      },
+      "symbols": {
+        "mean": 8804.833333333334,
+        "low": 7950.40625,
+        "high": 9774.695833333333
+      },
+      "total_symbols": {
+        "mean": 12303.166666666666,
+        "low": 11104.8375,
+        "high": 13640.608333333334
+      },
+      "saved_fraction": {
+        "mean": 0.8645833333333334,
+        "low": 0.78125,
+        "high": 0.9375
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "search_central",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 990,
+      "completion_time": {
+        "mean": 99.16666666666667,
+        "low": 72.75,
+        "high": 129.58333333333334
+      },
+      "symbols": {
+        "mean": 13656.916666666666,
+        "low": 11308.127083333333,
+        "high": 16063.699999999999
+      },
+      "total_symbols": {
+        "mean": 33251.583333333336,
+        "low": 28182.479166666668,
+        "high": 38387.754166666666
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "search_price",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 877,
+      "completion_time": {
+        "mean": 87.08333333333333,
+        "low": 67.5,
+        "high": 109.0020833333333
+      },
+      "symbols": {
+        "mean": 12367.333333333334,
+        "low": 10699.658333333333,
+        "high": 13991.841666666667
+      },
+      "total_symbols": {
+        "mean": 23163.333333333332,
+        "low": 20166.485416666666,
+        "high": 26083.00833333333
+      }
+    },
+    {
+      "experiment": "coordinator",
+      "parameter": "search_static",
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      }
+    },
+    {
+      "experiment": "default",
+      "parameter": 0,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "default",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "default",
+      "parameter": 0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 0,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 1,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 820,
+      "completion_time": {
+        "mean": 75.16666666666667,
+        "low": 67.75,
+        "high": 81.75
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 11665.75,
+        "low": 10553.660416666666,
+        "high": 12662.522916666667
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 1,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1113,
+      "completion_time": {
+        "mean": 110.91666666666667,
+        "low": 88.75,
+        "high": 135.25
+      },
+      "symbols": {
+        "mean": 9446.75,
+        "low": 8248.064583333335,
+        "high": 10815.59375
+      },
+      "total_symbols": {
+        "mean": 13113.333333333334,
+        "low": 11419.31875,
+        "high": 15091.354166666666
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 7.416666666666667,
+        "low": -20.583333333333332,
+        "high": 41.5
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.427025167385609,
+        "low": 2.5010510888206605,
+        "high": 4.607193391675751
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 1,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1147,
+      "completion_time": {
+        "mean": 118.33333333333333,
+        "low": 83.5,
+        "high": 159.66666666666666
+      },
+      "symbols": {
+        "mean": 32374.25,
+        "low": 22419.0375,
+        "high": 44244.38541666667
+      },
+      "total_symbols": {
+        "mean": 36151.083333333336,
+        "low": 25696.53125,
+        "high": 48725.05625
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 3,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1078,
+      "completion_time": {
+        "mean": 98.75,
+        "low": 80.41666666666667,
+        "high": 117.08333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 16483.75,
+        "low": 13594.00625,
+        "high": 19400.766666666666
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 3,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 955,
+      "completion_time": {
+        "mean": 93.75,
+        "low": 79.41458333333334,
+        "high": 108.0020833333333
+      },
+      "symbols": {
+        "mean": 10630.083333333334,
+        "low": 9075.047916666666,
+        "high": 12111.960416666665
+      },
+      "total_symbols": {
+        "mean": 14588.75,
+        "low": 12543.306250000001,
+        "high": 16526.722916666666
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -17.75,
+        "low": -32.0,
+        "high": -2.497916666666697
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 1.916424298962849,
+        "low": 1.5750383252738274,
+        "high": 2.302314966865971
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 3,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 759,
+      "completion_time": {
+        "mean": 76.0,
+        "low": 59.666666666666664,
+        "high": 94.41666666666667
+      },
+      "symbols": {
+        "mean": 20371.75,
+        "low": 15688.21875,
+        "high": 25645.106249999997
+      },
+      "total_symbols": {
+        "mean": 23278.0,
+        "low": 18439.14375,
+        "high": 28686.314583333333
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 5,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 957,
+      "completion_time": {
+        "mean": 86.33333333333333,
+        "low": 71.33333333333333,
+        "high": 101.41666666666667
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 15202.833333333334,
+        "low": 12710.831250000001,
+        "high": 17699.922916666666
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 995,
+      "completion_time": {
+        "mean": 98.83333333333333,
+        "low": 80.33333333333333,
+        "high": 119.75
+      },
+      "symbols": {
+        "mean": 10880.666666666666,
+        "low": 9243.129166666666,
+        "high": 12554.358333333334
+      },
+      "total_symbols": {
+        "mean": 15029.166666666666,
+        "low": 12859.010416666668,
+        "high": 17244.010416666668
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 4.916666666666667,
+        "low": -34.08541666666667,
+        "high": 38.333333333333336
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.5997028368359785,
+        "low": 1.8304317625716215,
+        "high": 3.4771059594860154
+      }
+    },
+    {
+      "experiment": "downlink_delay",
+      "parameter": 5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1038,
+      "completion_time": {
+        "mean": 103.75,
+        "low": 80.25,
+        "high": 126.5
+      },
+      "symbols": {
+        "mean": 28286.5,
+        "low": 21397.84375,
+        "high": 34904.39791666667
+      },
+      "total_symbols": {
+        "mean": 32222.166666666668,
+        "low": 24763.793749999997,
+        "high": 39387.35833333334
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.0,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.1,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 858,
+      "completion_time": {
+        "mean": 76.66666666666667,
+        "low": 57.333333333333336,
+        "high": 100.5
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 17543.916666666668,
+        "low": 13363.912499999999,
+        "high": 22685.587499999998
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.1,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 770,
+      "completion_time": {
+        "mean": 73.0,
+        "low": 60.333333333333336,
+        "high": 86.08333333333333
+      },
+      "symbols": {
+        "mean": 7028.25,
+        "low": 6105.741666666667,
+        "high": 7994.175
+      },
+      "total_symbols": {
+        "mean": 11441.0,
+        "low": 9959.912499999999,
+        "high": 13018.458333333332
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 25.0,
+        "low": 2.75,
+        "high": 47.41874999999997
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.7983969456597775,
+        "low": 2.986866767668124,
+        "high": 4.589384297947441
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.1,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 966,
+      "completion_time": {
+        "mean": 98.0,
+        "low": 73.66666666666667,
+        "high": 124.83541666666663
+      },
+      "symbols": {
+        "mean": 26696.083333333332,
+        "low": 19622.064583333333,
+        "high": 34527.766666666656
+      },
+      "total_symbols": {
+        "mean": 32133.333333333332,
+        "low": 24647.01875,
+        "high": 40375.05
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.3,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 883,
+      "completion_time": {
+        "mean": 81.0,
+        "low": 63.916666666666664,
+        "high": 98.58333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 32933.166666666664,
+        "low": 26208.641666666666,
+        "high": 39615.614583333336
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.3,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1018,
+      "completion_time": {
+        "mean": 104.08333333333333,
+        "low": 76.0,
+        "high": 134.16666666666666
+      },
+      "symbols": {
+        "mean": 8287.416666666666,
+        "low": 7018.264583333333,
+        "high": 9566.116666666667
+      },
+      "total_symbols": {
+        "mean": 17214.25,
+        "low": 14627.085416666667,
+        "high": 19862.149999999998
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -3.25,
+        "low": -38.083333333333336,
+        "high": 29.833333333333332
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.2907822099769732,
+        "low": 2.2383658101474992,
+        "high": 4.507288404167119
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.3,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 974,
+      "completion_time": {
+        "mean": 100.83333333333333,
+        "low": 69.33333333333333,
+        "high": 138.16874999999996
+      },
+      "symbols": {
+        "mean": 27272.083333333332,
+        "low": 18318.13125,
+        "high": 37932.270833333336
+      },
+      "total_symbols": {
+        "mean": 37642.5,
+        "low": 26560.445833333335,
+        "high": 51273.879166666644
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.5,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 875,
+      "completion_time": {
+        "mean": 84.0,
+        "low": 66.41666666666667,
+        "high": 103.91666666666667
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 50880.0,
+        "low": 40807.125,
+        "high": 62274.87083333332
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1123,
+      "completion_time": {
+        "mean": 114.25,
+        "low": 77.41458333333334,
+        "high": 162.08333333333334
+      },
+      "symbols": {
+        "mean": 8911.0,
+        "low": 7214.375,
+        "high": 10599.993749999998
+      },
+      "total_symbols": {
+        "mean": 24108.5,
+        "low": 19878.25625,
+        "high": 28279.291666666668
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 11.916666666666666,
+        "low": -24.833333333333332,
+        "high": 51.0
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.886872030823327,
+        "low": 3.0830831308583386,
+        "high": 4.946956047777318
+      }
+    },
+    {
+      "experiment": "downlink_loss",
+      "parameter": 0.5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1225,
+      "completion_time": {
+        "mean": 126.16666666666667,
+        "low": 93.41666666666667,
+        "high": 162.0020833333333
+      },
+      "symbols": {
+        "mean": 34635.916666666664,
+        "low": 25189.814583333333,
+        "high": 45010.120833333334
+      },
+      "total_symbols": {
+        "mean": 49914.166666666664,
+        "low": 37955.33125,
+        "high": 63008.20833333332
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": -5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1239,
+      "completion_time": {
+        "mean": 125.16666666666667,
+        "low": 105.33333333333333,
+        "high": 148.91666666666666
+      },
+      "symbols": {
+        "mean": 8204.0,
+        "low": 7165.666666666667,
+        "high": 9245.152083333332
+      },
+      "total_symbols": {
+        "mean": 9431.166666666666,
+        "low": 8299.99375,
+        "high": 10576.170833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -19.916666666666668,
+        "low": -40.416666666666664,
+        "high": 3.6666666666666665
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.6087274500243782,
+        "low": 2.649882137582511,
+        "high": 4.735330891428867
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": -5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1037,
+      "completion_time": {
+        "mean": 105.25,
+        "low": 76.74791666666667,
+        "high": 140.25
+      },
+      "symbols": {
+        "mean": 29606.0,
+        "low": 21335.004166666666,
+        "high": 39715.760416666664
+      },
+      "total_symbols": {
+        "mean": 31303.083333333332,
+        "low": 22908.625,
+        "high": 41510.71875
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 930,
+      "completion_time": {
+        "mean": 91.66666666666667,
+        "low": 71.66666666666667,
+        "high": 114.41666666666667
+      },
+      "symbols": {
+        "mean": 5898.083333333333,
+        "low": 5048.995833333333,
+        "high": 6819.502083333333
+      },
+      "total_symbols": {
+        "mean": 7629.916666666667,
+        "low": 6608.154166666667,
+        "high": 8738.8
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -2.3333333333333335,
+        "low": -20.5,
+        "high": 15.0
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 4.187207708718934,
+        "low": 3.408460154596049,
+        "high": 5.008199156739015
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 889,
+      "completion_time": {
+        "mean": 89.33333333333333,
+        "low": 73.0,
+        "high": 108.5
+      },
+      "symbols": {
+        "mean": 24696.5,
+        "low": 19982.404166666667,
+        "high": 30256.110416666663
+      },
+      "total_symbols": {
+        "mean": 26821.666666666668,
+        "low": 22088.09375,
+        "high": 32375.30833333333
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 10,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 984,
+      "completion_time": {
+        "mean": 96.41666666666667,
+        "low": 70.58125,
+        "high": 129.08541666666665
+      },
+      "symbols": {
+        "mean": 8217.416666666666,
+        "low": 7178.279166666666,
+        "high": 9296.25
+      },
+      "total_symbols": {
+        "mean": 12881.5,
+        "low": 11300.4875,
+        "high": 14542.335416666667
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 9.166666666666666,
+        "low": -27.5,
+        "high": 42.0020833333333
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.295571398148242,
+        "low": 2.576990060827281,
+        "high": 4.071582375733308
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 10,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1060,
+      "completion_time": {
+        "mean": 105.58333333333333,
+        "low": 85.66458333333334,
+        "high": 126.08333333333333
+      },
+      "symbols": {
+        "mean": 27081.083333333332,
+        "low": 21460.014583333334,
+        "high": 32832.16458333333
+      },
+      "total_symbols": {
+        "mean": 35332.75,
+        "low": 28310.89791666667,
+        "high": 42605.45833333333
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1056,
+      "completion_time": {
+        "mean": 108.66666666666667,
+        "low": 78.25,
+        "high": 147.41666666666666
+      },
+      "symbols": {
+        "mean": 8445.5,
+        "low": 7163.166666666667,
+        "high": 9856.0
+      },
+      "total_symbols": {
+        "mean": 11972.583333333334,
+        "low": 10205.395833333332,
+        "high": 13902.45625
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 7.083333333333333,
+        "low": -28.5,
+        "high": 47.666666666666664
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.7293331754583305,
+        "low": 2.6761139701216408,
+        "high": 4.890822008366505
+      }
+    },
+    {
+      "experiment": "fbl",
+      "parameter": 5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1108,
+      "completion_time": {
+        "mean": 115.75,
+        "low": 77.58333333333333,
+        "high": 166.5
+      },
+      "symbols": {
+        "mean": 31496.083333333332,
+        "low": 20589.08541666667,
+        "high": 45920.90833333333
+      },
+      "total_symbols": {
+        "mean": 35716.0,
+        "low": 23939.33125,
+        "high": 51533.016666666656
+      }
+    },
+    {
+      "experiment": "noise",
+      "parameter": 0.0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      }
+    },
+    {
+      "experiment": "noise",
+      "parameter": 0.25,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 966,
+      "completion_time": {
+        "mean": 99.0,
+        "low": 73.08333333333333,
+        "high": 132.58541666666665
+      },
+      "symbols": {
+        "mean": 8023.333333333333,
+        "low": 6689.397916666667,
+        "high": 9395.777083333332
+      },
+      "total_symbols": {
+        "mean": 11228.0,
+        "low": 9405.825,
+        "high": 13090.175
+      }
+    },
+    {
+      "experiment": "noise",
+      "parameter": 0.5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1194,
+      "completion_time": {
+        "mean": 125.66666666666667,
+        "low": 91.66666666666667,
+        "high": 167.5
+      },
+      "symbols": {
+        "mean": 9009.0,
+        "low": 7863.583333333333,
+        "high": 10141.647916666667
+      },
+      "total_symbols": {
+        "mean": 12787.666666666666,
+        "low": 11209.24375,
+        "high": 14301.347916666668
+      }
+    },
+    {
+      "experiment": "noise",
+      "parameter": 1.0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 805,
+      "completion_time": {
+        "mean": 80.16666666666667,
+        "low": 65.5,
+        "high": 95.66666666666667
+      },
+      "symbols": {
+        "mean": 7814.25,
+        "low": 6748.083333333333,
+        "high": 8911.204166666666
+      },
+      "total_symbols": {
+        "mean": 10831.833333333334,
+        "low": 9362.160416666666,
+        "high": 12356.85
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 100,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 0.6666666666666666,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1308,
+      "completion_time": {
+        "mean": 93.33333333333333,
+        "low": 83.16666666666667,
+        "high": 103.58333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 13215.833333333334,
+        "low": 11806.458333333334,
+        "high": 14641.358333333334
+      },
+      "saved_fraction": {
+        "mean": 0.875,
+        "low": 0.8333333333333334,
+        "high": 0.9166666666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 100,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.75,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1165,
+      "completion_time": {
+        "mean": 93.41666666666667,
+        "low": 85.25,
+        "high": 101.25
+      },
+      "symbols": {
+        "mean": 12222.583333333334,
+        "low": 11265.947916666666,
+        "high": 13134.333333333334
+      },
+      "total_symbols": {
+        "mean": 22775.166666666668,
+        "low": 21107.127083333333,
+        "high": 24366.58958333333
+      },
+      "saved_fraction": {
+        "mean": 0.9166666666666666,
+        "low": 0.875,
+        "high": 0.9583333333333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 4.75,
+        "low": -6.916666666666667,
+        "high": 17.083333333333332
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.2245842736464603,
+        "low": 1.9526876015937735,
+        "high": 2.511291158804474
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 100,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 0.5,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1420,
+      "completion_time": {
+        "mean": 98.16666666666667,
+        "low": 85.91666666666667,
+        "high": 111.25
+      },
+      "symbols": {
+        "mean": 27190.166666666668,
+        "low": 23656.458333333332,
+        "high": 30981.056249999998
+      },
+      "total_symbols": {
+        "mean": 45580.75,
+        "low": 40064.875,
+        "high": 51415.95416666666
+      },
+      "saved_fraction": {
+        "mean": 0.8854166666666666,
+        "low": 0.8229166666666666,
+        "high": 0.9479166666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 200,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 0.6666666666666666,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1308,
+      "completion_time": {
+        "mean": 93.33333333333333,
+        "low": 83.16666666666667,
+        "high": 103.58333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 13215.833333333334,
+        "low": 11806.458333333334,
+        "high": 14641.358333333334
+      },
+      "saved_fraction": {
+        "mean": 0.875,
+        "low": 0.8333333333333334,
+        "high": 0.9166666666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 200,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.5833333333333334,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1214,
+      "completion_time": {
+        "mean": 98.66666666666667,
+        "low": 82.0,
+        "high": 117.2520833333333
+      },
+      "symbols": {
+        "mean": 14801.0,
+        "low": 12719.302083333334,
+        "high": 16763.65208333333
+      },
+      "total_symbols": {
+        "mean": 26279.75,
+        "low": 22810.785416666666,
+        "high": 29621.45208333333
+      },
+      "saved_fraction": {
+        "mean": 0.875,
+        "low": 0.8020833333333334,
+        "high": 0.9375
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -0.5,
+        "low": -14.25,
+        "high": 12.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 1.8376235839920727,
+        "low": 1.594306478543601,
+        "high": 2.108507027853178
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 200,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 0.5,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1405,
+      "completion_time": {
+        "mean": 98.16666666666667,
+        "low": 85.91666666666667,
+        "high": 111.25
+      },
+      "symbols": {
+        "mean": 27198.666666666668,
+        "low": 23664.883333333335,
+        "high": 30990.9125
+      },
+      "total_symbols": {
+        "mean": 45426.166666666664,
+        "low": 40041.17916666667,
+        "high": 51140.52291666667
+      },
+      "saved_fraction": {
+        "mean": 0.8854166666666666,
+        "low": 0.8229166666666666,
+        "high": 0.9479166666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 25,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 0.6666666666666666,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1308,
+      "completion_time": {
+        "mean": 93.33333333333333,
+        "low": 83.16666666666667,
+        "high": 103.58333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 13215.833333333334,
+        "low": 11806.458333333334,
+        "high": 14641.358333333334
+      },
+      "saved_fraction": {
+        "mean": 0.875,
+        "low": 0.8333333333333334,
+        "high": 0.9166666666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 25,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.5,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1193,
+      "completion_time": {
+        "mean": 102.58333333333333,
+        "low": 88.66666666666667,
+        "high": 117.25
+      },
+      "symbols": {
+        "mean": 4348.583333333333,
+        "low": 3986.0770833333336,
+        "high": 4720.502083333333
+      },
+      "total_symbols": {
+        "mean": 13049.583333333334,
+        "low": 12023.7375,
+        "high": 14119.033333333333
+      },
+      "saved_fraction": {
+        "mean": 0.8541666666666666,
+        "low": 0.7916666666666666,
+        "high": 0.90625
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -0.3333333333333333,
+        "low": -12.75,
+        "high": 12.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.2748404652856293,
+        "low": 2.912210094212384,
+        "high": 3.634516559597377
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 25,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 0.25,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1344,
+      "completion_time": {
+        "mean": 102.25,
+        "low": 90.08125,
+        "high": 113.75
+      },
+      "symbols": {
+        "mean": 14240.916666666666,
+        "low": 12460.216666666667,
+        "high": 15904.175
+      },
+      "total_symbols": {
+        "mean": 31391.166666666668,
+        "low": 27783.029166666667,
+        "high": 34777.10416666667
+      },
+      "saved_fraction": {
+        "mean": 0.84375,
+        "low": 0.78125,
+        "high": 0.90625
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 50,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 0.6666666666666666,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1308,
+      "completion_time": {
+        "mean": 93.33333333333333,
+        "low": 83.16666666666667,
+        "high": 103.58333333333333
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 13215.833333333334,
+        "low": 11806.458333333334,
+        "high": 14641.358333333334
+      },
+      "saved_fraction": {
+        "mean": 0.875,
+        "low": 0.8333333333333334,
+        "high": 0.9166666666666666
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 50,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 0.6666666666666666,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1245,
+      "completion_time": {
+        "mean": 102.91666666666667,
+        "low": 88.83333333333333,
+        "high": 117.91666666666667
+      },
+      "symbols": {
+        "mean": 8641.5,
+        "low": 7797.825,
+        "high": 9433.685416666665
+      },
+      "total_symbols": {
+        "mean": 19329.166666666668,
+        "low": 17622.07083333333,
+        "high": 20961.33958333333
+      },
+      "saved_fraction": {
+        "mean": 0.8854166666666666,
+        "low": 0.8020833333333334,
+        "high": 0.9583333333333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 9.333333333333334,
+        "low": -5.25,
+        "high": 23.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.522237651642269,
+        "low": 3.017254752754608,
+        "high": 4.065331513109088
+      }
+    },
+    {
+      "experiment": "rescue",
+      "parameter": 50,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 0.5833333333333334,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1455,
+      "completion_time": {
+        "mean": 112.25,
+        "low": 93.66458333333334,
+        "high": 132.58333333333334
+      },
+      "symbols": {
+        "mean": 30437.416666666668,
+        "low": 24956.720833333333,
+        "high": 36424.14791666666
+      },
+      "total_symbols": {
+        "mean": 50256.583333333336,
+        "low": 41836.660416666666,
+        "high": 59412.2625
+      },
+      "saved_fraction": {
+        "mean": 0.84375,
+        "low": 0.75,
+        "high": 0.9166666666666666
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 150,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 966,
+      "completion_time": {
+        "mean": 96.5,
+        "low": 83.83333333333333,
+        "high": 110.16666666666667
+      },
+      "symbols": {
+        "mean": 8125.666666666667,
+        "low": 7273.6125,
+        "high": 9019.287499999999
+      },
+      "total_symbols": {
+        "mean": 17468.916666666668,
+        "low": 15800.616666666667,
+        "high": 19179.09375
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 12.416666666666666,
+        "low": -9.083333333333334,
+        "high": 35.583333333333336
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 1.8921524387742543,
+        "low": 1.5118329923252025,
+        "high": 2.3240307955722876
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 150,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1054,
+      "completion_time": {
+        "mean": 108.91666666666667,
+        "low": 85.41666666666667,
+        "high": 135.58541666666665
+      },
+      "symbols": {
+        "mean": 15375.0,
+        "low": 11980.0,
+        "high": 19238.110416666666
+      },
+      "total_symbols": {
+        "mean": 33457.583333333336,
+        "low": 26427.65208333333,
+        "high": 41464.44374999999
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 300,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 877,
+      "completion_time": {
+        "mean": 87.08333333333333,
+        "low": 67.5,
+        "high": 109.0020833333333
+      },
+      "symbols": {
+        "mean": 12367.333333333334,
+        "low": 10699.658333333333,
+        "high": 13991.841666666667
+      },
+      "total_symbols": {
+        "mean": 23163.333333333332,
+        "low": 20166.485416666666,
+        "high": 26083.00833333333
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 37.166666666666664,
+        "low": 6.497916666666669,
+        "high": 68.16666666666667
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.812200150935259,
+        "low": 2.2656147836618086,
+        "high": 3.4113168891521273
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 300,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1210,
+      "completion_time": {
+        "mean": 124.25,
+        "low": 95.75,
+        "high": 155.25
+      },
+      "symbols": {
+        "mean": 34779.416666666664,
+        "low": 26546.658333333333,
+        "high": 43778.145833333336
+      },
+      "total_symbols": {
+        "mean": 57081.75,
+        "low": 44123.979166666664,
+        "high": 71232.04583333332
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 600,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 765,
+      "completion_time": {
+        "mean": 75.08333333333333,
+        "low": 64.41666666666667,
+        "high": 85.91666666666667
+      },
+      "symbols": {
+        "mean": 12486.583333333334,
+        "low": 11237.414583333333,
+        "high": 13494.920833333334
+      },
+      "total_symbols": {
+        "mean": 23215.25,
+        "low": 21065.797916666666,
+        "high": 24961.204166666666
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 16.666666666666668,
+        "low": -0.8354166666666648,
+        "high": 34.5
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.84330514752501,
+        "low": 2.8653973307270206,
+        "high": 4.8583735876006395
+      }
+    },
+    {
+      "experiment": "shared",
+      "parameter": 600,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 969,
+      "completion_time": {
+        "mean": 91.75,
+        "low": 69.08333333333333,
+        "high": 117.0
+      },
+      "symbols": {
+        "mean": 47989.75,
+        "low": 34571.81041666667,
+        "high": 62981.09791666666
+      },
+      "total_symbols": {
+        "mean": 68641.83333333333,
+        "low": 50509.45625,
+        "high": 88677.83124999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -10,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -10,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1667,
+      "completion_time": {
+        "mean": 165.5,
+        "low": 142.16458333333333,
+        "high": 191.41666666666666
+      },
+      "symbols": {
+        "mean": 10110.833333333334,
+        "low": 9182.989583333334,
+        "high": 11027.110416666666
+      },
+      "total_symbols": {
+        "mean": 10877.333333333334,
+        "low": 9927.397916666667,
+        "high": 11825.139583333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 18.416666666666668,
+        "low": -17.16875,
+        "high": 56.5020833333333
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 5.202151157998846,
+        "low": 4.392271195829716,
+        "high": 6.083350876025779
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -10,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1794,
+      "completion_time": {
+        "mean": 183.91666666666666,
+        "low": 155.58333333333334,
+        "high": 215.41666666666666
+      },
+      "symbols": {
+        "mean": 52598.083333333336,
+        "low": 44422.7375,
+        "high": 61669.39374999999
+      },
+      "total_symbols": {
+        "mean": 53961.5,
+        "low": 45681.94791666667,
+        "high": 63109.439583333326
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -5,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1212,
+      "completion_time": {
+        "mean": 121.91666666666667,
+        "low": 100.25,
+        "high": 145.58333333333334
+      },
+      "symbols": {
+        "mean": 8159.916666666667,
+        "low": 6925.8,
+        "high": 9391.452083333332
+      },
+      "total_symbols": {
+        "mean": 9276.583333333334,
+        "low": 7958.408333333334,
+        "high": 10602.841666666667
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 12.833333333333334,
+        "low": -20.75,
+        "high": 45.75
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 4.6708095466661215,
+        "low": 3.6103096904828567,
+        "high": 5.757078565329811
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": -5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1327,
+      "completion_time": {
+        "mean": 134.75,
+        "low": 100.0,
+        "high": 175.2520833333333
+      },
+      "symbols": {
+        "mean": 38113.416666666664,
+        "low": 28119.79375,
+        "high": 49783.914583333324
+      },
+      "total_symbols": {
+        "mean": 39861.166666666664,
+        "low": 29656.225000000002,
+        "high": 51692.07916666666
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 0,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 976,
+      "completion_time": {
+        "mean": 98.5,
+        "low": 74.5,
+        "high": 129.16874999999996
+      },
+      "symbols": {
+        "mean": 6165.166666666667,
+        "low": 5224.954166666666,
+        "high": 7266.085416666667
+      },
+      "total_symbols": {
+        "mean": 7805.75,
+        "low": 6688.15625,
+        "high": 9142.710416666665
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 0.6666666666666666,
+        "low": -38.916666666666664,
+        "high": 41.33541666666664
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 4.459219810224108,
+        "low": 3.1964883713017223,
+        "high": 6.224863290462641
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 995,
+      "completion_time": {
+        "mean": 99.16666666666667,
+        "low": 75.41666666666667,
+        "high": 128.91666666666666
+      },
+      "symbols": {
+        "mean": 27491.833333333332,
+        "low": 20632.06666666667,
+        "high": 36093.30416666666
+      },
+      "total_symbols": {
+        "mean": 29857.916666666668,
+        "low": 22838.979166666668,
+        "high": 38735.12291666667
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 10,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 10,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1085,
+      "completion_time": {
+        "mean": 111.08333333333333,
+        "low": 85.25,
+        "high": 140.5020833333333
+      },
+      "symbols": {
+        "mean": 8859.333333333334,
+        "low": 7943.197916666667,
+        "high": 9747.36875
+      },
+      "total_symbols": {
+        "mean": 13796.5,
+        "low": 12370.722916666668,
+        "high": 15176.731249999999
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -19.333333333333332,
+        "low": -48.916666666666664,
+        "high": 8.5
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.6399277598013393,
+        "low": 2.1225546480855257,
+        "high": 3.2170938357318346
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 10,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 938,
+      "completion_time": {
+        "mean": 91.75,
+        "low": 76.5,
+        "high": 106.5
+      },
+      "symbols": {
+        "mean": 23388.0,
+        "low": 18847.39791666667,
+        "high": 27814.91875
+      },
+      "total_symbols": {
+        "mean": 30544.25,
+        "low": 25114.2875,
+        "high": 35863.541666666664
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 20,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 20,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 892,
+      "completion_time": {
+        "mean": 87.25,
+        "low": 72.0,
+        "high": 104.41666666666667
+      },
+      "symbols": {
+        "mean": 5552.333333333333,
+        "low": 5057.235416666666,
+        "high": 6098.672916666666
+      },
+      "total_symbols": {
+        "mean": 11147.583333333334,
+        "low": 10251.995833333332,
+        "high": 12115.258333333333
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -1.6666666666666667,
+        "low": -30.25,
+        "high": 23.335416666666635
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 1.6511526685477578,
+        "low": 1.2264824033595505,
+        "high": 2.086340570673034
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 20,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 924,
+      "completion_time": {
+        "mean": 85.58333333333333,
+        "low": 69.08333333333333,
+        "high": 100.83333333333333
+      },
+      "symbols": {
+        "mean": 9167.75,
+        "low": 7248.735416666666,
+        "high": 10921.933333333332
+      },
+      "total_symbols": {
+        "mean": 19834.166666666668,
+        "low": 15891.16875,
+        "high": 23452.627083333333
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 5,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 5,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 1069,
+      "completion_time": {
+        "mean": 108.5,
+        "low": 81.66666666666667,
+        "high": 138.75
+      },
+      "symbols": {
+        "mean": 8685.833333333334,
+        "low": 7457.160416666667,
+        "high": 9871.675
+      },
+      "total_symbols": {
+        "mean": 12217.166666666666,
+        "low": 10516.56875,
+        "high": 13860.670833333334
+      },
+      "periodic_minus_mica_slots": {
+        "mean": -18.0,
+        "low": -56.166666666666664,
+        "high": 18.25
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 2.7938789216156574,
+        "low": 2.1070414912034114,
+        "high": 3.6327414975522423
+      }
+    },
+    {
+      "experiment": "snr",
+      "parameter": 5,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 900,
+      "completion_time": {
+        "mean": 90.5,
+        "low": 73.83333333333333,
+        "high": 109.41666666666667
+      },
+      "symbols": {
+        "mean": 24267.166666666668,
+        "low": 19525.56875,
+        "high": 29697.93958333333
+      },
+      "total_symbols": {
+        "mean": 27934.25,
+        "low": 22749.510416666664,
+        "high": 33844.67916666667
+      }
+    },
+    {
+      "experiment": "table_xii",
+      "parameter": 0,
+      "scheme": "genie",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 830,
+      "completion_time": {
+        "mean": 74.0,
+        "low": 62.166666666666664,
+        "high": 86.33541666666663
+      },
+      "symbols": {
+        "mean": 0.0,
+        "low": 0.0,
+        "high": 0.0
+      },
+      "total_symbols": {
+        "mean": 10492.416666666666,
+        "low": 8864.775000000001,
+        "high": 12193.193749999999
+      }
+    },
+    {
+      "experiment": "table_xii",
+      "parameter": 0,
+      "scheme": "mica",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 838,
+      "completion_time": {
+        "mean": 83.08333333333333,
+        "low": 67.5,
+        "high": 101.0020833333333
+      },
+      "symbols": {
+        "mean": 12924.25,
+        "low": 11212.822916666668,
+        "high": 14651.983333333332
+      },
+      "total_symbols": {
+        "mean": 16943.166666666668,
+        "low": 14734.560416666667,
+        "high": 19218.760416666668
+      },
+      "periodic_minus_mica_slots": {
+        "mean": 8.666666666666666,
+        "low": -20.0,
+        "high": 38.33541666666664
+      },
+      "periodic_over_mica_uplink": {
+        "mean": 3.7131555022535156,
+        "low": 2.6461960791410712,
+        "high": 5.050677223954442
+      }
+    },
+    {
+      "experiment": "table_xii",
+      "parameter": 0,
+      "scheme": "sem",
+      "n": 12,
+      "completion_rate": 1.0,
+      "llm_fallbacks": 0,
+      "llm_decisions": 969,
+      "completion_time": {
+        "mean": 91.75,
+        "low": 69.08333333333333,
+        "high": 117.0
+      },
+      "symbols": {
+        "mean": 47989.75,
+        "low": 34571.81041666667,
+        "high": 62981.09791666666
+      },
+      "total_symbols": {
+        "mean": 55429.833333333336,
+        "low": 40582.26666666667,
+        "high": 71877.04583333334
+      }
+    }
+  ],
+  "report_source_sha256": "7787057bd231a4ab9ade1211381401bf3831a3bf1743adfaa9afe38471abfb38",
+  "inference": {
+    "http_requests": 68944,
+    "server_seconds": 39155.44599340005,
+    "prompt_tokens": 25717426,
+    "generated_tokens": 637685
+  },
+  "llm_by_agent": {
+    "0": {
+      "model": "qwen3:8b",
+      "decisions": 36639,
+      "fallbacks": 0,
+      "agree_with_planner": 11785
+    },
+    "2": {
+      "model": "llama3.1:8b",
+      "decisions": 37442,
+      "fallbacks": 0,
+      "agree_with_planner": 10193
+    },
+    "4": {
+      "model": "gemma3:12b",
+      "decisions": 39307,
+      "fallbacks": 0,
+      "agree_with_planner": 12030
+    }
+  }
+}

@@ -18,7 +18,7 @@ import math
 
 import numpy as np
 
-from mica_comm.agents.voi import TeamModel
+from mica_comm.agents.etom import EToMModel
 from mica_comm.communication.messages import (
     HEADER_BITS,
     Packet,
@@ -46,7 +46,7 @@ class JointMicaScheduler(MicaScheduler):
         c = self.cfg
         W, price = c.symbols_per_slot, self.price
         rates = sorted(c.rates)
-        team = TeamModel(sim, agent, c.tom_temperature)
+        team = EToMModel(sim, agent, c.etom_temperature)
 
         # -- confirmations: additive value, one group each ---------------------
         acked_c = getattr(agent, "acked_confirms", set())

@@ -67,6 +67,13 @@ class Simulation:
 
     def __init__(self, cfg: Config, scheme: str, seed: int, record_traj: bool = False):
         self.cfg = cfg
+        if len(set(cfg.llm_agents)) != len(cfg.llm_agents) or any(
+            k < 0 or k >= cfg.n_agents for k in cfg.llm_agents
+        ):
+            raise ValueError("llm_agents must contain distinct valid agent indices")
+        if cfg.llm_models and len(cfg.llm_models) != len(cfg.llm_agents):
+            raise ValueError("llm_models must contain one model per LLM agent")
+        models = dict(zip(cfg.llm_agents, cfg.llm_models or (cfg.llm_model,) * len(cfg.llm_agents)))
         n = cfg.grid
         world_rng = _stream_rng(seed, "world")
         self.sense_rng = _stream_rng(seed, "sensing")
@@ -104,7 +111,7 @@ class Simulation:
             if k in cfg.llm_agents:
                 from mica_comm.agents.llm_agent import LLMAgent, get_client
 
-                self.agents.append(LLMAgent(k, p, cfg, self, get_client(cfg.llm_model)))
+                self.agents.append(LLMAgent(k, p, cfg, self, get_client(models[k])))
             else:
                 self.agents.append(Agent(k, p, cfg))
         # agent -> last position known to the team (launch points are common knowledge)
@@ -396,6 +403,15 @@ class Simulation:
             out["llm_decisions"] = sum(a.decisions for a in llm)
             out["llm_fallbacks"] = sum(a.fallbacks for a in llm)
             out["llm_agree"] = sum(a.agree_with_planner for a in llm)
+            out["llm_by_agent"] = {
+                str(a.idx): {
+                    "model": a.client.model,
+                    "decisions": a.decisions,
+                    "fallbacks": a.fallbacks,
+                    "agree_with_planner": a.agree_with_planner,
+                }
+                for a in llm
+            }
         if self.record_traj:
             out["trajectories"] = [a.trajectory for a in self.agents]
             out["victims"] = sorted(self.world.victims)
@@ -408,16 +424,39 @@ def run_episode(cfg: Config, scheme: str, seed: int, record_traj: bool = False) 
 
 
 def main():
+    from mica_comm.core.config import MIXED_TEAM_MODELS
+    from mica_comm.simulation.realistic import REALISTIC_SCHEMES, run_realistic
+
     ap = argparse.ArgumentParser(description="Run one search-and-rescue episode.")
     ap.add_argument("--scheme", default="mica", choices=sorted(SCHEMES))
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--snr", type=float, default=Config.snr_ref_db)
     ap.add_argument("--symbols", type=int, default=Config.symbols_per_slot)
     ap.add_argument("--agents", type=int, default=Config.n_agents)
+    ap.add_argument("--team", choices=("mixed", "planner"), default="mixed")
+    ap.add_argument("--shared-budget", type=int, default=300)
+    ap.add_argument("--shared-mode", choices=("static", "price", "central"), default="static")
     args = ap.parse_args()
-    cfg = Config().with_(snr_ref_db=args.snr, symbols_per_slot=args.symbols, n_agents=args.agents)
-    out = run_episode(cfg, args.scheme, args.seed)
-    out.pop("curve")
+    if args.shared_budget < 0:
+        ap.error("--shared-budget must be nonnegative")
+    if args.team == "mixed" and args.agents < 6:
+        ap.error("The mixed team requires at least six agents (three LLMs plus planners)")
+    cfg = Config().with_(
+        snr_ref_db=args.snr,
+        symbols_per_slot=args.symbols,
+        n_agents=args.agents,
+        shared_budget=args.shared_budget,
+        shared_mode=args.shared_mode,
+        llm_agents=(0, 2, 4) if args.team == "mixed" else (),
+        llm_models=MIXED_TEAM_MODELS if args.team == "mixed" else (),
+    )
+    if args.shared_budget:
+        if args.scheme not in REALISTIC_SCHEMES:
+            ap.error(f"--scheme {args.scheme} is unavailable with a shared budget")
+        out = run_realistic(cfg, args.scheme, args.seed)
+    else:
+        out = run_episode(cfg, args.scheme, args.seed)
+        out.pop("curve")
     print(json.dumps(out, indent=2))
 
 

@@ -15,6 +15,25 @@
 
 </div>
 
+**当前主基线已完成：**三个 planner + 三个不同模型 LLM，共 1380 次任务，后端回退为零。[结果与 Table XII](reports/current_mixed/README.md) · [中英文图表](reports/current_mixed/FIGURES.md)。
+
+
+
+## 当前主基线：3 个 planner + 3 个不同模型的 LLM
+
+每次任务的 0、2、4 号智能体分别使用 `qwen3:8b`、`llama3.1:8b`、`gemma3:12b`，其余三个使用 planner。完整主实验统一使用当前 EToM 和精确 DP 调度器。团队规模扫描固定这三个 LLM，改变 planner 数量，总规模为 6、8、10、12、14。
+
+```bash
+python -m experiments.run_current --table-xii --seeds 12 --workers 6 --output results/current_mixed_20261019
+python -m experiments.summarize_current --input results/current_mixed_20261019
+```
+
+完整矩阵为 112 个配置单元，另加 3 个 Table XII 正交链路对照单元；每单元 12 个相同任务种子，共 1,380 次任务。Table XII 对照使用每 agent 每时隙 100 个符号；主搜索实验使用总计 300 个符号的共享上行和静态均分。三模型混编是对论文团队结构的扩展，模型版本与论文不同，不能声称复现论文原始数值。
+
+结果自动导出 `missions.jsonl`、`manifest.json`、`summary.json`、`metrics.csv`、`README.md`，包含逐 agent 模型身份、LLM 回退检查、配对时间差、通信比值和 95% bootstrap 区间。后端回退会中止对应任务，不会作为有效结果记录。相同命令支持断点续跑，代码、配置、模型摘要和种子必须一致。`mica-mission` 默认也使用三模型混编；纯 planner 诊断需显式指定 `--team planner`。
+
+下方纯 planner 和单模型 LLM 结果均为历史快照。
+
 ---
 
 ## 项目概述
@@ -33,7 +52,7 @@ mica-mission --scheme mica --seed 9000
 python -m pytest -q
 ```
 
-默认任务无需 LLM 服务。运行本地模型实验时，将端点指向 Windows Ollama；从 WSL 无法访问 localhost 时，将地址替换为 Windows 主机地址。
+默认任务使用三个不同模型的混编团队，需要 Ollama。纯 planner 诊断请显式指定 `mica-mission --team planner`。从 WSL 无法访问 Windows localhost 时，将端点地址替换为 Windows 主机地址。
 
 ```bash
 python -m experiments.run_team_benchmark --help
@@ -41,7 +60,7 @@ python -m experiments.run_team_benchmark --url http://localhost:11434 \
   --seeds 12 --output results/team_new
 ```
 
-模型为 `qwen3:8b`、`llama3.1:8b`、`gemma3:12b`。每次任务由 3 个所选 LLM 智能体和 3 个经典规划智能体组成，不是三个模型同时混编。
+模型为 `qwen3:8b`、`llama3.1:8b`、`gemma3:12b`。默认每次任务混编三个不同模型各一个智能体和三个 planner。历史单模型团队比较需显式指定 `--team-mode single_model`。
 
 ## 项目结构
 
@@ -110,7 +129,7 @@ IDEAL 绕过上行投递约束，其零上行记账不代表实际零成本。�
 仓库提供带代码指纹的结果快照和最终矢量图表。绘图实现作为内部工具保留，不纳入公开源码。若要为后续研究重新运行经典规划实验：
 
 ```bash
-python -m experiments.run_current --seeds 12 --workers 6 --output results/current_new
+python -m experiments.run_current --table-xii --seeds 12 --workers 6 --output results/current_mixed_new
 ```
 
 发布图表中的阴影与误差线为按任务种子重采样的探索性 95% bootstrap 区间，未校正多重比较；未完成任务保留上限时长，不从统计删除。图 13 为预算点的均值权衡，不宣称全局 Pareto 最优；轨迹图固定使用首个种子。

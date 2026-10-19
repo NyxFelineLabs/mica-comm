@@ -1,4 +1,4 @@
-"""MICA message scheduling and conventional communication baselines.
+﻿"""MICA message scheduling and conventional communication baselines.
 
 Every scheme decides, for one agent and one slot, which packets are put on the
 uplink, at which rate, and returns the packets decoded by the coordinator.
@@ -10,7 +10,8 @@ from typing import List, Optional
 
 import numpy as np
 
-from mica_comm.agents.voi import TeamModel
+from mica_comm.agents.etom import EToMModel
+from mica_comm.agents.information_gain import InformationGainModel, TaskRelevanceModel
 from mica_comm.communication.channel import Channel
 from mica_comm.communication.messages import (
     Packet,
@@ -306,49 +307,49 @@ class Group:
     cell: Optional[int] = None
 
 
-def lagrangian_select(groups: List[Group], budget: int, price: float):
-    """max sum(value) - price*symbols  s.t.  sum(symbols) <= budget, one option per group.
-
-    Solved by dualising the budget constraint (bisection on the multiplier) followed by
-    a greedy fill of the residual budget.
-    """
-
-    def pick(lam):
-        chosen, used = [], 0
-        for g in groups:
-            best, best_u = None, 0.0
-            for o in g.options:
-                u = o.value - lam * o.symbols
-                if u > best_u:
-                    best, best_u = o, u
-            if best is not None:
-                chosen.append((g, best))
-                used += best.symbols
-        return chosen, used
-
-    chosen, used = pick(price)
+def exact_select(groups: List[Group], budget: int, price: float):
+    """Maximize net value under an integer symbol budget, at most one option per group."""
+    chosen, used = [], 0
+    for group in groups:
+        best, best_value = None, 0.0
+        for option in group.options:
+            value = option.value - price * option.symbols
+            if value > best_value:
+                best, best_value = option, value
+        if best is not None:
+            chosen.append((group, best))
+            used += best.symbols
     if used <= budget:
         return chosen
-    lo, hi = 0.0, max((o.value / o.symbols for g in groups for o in g.options), default=1.0)
-    for _ in range(40):
-        mid = 0.5 * (lo + hi)
-        if pick(price + mid)[1] <= budget:
-            hi = mid
-        else:
-            lo = mid
-    chosen, used = pick(price + hi)
-    taken = {id(g) for g, _ in chosen}
-    for g in sorted(
-        (g for g in groups if id(g) not in taken),
-        key=lambda g: -max(o.value / o.symbols for o in g.options),
-    ):
-        fits = [
-            o for o in g.options if o.symbols <= budget - used and o.value - price * o.symbols > 0
-        ]
-        if fits:
-            o = max(fits, key=lambda o: o.value - price * o.symbols)
-            chosen.append((g, o))
-            used += o.symbols
+
+    dp = [float("-inf")] * (budget + 1)
+    dp[0] = 0.0
+    parents = []
+    for group in groups:
+        next_dp = dp.copy()  # Omitting this group is always allowed.
+        parent = [None] * (budget + 1)
+        for used, value in enumerate(dp):
+            if value == float("-inf"):
+                continue
+            for option in group.options:
+                new_used = used + option.symbols
+                if new_used > budget:
+                    continue
+                new_value = value + option.value - price * option.symbols
+                if new_value > next_dp[new_used]:
+                    next_dp[new_used] = new_value
+                    parent[new_used] = (used, option)
+        dp = next_dp
+        parents.append(parent)
+
+    used = max(range(budget + 1), key=lambda b: (dp[b], -b))
+    chosen = []
+    for group, parent in zip(reversed(groups), reversed(parents)):
+        step = parent[used]
+        if step is not None:
+            used, option = step
+            chosen.append((group, option))
+    chosen.reverse()
     return chosen
 
 
@@ -359,7 +360,10 @@ class MicaScheduler(Scheme):
     """Value-of-information scheduling with importance-aware rate selection.
 
     voi_mode selects the valuation rule, all on the same aggregation/transport:
-      "tom"  decision-theoretic theory-of-mind VoI,
+      "etom" decision-theoretic EToM value of information,
+      "twig" task-weighted information gain, without receiver policy prediction,
+      "ig"   unweighted evidence information gain (same intent rule as twig),
+      "ptr"  public task relevance via counterfactual search coverage,
       "tv"   total-variation shift of the common belief,
       "bits" payload size (throughput objective),
       "aoi"  age reduction of the delivered records (freshness objective).
@@ -371,7 +375,7 @@ class MicaScheduler(Scheme):
     name = "mica"
 
     def __init__(
-        self, cfg, channel, use_voi=True, use_uep=True, voi_mode="tom", name=None, use_filter=None
+        self, cfg, channel, use_voi=True, use_uep=True, voi_mode="etom", name=None, use_filter=None
     ):
         super().__init__(cfg, channel)
         if not use_voi:
@@ -412,7 +416,7 @@ class MicaScheduler(Scheme):
     def evidence_voi(self, sim, records, prefixes, team=None):
         """VoI of delivering the first n pending records, for each n.
 
-        voi_mode="tom": decision-theoretic VoI under the theory-of-mind team model.
+        voi_mode="etom": EToM value under the calibrated teammate model.
         voi_mode="tv":  total-variation shift of the team's survivor-occupancy belief.
         """
         delta = np.zeros_like(sim.Lc)
@@ -422,7 +426,7 @@ class MicaScheduler(Scheme):
                 sim.sensor.apply(delta, records[i])
                 i += 1
             deltas.append(delta.copy())
-        if self.voi_mode == "tom":
+        if self.voi_mode in ("etom", "twig", "ig", "ptr"):
             vals = team.evidence_voi(deltas, [records[n - 1].pos for n in ns])
         elif self.voi_mode == "aoi":
             vals = [float(sum(sim.t - r.t + 1 for r in records[:n])) for n in ns]
@@ -465,14 +469,14 @@ class MicaScheduler(Scheme):
         acked_confirms = getattr(agent, "acked_confirms", set())
         groups = []
         mode = self.voi_mode
-        team = TeamModel(sim, agent, c.tom_temperature) if mode == "tom" else None
+        team = self.value_model(sim, agent)
         for cell in sorted(agent.confirmed_pending - acked_confirms):
             b = confirm_bits(c)
             if not self.use_uep:
                 rates = self._fixed_rates(b, snr_mean)
             if not self.use_voi:
                 v = b
-            elif mode in ("tom", "tv"):
+            elif mode in ("etom", "twig", "ig", "ptr", "tv"):
                 v = c.confirm_value
             else:
                 v = PRIORITY
@@ -527,7 +531,7 @@ class MicaScheduler(Scheme):
             if fits:
                 vals = (
                     self.evidence_voi(sim, recs, fits.values(), team)
-                    if mode in ("tom", "tv", "aoi")
+                    if mode in ("etom", "twig", "ig", "ptr", "tv", "aoi")
                     else {n: float(sizes[n - 1]) for n in fits.values()}
                 )
                 opts = []
@@ -537,9 +541,19 @@ class MicaScheduler(Scheme):
                 groups.append(Group("EVID", opts))
         return [g for g in groups if g.options]
 
+    def value_model(self, sim, agent):
+        """Build a valuation module using only this sender's available view."""
+        if self.voi_mode == "etom":
+            return EToMModel(sim, agent, self.cfg.etom_temperature)
+        if self.voi_mode in ("twig", "ig"):
+            return InformationGainModel(sim, agent, weighted=self.voi_mode == "twig")
+        if self.voi_mode == "ptr":
+            return TaskRelevanceModel(sim, agent)
+        return None
+
     def transmit(self, agent, t, snr_mean, snr_inst, sim):
         groups = self.build_groups(agent, snr_mean, sim)
-        chosen = lagrangian_select(groups, self.cfg.symbols_per_slot, self.price)
+        chosen = exact_select(groups, self.cfg.symbols_per_slot, self.price)
         if self.log is not None:
             self.log.append((groups, chosen, self.price, self.cfg.symbols_per_slot))
         res = TxResult([])
@@ -608,6 +622,9 @@ SCHEMES = {
     "nl": lambda cfg, ch: NaturalLanguage(cfg, ch),
     "sem": lambda cfg, ch: SemanticPeriodic(cfg, ch),
     "mica": lambda cfg, ch: MicaScheduler(cfg, ch),
+    "mica_twig": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="twig", name="mica_twig"),
+    "mica_ig": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="ig", name="mica_ig"),
+    "mica_ptr": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="ptr", name="mica_ptr"),
     "mica_nouep": lambda cfg, ch: MicaScheduler(cfg, ch, use_uep=False, name="mica_nouep"),
     "mica_novoi": lambda cfg, ch: MicaScheduler(cfg, ch, use_voi=False, name="mica_novoi"),
     "mica_tv": lambda cfg, ch: MicaScheduler(cfg, ch, voi_mode="tv", name="mica_tv"),

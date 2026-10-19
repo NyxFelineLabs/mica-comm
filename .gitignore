@@ -25,6 +25,10 @@ figures/*
 !figures/current/
 !figures/current/zh/
 !figures/current/en/
+!figures/current_mixed/
+figures/current_mixed/**/png/
+figures/current_mixed/**/audit/
+figures/current_mixed/**/previews/
 figures/current/**/png/
 figures/current/**/audit/
 

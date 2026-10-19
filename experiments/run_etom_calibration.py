@@ -1,4 +1,4 @@
-"""Fit receiver softmax parameters on training seeds and evaluate held-out missions.
+﻿"""Fit receiver softmax parameters on training seeds and evaluate held-out missions.
 
 Only the teammate predictor changes. Training labels are instrumented planner
 targets; predictor features contain shared beliefs, public positions and public
@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 
 from mica_comm import Config, Simulation, run_episode
-from mica_comm.agents.voi import TeamModel
+from mica_comm.agents.etom import EToMModel
 from mica_comm.core.paths import RESULTS_DIR
 
 TEMPERATURES = (0.02, 0.04, 0.07, 0.1, 0.2, 0.4, 0.8)
@@ -36,7 +36,7 @@ def prediction_losses(sim):
     losses = np.zeros((n, len(PARAMETERS)))
     for j in range(n):
         sender = sim.agents[(j + 1) % n]
-        team = TeamModel(sim.view(sender), sender, sim.cfg.tom_temperature)
+        team = EToMModel(sim.view(sender), sender, sim.cfg.etom_temperature)
         score = team.mass_shared * team.dist[j] * team.rep_known[j]
         maximum = float(score.max())
         normalized = (score.reshape(-1) / maximum) if maximum > 0 else np.zeros(score.size)
@@ -74,8 +74,8 @@ def fit(records):
         allowed = [
             i
             for i, (temperature, persistence) in enumerate(PARAMETERS)
-            if (variant not in ("baseline", "persistence") or temperature == 0.1)
-            and (variant not in ("baseline", "temperature") or persistence == 0)
+            if (variant not in ("baseline", "persistence") or temperature == 0.2)
+            and (variant not in ("baseline", "temperature") or persistence == 2.0)
         ]
         selected[variant] = [allowed[int(np.argmin(row[allowed]))] for row in losses]
     return selected
@@ -87,8 +87,8 @@ def mission_job(job):
     if variant != "baseline":
         overrides = {
             **overrides,
-            "tom_temperatures": tuple(PARAMETERS[i][0] for i in indices),
-            "tom_persistence": tuple(PARAMETERS[i][1] for i in indices),
+            "etom_receiver_temperatures": tuple(PARAMETERS[i][0] for i in indices),
+            "etom_intent_persistences": tuple(PARAMETERS[i][1] for i in indices),
         }
     started = time.monotonic()
     result = run_episode(Config().with_(**overrides), "mica", seed)
@@ -154,7 +154,7 @@ def main():
     parser.add_argument("--sample-interval", type=int, default=5)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=list(SCENARIOS))
-    parser.add_argument("--output", type=Path, default=RESULTS_DIR / "behavior_calibration")
+    parser.add_argument("--output", type=Path, default=RESULTS_DIR / "etom_calibration")
     args = parser.parse_args()
     if min(args.train_seeds, args.eval_seeds, args.sample_interval, args.workers) <= 0:
         parser.error("seed counts, sample interval, and worker count must be positive")
@@ -232,3 +232,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

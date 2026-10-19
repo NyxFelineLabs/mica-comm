@@ -42,7 +42,7 @@ TRANSLATIONS = {
     "Ideal reference": "理想参考",
     "MICA w/o VoI": "MICA（无信息价值）",
     "Belief-divergence VoI": "信念差异信息价值",
-    "MICA (ToM value)": "MICA（心智模型价值）",
+    "MICA (EToM value)": "MICA（EToM 价值）",
     "Throughput value": "吞吐量价值",
     "Throughput value (bits)": "吞吐量价值（比特）",
     "Age-of-information value": "信息年龄价值",

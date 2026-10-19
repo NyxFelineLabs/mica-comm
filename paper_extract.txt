@@ -1,0 +1,2160 @@
+---PAGE 1---
+Resource-Eﬀicient Semantic Communication
+for Heterogeneous Agentic Teams
+Farhad Rezazadeh, Member, IEEE, Hatim Chergui, Senior Member, IEEE, Lingjia Liu, Fellow, IEEE,
+and Merouane Debbah, Fellow, IEEE
+Abstract—Teams of autonomous agents, including large lan-
+guage model (LLM) agents, must coordinate over scarce and
+unreliable wireless links. We propose goal-oriented semantic
+communication (GOSC)1, a closed-loop co-design that jointly
+decides what each agent sends, when it sends it, and how reliably
+it is transmitted, based on each message’s value to the team
+task. An edge broadcast of the team’s common knowledge closes
+the loop by updating these values. We prove that a message
+is sent only if its value exceeds the cost of delivering it and
+that more valuable messages receive more robust transmission
+rates, and we show that the scheduler solves each scheduling step
+exactly whenever the radio budget is not saturated, which held
+in 95% of scheduling decisions. In search-and-rescue missions
+validated on unseen scenarios, GOSC meets the same mission
+targets as carefully tuned periodic semantic schemes with 1.2–8.5
+times fewer uplink channel uses. In most settings, this advantage
+persists with realistic packet overheads, reaching 16.6 times fewer
+uplink channel uses and 13.8 times lower cost when downlink
+costs are included; in the rescue task, it also persists when all
+agents share one uplink. Rough value estimates suﬀice, whereas
+values that ignore message content can fail. With three different
+LLMs, GOSC uses 3.2–3.5 times fewer channel uses, while
+completion-time gains depend on the model.
+Index Terms—Semantic communication, goal-oriented com-
+munication, multi-agent systems, LLM agents, event-triggered
+scheduling, unequal error protection.
+I. INTRODUCTION
+A
+UTONOMOUS agents increasingly solve tasks as teams,
+such as fleets of unmanned aerial vehicles (UAVs),
+robots, and embodied agents built on large language models
+(LLMs) [1]–[5]. Coordination requires agents to share what
+they observe and what they intend, but in the situations where
+teams matter most, such as disaster response, the wireless
+capacity available for coordination is scarce, fading and shared
+with other traﬀic. Classical communication design reproduces
+bits reliably irrespective of their use [6]; semantic and goal-
+oriented communication instead asks which information serves
+the receiver’s task [7]–[10].
+For a team, this question becomes three decisions that every
+agent faces in every slot.
+F. Rezazadeh is with the Technical University of Catalonia (UPC) and
+BrainOmega, 08028 Barcelona, Spain (e-mail: farhad.rezazadeh@upc.edu).
+H. Chergui is with i2CAT Foundation, 08034 Barcelona, Spain (e-mail:
+hatim.chergui@i2cat.net).
+L. Liu is with the Virginia Tech, 24061 Blacksburg, USA (e-mail:
+ljliu@vt.edu).
+M. Debbah is with the Khalifa University of Science and Technology,
+127788 Abu Dhabi, UAE (e-mail: merouane.debbah@ku.ac.ae).
+1To support reproducibility, the source code is publicly available for non-
+commercial use at https://github.com/frezazadeh/gosc-agentic-teams.
+Q1) What should it send? Raw sensor data, verbose natural
+language as exchanged by LLM agents [11]–[13], or
+compact semantic updates?
+Q2) When should it send? Periodically, or only when a
+message is worth its radio cost?
+Q3) How reliably should the network deliver it over a fading
+link?
+Existing designs answer these questions largely one at a
+time. Semantic and task-oriented communication chooses the
+representation (Q1) [14]–[16], age- and value-of-information
+scheduling chooses the timing (Q2) [17]–[19], and importance-
+aware unequal error protection chooses the reliability (Q3)
+[20], [21]. In multi-agent coordination the three are coupled.
+Whether a message is worth sending depends on what the
+teammates already know, which changes with every delivered
+message; whether it is worth its cost depends on the channel
+uses needed to deliver it reliably; and how much protection it
+deserves depends on how much it is worth.
+This paper co-designs the three decisions in closed loop
+under a task-level objective. In the proposed goal-oriented
+semantic communication (GOSC) framework (Figure 1), a
+lossless semantic representation determines what is sent; a
+value-versus-cost trigger determines when, sending a message
+only if its value to the team exceeds the price of delivering it;
+and joint value-aware rate selection determines how reliably,
+protecting more valuable messages more strongly. The edge
+coordinator’s broadcast of the fused common knowledge closes
+the loop; it tells every sender what its teammates already know,
+and hence what is still worth saying.
+A design built on message values raises a question that has
+received little attention. How accurate does semantic valuation
+need to be for resource-eﬀicient agent communication? We
+answer it analytically and experimentally. A value error can
+change a decision only for messages whose value lies close to
+the price of their delivery, and the loss it causes is bounded
+by the price of the channel uses whose allocation changes,
+not by the value itself. In missions, GOSC kept a significant
+channel-use advantage over tuned periodic schedules in 20
+of 24 combinations of setting and value estimate whose rank
+correlation with the exact value was at least 0.89, including
+typical errors of a factor of seven and values known only to
+their order of magnitude; only content-independent values lost
+the advantage in the search task. Precise semantic valuation is
+therefore not necessary; coarse task relevance combined with
+communication-aware scheduling suﬀices, which also explains
+why a theory-of-mind value showed no advantage over simpler
+values.
+arXiv:2609.39477v1  [cs.NI]  30 Sep 2026
+
+
+---PAGE 2---
+Perception
+(on-board detector)
+Belief
+ℓ𝑘= ℓ𝐸+ 𝛿𝑘
+Cognitive core
+planner or LLM
+Intention 𝑔𝑘
+(target / claim)
+Q1 (what) semantic
+encoding + relevance filter
+Message value 𝑉
+(pluggable, e.g., ToM, bits, AoI)
+Q2 (when) & Q3 (how reliably)
+send iff 𝑉> 𝜆𝑐★( ¯𝛾),
+rate non-increasing in 𝑉
+evidence
+intention
+𝑣
+Agent 𝑘
+Base station + edge coordinator
+fusion of ℓ𝐸, declarations, broadcast
+fading uplink, 𝑊ch. uses/slot,
+price 𝜂, rate 𝑅∈R
+common knowledge
+closes the loop
+Teammates
+(planner or LLM)
+Fig. 1. GOSC as a closed-loop co-design of what, when and how reliably. Each agent’s cognitive core (a planner or an LLM) produces beliefs and intentions;
+the semantic representation and relevance filter determine the candidate messages (Q1); a pluggable value function prices them; one value-priced selection
+decides whether each is sent now (Q2) and at which rate (Q3) under the per-slot budget and the price 𝜆(Theorem 1); the edge broadcast of the fused common
+knowledge tells every sender what its teammates already know, closing the loop (Section IV). ToM, theory of mind; AoI, age of information.
+Our contributions are as follows.
+• Closed-loop co-design of what, when and how reli-
+ably. We formulate team coordination over a block-fading
+uplink as the joint minimization of mission time and
+radio cost and propose GOSC, in which one decision rule,
+expected task value minus the price of the channel uses,
+selects the messages, triggers their transmission and sets
+their rates, and the common-knowledge broadcast closes
+the loop. The communication layer is training-free and
+independent of the agents’ cognitive core, which can be
+a planner or an LLM.
+• Structure and exactness of the scheduler. A message
+is sent if and only if its value exceeds the price of a
+successful delivery; at this margin it uses the goodput-
+maximizing rate, and the more its value exceeds the mar-
+gin, the more robust its rate (Theorem 1). The Lagrangian
+relaxation of the per-slot scheduling problem is exact
+whenever the price keeps the budget slack and otherwise
+loses at most one message’s net value (Theorem 2). The
+price kept the budget slack in 95.2–95.8% of the logged
+instances, which explains why the heuristic was exact in
+99% of them.
+• Resource eﬀiciency against tuned semantic baselines.
+At operating points frozen and re-evaluated on fresh
+seeds, GOSC meets common mission targets with 1.2–
+8.5 times fewer uplink channel uses than the most frugal
+tuned semantic periodic schedules we could construct,
+including ones that filter or deliberately suppress updates.
+The advantage survives per-packet overheads of 16–64
+bits in five of six settings, growing with the overhead in
+the rescue task; it holds for the total uplink-plus-downlink
+cost including the common-knowledge broadcast; and it
+persists in the rescue task when all agents compete for a
+shared network-wide uplink, whereas in the search task
+it is significant only with the largest shared budget.
+• How accurate must semantic values be? We bound
+the effect of value errors (Proposition 2) and show in
+missions that GOSC’s eﬀiciency survives value errors
+of a typical factor of seven but not content-independent
+values; semantic valuation must be coarsely right, not
+precise, and a decision-aware theory-of-mind value brings
+no consistent gain over throughput or age-of-information
+values.
+• Reproducible evaluation. Two tasks, finite-blocklength
+errors, a lossy and delayed downlink, per-packet over-
+heads, a shared uplink, a proof-of-concept with heteroge-
+neous LLM–planner teams (Qwen2.5-3B, Llama-3.2-3B
+and Qwen2.5-7B), paired statistics, and hyper-parameters
+frozen on seeds disjoint from the evaluation seeds; the
+code, configurations and per-mission results will be re-
+leased publicly.
+II. RELATED WORK AND POSITIONING
+What to send: Deep joint source–channel coding [22] and
+DeepSC [14] transmit meaning rather than bits; task-oriented
+designs optimize for a receiver’s inference task [15], [23], and
+surveys identify multi-agent collaboration as a key application
+[7]–[10], [24]. Importance-aware designs select the most im-
+portant learned features under a performance target [16]; with
+several transmitters, feature dimensions, their precision and
+resource blocks can be chosen jointly under a per-slot budget
+[25]. Here the importance is computed offline, or per input,
+by a trained model for the inference task of a single receiver.
+When to send: Age of information (AoI) and its variants
+schedule updates by freshness [17], [26], [27]; query AoI
+[28] and application-aware value of information [18] schedule
+sensor updates by when and how receivers use them. Event-
+triggered sampling sends only when the change of a signal
+justifies it [29]; in networked control, the value of a packet is
+its effect on the control cost [30], and goal-oriented robotic
+waypoint transmission combines value and age of information
+with proactive repetition [19]. Theory of mind (ToM), attribut-
+ing beliefs and intentions to others [31], [32], lets ToM2C [33]
+learn when and with whom to share intentions, and Thomas et
+
+
+---PAGE 3---
+al. [34] build a pragmatic semantic link between two agents;
+learned multi-agent communication [35]–[39] requires end-to-
+end training.
+How reliably to deliver: Importance-aware unequal error
+protection allocates more power to important features [20] or
+protects them with stronger channel codes to meet learned
+reliability targets [21]; rate–distortion optimized streaming
+schedules interdependent media packets [40]. These designs
+fix what is sent and decide its protection.
+Positioning: Table I organizes the closest works by the three
+decisions and by the loop that couples them; it compares
+problem settings and mechanisms. Each decision has strong
+precedents, namely importance-aware feature selection for
+what [16], [25], ToM-based and value- or age-based gating
+for when [19], [33], and importance-aware power, coding
+and precision for how reliably [20], [21], [25]. What is new
+in GOSC is their closed-loop co-design for a team with a
+task-level objective. One decision rule chooses the message,
+whether to send it now, and its rate, by one criterion, namely
+the expected value to the team minus the price of reliable
+delivery. The value is computed against the teammates’ current
+knowledge, which the edge broadcast keeps common, so every
+delivery changes what is worth sending next. The co-design
+has a structure that none of the separate designs has, with a
+send threshold set by the price of a successful delivery, a rate
+that moves from goodput-optimal to most robust as the value
+grows (Theorem 1), and a scheduler that is exact whenever
+the price keeps the budget slack (Theorem 2). It also answers
+a question the separate designs do not raise, namely how
+accurate the value must be (Section IV-E). LLM-based agents
+coordinate through natural language [3], [4], [11]–[13]; GOSC
+lets them coordinate through typed semantics at a fraction of
+the cost. Because the published systems differ in task, receivers
+and channel model, we evaluate their mechanisms (ToM-based
+valuation, age-of-information prioritization, and a throughput
+value) within one architecture, against periodic semantic sched-
+ules tuned to be as frugal as possible (Section V).
+III. SYSTEM MODEL AND PROBLEM FORMULATION
+A. Tasks, Perception and Beliefs
+A disaster area is a grid of 𝑁× 𝑁cells with 𝑉survivors
+at unknown cells. 𝐾agents launch next to a base station
+(BS) with an edge coordinator. In slot 𝑡, agent 𝑘at 𝑝𝑘(𝑡)
+senses the (2𝑟+ 1)2 footprint F (𝑝𝑘) with detection and
+false-alarm probabilities 𝑝𝑑and 𝑝𝑓𝑎, independently per cell.
+The evidence record 𝑜𝑡
+𝑘adds the log-likelihood ratio (LLR)
+𝜆+ = ln(𝑝𝑑/𝑝𝑓𝑎) to detected and 𝜆−= ln((1−𝑝𝑑)/(1−𝑝𝑓𝑎))
+to undetected footprint cells of a log-odds belief map; Bayesian
+fusion is additive. A survivor is declared when the edge
+posterior reaches 𝜏or an agent whose own posterior crossed
+𝜏confirms it.
+Search task. The mission ends when all survivors are
+declared; the metric is the completion time 𝑇(capped at
+𝑇max). Rescue task. Each survivor also has a deadline 𝑑𝑠∼
+U[60, 180] slots; once located, one agent must stay at it for
+𝑆𝑟= 8 slots before 𝑑𝑠, and the metric is the fraction of
+survivors saved. An agent’s intention to rescue a survivor is
+a claim; unknown claims cause duplicated travel or neglected
+survivors.
+B. Agents
+Each agent follows a belief–desire–intention architecture
+[41]. Its planner core selects the target
+𝑔𝑘= arg max
+𝑐
+𝑆𝑘(𝑐), 𝑆𝑘(𝑐) =
+𝑀𝑘(𝑐)
+1 + 𝛽∥𝑐−𝑝𝑘∥1
+∏
+𝑞∈D𝑘
+𝜌(𝑐, 𝑞),
+(1)
+where 𝑀𝑘(𝑐) is the belief mass in the footprint centred on
+𝑐, 𝛽discounts travel, and 𝜌(𝑐, 𝑞) = 1 −𝑒−∥𝑐−𝑞∥2/2𝜍2 repels
+from the known intentions of higher-priority teammates and
+the known positions of the others (D𝑘); a hysteresis factor
+ℎavoids oscillations. In the rescue task, an agent takes the
+most urgent feasible task that is not known to be claimed and
+for which no free teammate is known to be closer, and keeps
+it while it remains feasible. Agents move one cell per slot.
+In Section V-G, an LLM core replaces the planner core for
+some agents; the communication layer only uses beliefs and
+intentions (Figure 1).
+C. Radio Resources, Uplink and Downlink
+Resources. By default, each agent has 𝑊channel uses per
+1 s slot on orthogonal resources. In 5G New Radio (NR)
+numerology 0, a resource block over a 1 ms slot holds 168
+resource elements [42], so the default 𝑊= 100 is about
+0.6 resource-block slots per agent and second, that is, a thin
+coordination sub-channel in a cell loaded by other traﬀic. In
+Section V-F2, all agents instead compete for a shared budget
+of 𝐵channel uses per slot, allocated by the BS in every slot
+(Section IV-F).
+Uplink. The mean signal-to-noise ratio (SNR) follows log-
+distance path loss, ¯𝛾𝑘= ¯𝛾ref(𝑑ref/max(𝑑𝑘, 𝑑min)) 𝛼, and the
+instantaneous SNR is ¯𝛾𝑘|ℎ𝑘|2 with Rayleigh block fading per
+slot; the transmitter knows only ¯𝛾𝑘. A packet of 𝐿bits at rate
+𝑅occupies 𝑠= ⌈(𝐿+ 𝐻)/𝑅⌉channel uses, where 𝐻is a fixed
+per-packet overhead for the header and the cyclic redundancy
+check (CRC), 𝐻= 0 unless stated otherwise, and is decoded
+iff log2(1 + ¯𝛾𝑘|ℎ𝑘|2) ≥𝑅, so [43]
+𝑃𝑠(𝑅; ¯𝛾𝑘) = exp( −(2𝑅−1)/ ¯𝛾𝑘
+).
+(2)
+Packets of one agent in one slot share the fading block, so
+their outcomes are nested in the rate. We also evaluate a finite-
+blocklength (FBL) model with the normal-approximation er-
+ror probability [44], [45], averaged over the fading, with
+an optional coding gap. Rates come from a finite set R.
+Conventional link adaptation uses the largest 𝑅∈R with
+1 −𝑃𝑠(𝑅) ≤0.1; if none qualifies (below about 2.5 dB mean
+SNR) it uses the lowest rate, and packets larger than a slot
+are split into independently coded per-slot fragments that are
+retransmitted until decoded. Hybrid automatic repeat request
+(HARQ) acknowledgments are reliable.
+Downlink. The edge fuses decoded packets and broadcasts
+the result; by default the broadcast is error-free, and Sec-
+tion V-F3 studies loss and delay.
+
+
+---PAGE 4---
+TABLE I
+Positioning by the three coupled decisions (what, when, how reliably) and the loop that GOSC closes; problem setting and mechanism (✓, addressed; (✓),
+partly; —, not addressed or not modelled; Rx, receiver; ToM, theory of mind; VoI/AoI, value/age of information; LoS, line of sight; AWGN, additive white
+Gaussian noise; MIMO, multiple-input multiple-output; FBL, finite blocklength)
+ToM2C
+Thomas et al.
+Wu et al.
+Sun et al.
+Cao et al.
+Kim et al.
+Lei et al.
+[33]
+[34]
+[19]
+[16]
+[20]
+[21]
+[25]
+GOSC
+Q1 What (semantic message selection)
+Content chosen by task relevance
+whom to tell
+learned content
+—
+top features
+—
+—
+feature dimensions
+messages, lossless records
+Q2 When (event triggering)
+Sends only when worth its cost
+learned gate
+—
+VoI/AoI priority
+—
+—
+—
+—
+value > price of delivery (Thm. 1)
+Q3 How reliably (physical-layer protection)
+Per-message reliability
+—
+learned codec
+equal repetition
+—
+power
+code rate
+precision
+rate
+Protection grows with value
+—
+—
+—
+—
+✓(closed form)
+✓(learned targets)
+—
+✓(Thm. 1)
+Co-design and closed loop
+Q1–Q3 decided jointly
+—
+(✓) Q1+Q3
+—
+—
+—
+—
+(✓) Q1+Q3
+✓(one rule)
+Value tracks receivers’ current knowledge
+✓
+✓
+✓
+—
+—
+—
+—
+✓(common knowledge)
+Several receivers that act on messages
+✓
+— (2 agents)
+—
+—
+—
+—
+— (1 fusion Rx)
+✓
+Exactness or structure of the decision
+—
+—
+—
+—
+closed form
+optimality analysis
+—
+Thms. 1, 2; Prop. 2
+Network and agents
+Resource budget
+—
+—
+—
+—
+power
+—
+resource blocks
+per-agent or shared channel uses
+Channel and packet errors
+ideal
+Rayleigh
+Rayleigh, LoS
+AWGN, Rayleigh
+MIMO Rayleigh
+Rayleigh
+no error model
+Rayleigh, FBL, overhead
+Training-free communication layer
+—
+—
+(✓) ordering
+(✓) selector
+(✓) allocation
+(✓) coding
+(✓) scheduler
+✓
+Heterogeneous LLM–planner agents
+—
+—
+—
+—
+—
+—
+—
+✓
+Communication cost. Our primary metric is the number
+of uplink channel uses, including overheads. Section V-F1
+also reports the total cost, which comprises uplink data and
+control (scheduling requests), the downlink broadcast of the
+common knowledge (its payload plus 𝐻per broadcast), one
+bit of HARQ feedback per uplink transmission, and downlink
+grants, with downlink bits counted at 2 bit per channel use.
+D. Shared and Private Knowledge
+Let ℓ𝐸be the edge log-odds map.
+Proposition 1 (Knowledge decomposition). With conditionally
+independent detections, exactly-once fusion at the edge and
+an error-free, instantaneous broadcast, agent 𝑘’s belief is
+ℓ𝑘= ℓ𝐸+ 𝛿𝑘, where 𝛿𝑘sums the LLRs of 𝑘’s own undelivered
+records.
+Proof. ℓ𝑘is the prior plus the LLRs of all records known to
+𝑘, namely its own and, via the broadcast, all delivered records
+of the others. ℓ𝐸is the prior plus all delivered records; the
+difference is 𝑘’s undelivered records, and LLRs add.
+A sender therefore knows the shared component of its
+teammates’ knowledge but not their private components 𝛿𝑗;
+the broadcast is what closes the loop between the team’s
+knowledge and each sender’s decisions. With a delayed or
+lossy broadcast, ℓ𝐸is replaced by the snapshot last received
+by agent 𝑘(slot 𝑣𝑘), and 𝛿𝑘comprises 𝑘’s own evidence not
+represented in that snapshot, that is, records not yet delivered
+plus records delivered after slot 𝑣𝑘. Our simulator implements
+exactly this bookkeeping; delivered messages are never re-sent,
+because HARQ acknowledges them.
+E. Problem
+With 𝑛𝑡
+𝑘the channel uses of agent 𝑘in slot 𝑡and a price
+𝜂≥0 per channel use, we seek decentralized policies for
+min E
+[
+𝑇+𝜂
+∑
+𝑡<𝑇
+∑
+𝑘
+𝑛𝑡
+𝑘
+]
+s.t.
+𝑛𝑡
+𝑘≤𝑊
+(
+or ∑
+𝑘𝑛𝑡
+𝑘≤𝐵
+)
+, (3)
+a decentralized partially observable Markov decision process
+(POMDP) that is NEXP-complete in general [46]. In the rescue
+task, 𝑇in (3) is replaced by the number of survivors not saved.
+TABLE II
+Message types and payload sizes (𝑁= 32, 𝑟= 2), without the per-packet
+overhead 𝐻
+Scheme
+Content per message
+Bits
+Raw
+position + 8-bit score of each of 25 cells
+218
+Natural language
+English status report
+≈1,480
+Semantic periodic
+position, detections, intention
+33 + 5𝑃
+GOSC CONFIRM
+survivor cell
+18
+GOSC INTENT
+target cell
+18
+GOSC EVIDENCE
+𝑛aggregated records, Sec. IV-A
+34 (𝑛=1)
+We do not solve (3); each agent uses a myopic value-versus-
+cost surrogate, whose structure we analyze in Section IV and
+whose merit we evaluate empirically in Section V.
+IV. WHAT, WHEN AND HOW RELIABLY IN GOSC
+Figure 1 shows GOSC at each agent. The semantic repre-
+sentation fixes the candidate messages (what, Section IV-A);
+a pluggable value function prices them (Section IV-B); and
+one value-priced selection decides when each is sent and how
+reliably (Section IV-C). We then characterize this selection
+(Sections IV-C–IV-E) and extend it to a shared uplink (Sec-
+tion IV-F).
+A. Semantic Representation for What to Send
+GOSC sends CONFIRM (survivor cell, 18 bits), INTENT (target
+cell, 18 bits) and EVIDENCE messages. Evidence aggregates a
+run of 𝑛pending records losslessly using an anchor cell, 3-
+bit move codes (or a jump with 𝑐𝑏+ 8 bits), and, for each
+detection, its record index and footprint offset, i.e., 𝐿𝐸= 34+
+3(𝑛−1) + 𝐽(𝑐𝑏+ 8) + 𝑃(⌈log2 𝑛⌉+ 𝑓𝑏) bits for 𝐽jumps and
+𝑃detections, with 𝑐𝑏= ⌈log2 𝑁2⌉and 𝑓𝑏= ⌈log2(2𝑟+ 1)2⌉
+(Table II). A relevance filter queues a record only if it would
+move the belief held by the team after the queued evidence
+by at least 𝜀expected survivors. The representation and the
+filter decide which information is a candidate at all; which
+candidate is worth its radio cost is decided next.
+B. Message Values
+GOSC admits any value function; we consider four. (i)
+The ToM value. The sender models each teammate 𝑗as a
+
+
+---PAGE 5---
+Boltzmann-rational planner applying (1) to the shared knowl-
+edge K𝐸, 𝜋𝑗(𝑐) ∝exp(𝑆𝑗(𝑐; K𝐸)/(𝜗max 𝑆𝑗)), and values a
+message 𝑚by its value of information (VoI), the change of the
+teammates’ expected utility 𝑈𝑗under its own, better-informed
+belief,
+VoI𝑘(𝑚) = ∑
+𝑗≠𝑘
+(E𝜋𝑗(·|K𝐸⊕𝑚) [𝑈𝑗] −E𝜋𝑗(·|K𝐸) [𝑈𝑗]).
+(4)
+In the rescue task, a claim receives a high value if some
+teammate would otherwise choose the same survivor. (ii)
+Belief divergence is the total-variation shift of the shared belief.
+(iii) Throughput is the payload size. (iv) Age of information
+is the summed age of the delivered records. Confirmations
+always have a fixed high value. Only (i) models the receivers’
+decisions; (iii) and (iv) encode no task knowledge beyond the
+relevance filter.
+C. Value-Priced Joint Selection for When and How Reliably
+Each slot, the sender forms one group 𝑖per candidate
+message (each confirmation, the intent if it changed, and the
+evidence). An option 𝑜of group 𝑖is a rate 𝑅𝑖𝑜∈R with
+the payload that fits into 𝑊channel uses at that rate (for
+evidence, the longest fitting prefix of the queue), occupying
+𝑠𝑖𝑜= ⌈(𝐿𝑖𝑜+ 𝐻)/𝑅𝑖𝑜⌉channel uses, with expected value
+𝑣𝑖𝑜= 𝑉𝑖𝑜𝑃𝑠(𝑅𝑖𝑜; ¯𝛾), where 𝑉𝑖𝑜is the value of its payload.
+The per-slot problem is the multiple-choice knapsack [47]
+max
+𝑥
+∑
+𝑖,𝑜𝑥𝑖𝑜𝑢𝑖𝑜(𝜂) s.t. ∑
+𝑖,𝑜𝑥𝑖𝑜𝑠𝑖𝑜≤𝑊, ∑
+𝑜𝑥𝑖𝑜≤1,
+(5)
+with 𝑥𝑖𝑜∈{0, 1} and net value 𝑢𝑖𝑜(𝜆) = 𝑣𝑖𝑜−𝜆𝑠𝑖𝑜. For a
+price 𝜆≥𝜂, the decoupled rule 𝑥(𝜆) selects in each group
+the option 𝑜𝑖(𝜆) = arg max𝑜𝑢𝑖𝑜(𝜆) if this net value is positive
+and nothing otherwise; 𝑆(𝜆) denotes its channel uses. GOSC
+applies 𝑥(𝜂) if 𝑆(𝜂) ≤𝑊; otherwise it finds by bisection [48]
+the smallest 𝜆with 𝑆(𝜆) ≤𝑊, i.e., it relaxes the budget with
+a multiplier 𝜇= 𝜆−𝜂, and fills the residual budget greedily
+(Algorithm 1). The same rule answers when (whether a group
+is selected) and how reliably (which rate), as the following
+result makes precise.
+Theorem 1 (Threshold structure for when and how reliably).
+Consider a message with a fixed payload 𝐿and value 𝑉≥
+0, a price 𝜆> 0 and mean SNR ¯𝛾. Let 𝑐(𝑅; ¯𝛾) = ⌈(𝐿+
+𝐻)/𝑅⌉/𝑃𝑠(𝑅; ¯𝛾) be the expected channel uses per successful
+delivery at rate 𝑅(with independent retransmissions), 𝑐★( ¯𝛾) =
+min𝑅𝑐(𝑅; ¯𝛾) over the rates whose packet fits into the budget,
+and 𝑅𝑐the largest minimizer. Then the following hold.
+(i) When. The message is sent iff 𝑉> 𝜆𝑐★( ¯𝛾), and 𝑐★( ¯𝛾)
+is non-increasing in ¯𝛾; hence neither a larger value nor
+a better channel ever suppresses a transmission.
+(ii) How reliably. The selected rate 𝑅★(𝑉) (the largest
+maximizer of 𝑢(𝑅) = 𝑉𝑃𝑠(𝑅; ¯𝛾) −𝜆⌈(𝐿+ 𝐻)/𝑅⌉) is
+non-increasing in 𝑉. For values just above the threshold
+it minimizes 𝑐, and for suﬀiciently large values it is
+the most robust feasible rate. Every transmitted message
+therefore uses a rate at or below 𝑅𝑐; if (𝐿+ 𝐻)/𝑅is
+an integer for all 𝑅, the minimizers of 𝑐maximize the
+goodput 𝑅𝑃𝑠(𝑅; ¯𝛾).
+Algorithm 1 GOSC at agent 𝑘in slot 𝑡
+1: Sense, update 𝛿𝑘; if 𝜎(ℓ𝐸+ 𝛿𝑘)(𝑐) ≥𝜏, add 𝑐to the
+pending confirmations
+2: Select intention 𝑔𝑘by (1)
+3: What. Admit record 𝑜𝑡
+𝑘to the queue if it passes the
+relevance filter
+4: Build groups for confirmations (fixed value) and for intent
+and evidence prefixes (value, e.g., (4)), for every 𝑅∈R
+5: When and how reliably. 𝜆←𝜂; if 𝑆(𝜂) > 𝑊then bisect
+𝜆until 𝑆(𝜆) ≤𝑊
+6: Transmit 𝑥(𝜆); greedily add the remaining groups that fit
+7: On HARQ acknowledgment, remove delivered records
+from the queue; on broadcast, update 𝛿𝑘(closes the loop)
+Proof. (i) The message is sent iff max𝑅𝑢(𝑅) > 0, i.e., iff
+𝑉> 𝜆𝑠(𝑅)/𝑃𝑠(𝑅) for some 𝑅. By (2), 𝑃𝑠(𝑅; ¯𝛾) increases in
+¯𝛾, so each 𝑐(𝑅; ¯𝛾) and their minimum are non-increasing in
+¯𝛾. (ii) For 𝑅1 < 𝑅2, 𝑢(𝑅2) −𝑢(𝑅1) = 𝑉[𝑃𝑠(𝑅2) −𝑃𝑠(𝑅1)] +
+𝜆(𝑠(𝑅1) −𝑠(𝑅2)) decreases in 𝑉because 𝑃𝑠decreases in 𝑅;
+𝑢has decreasing differences in (𝑅,𝑉), and Topkis’ theorem
+[49] shows that the largest maximizer is non-increasing in
+𝑉. At 𝑉= 𝜆𝑐★(1 + 𝜖), 𝑢(𝑅) = 𝜆𝑃𝑠(𝑅) [𝑐★(1 + 𝜖) −𝑐(𝑅)],
+which is positive for 𝑅= 𝑅𝑐and negative for every 𝑅with
+𝑐(𝑅) > 𝑐★(1 + 𝜖); for 𝜖below the relative gap between the
+smallest and second-smallest values of 𝑐, the maximizer is
+therefore a minimizer of 𝑐. As 𝑉→∞, 𝑢(𝑅)/𝑉→𝑃𝑠(𝑅),
+which is maximized by the lowest feasible rate. Without
+ceilings, 𝑐(𝑅) = (𝐿+ 𝐻)/(𝑅𝑃𝑠(𝑅)).
+Theorem 1 answers when and how reliably with one number,
+the price of a successful delivery 𝜆𝑐★( ¯𝛾). A message is sent
+when its value exceeds it, at the margin it is sent at the
+cost-eﬀicient (goodput-maximizing) rate that the rate-aware
+periodic baseline of Section V uses for every message, and the
+further its value exceeds the margin, the more of its channel
+uses are spent on protection. Unequal error protection thus
+follows from the task rather than being imposed. The ordering
+concerns one message; messages with different payloads are
+compared through their thresholds. The argument only uses
+that 𝑃𝑠increases in ¯𝛾and decreases in 𝑅, so it also holds for
+the fading-averaged FBL model; for evidence, whose payload
+grows with the prefix, (i) holds with 𝑉and 𝐿indexed by the
+option. In the logged instances of Section IV-D, every intent
+and confirmation selected by the decoupled rule used a rate
+at or below 𝑅𝑐, and 98.4% of the confirmations, whose value
+is fixed and high, used the most robust feasible rate; the only
+exceptions (1.6% and 4.9% of the intents at 𝑊= 100 and
+𝑊= 50) came from the greedy fill, where lower rates no
+longer fitted into the residual budget.
+D. Exactness of the Lagrangian Scheduler
+Theorem 2 (Exactness and optimality gap). Let OPT be the
+optimum of (5) and 𝐽(𝑥) = ∑
+𝑖,𝑜𝑥𝑖𝑜𝑢𝑖𝑜(𝜂).
+(i) If 𝑆(𝜂) ≤𝑊, then 𝑥(𝜂) is optimal.
+(ii) For every 𝜆≥𝜂with 𝑆(𝜆) ≤𝑊, 𝐽(𝑥(𝜆)) ≤OPT ≤
+𝐽(𝑥(𝜆))+(𝜆−𝜂) (𝑊−𝑆(𝜆)). In particular, 𝑥(𝜆) is optimal
+if 𝑆(𝜆) = 𝑊, and it is always optimal for the budget
+𝑆(𝜆).
+
+
+---PAGE 6---
+(iii) Let 𝜆★
+=
+inf{𝜆
+≥
+𝜂
+:
+𝑆(𝜆)
+≤
+𝑊}
+>
+𝜂and
+suppose that one group 𝑖★changes its option at 𝜆★,
+from 𝑜−(below 𝜆★) to 𝑜+ (above), as is generic. Then
+OPT−𝐽(𝑥(𝜆★+)) < 𝑢𝑖★𝑜−(𝜂)−𝑢𝑖★𝑜+(𝜂) ≤max𝑖,𝑜𝑢𝑖𝑜(𝜂);
+hence the relaxation loses less than the net value of one
+message.
+Proof. For any feasible 𝑥and 𝜆≥𝜂, 𝐽(𝑥) = ∑𝑥𝑖𝑜𝑢𝑖𝑜(𝜆) +
+(𝜆−𝜂) ∑𝑥𝑖𝑜𝑠𝑖𝑜≤∑
+𝑖max𝑜𝑢𝑖𝑜(𝜆)+ + (𝜆−𝜂)𝑊= 𝐽(𝑥(𝜆)) +
+(𝜆−𝜂)(𝑊−𝑆(𝜆)), because 𝑥(𝜆) maximizes ∑𝑥𝑖𝑜𝑢𝑖𝑜(𝜆) under
+the group constraints alone. This is (ii); replacing 𝑊by 𝑆(𝜆)
+gives optimality for that budget [50], and (i) is the case 𝜆= 𝜂.
+For (iii), 𝑥−= 𝑥(𝜆★−) and 𝑥+ = 𝑥(𝜆★+) both maximize the
+Lagrangian at 𝜆★, so 𝐽(𝑥−)−𝐽(𝑥+) = (𝜆★−𝜂)(𝑆(𝑥−)−𝑆(𝑥+));
+with 𝑆(𝑥−) > 𝑊and (ii), OPT−𝐽(𝑥+) ≤(𝜆★−𝜂)(𝑊−𝑆(𝑥+)) <
+𝐽(𝑥−) −𝐽(𝑥+), which is the change of the net value of group
+𝑖★, and 𝑢𝑖★𝑜+(𝜂) ≥0.
+Theorem 2 explains why the heuristic is almost always exact.
+On 12,246 and 13,125 logged scheduling instances (𝑊= 100
+and 𝑊= 50; 30 search missions each), the price 𝜂alone
+kept the budget slack in 95.8% and 95.2% of the instances,
+where (i) certifies optimality; in the remaining instances the
+relaxation was still exact in 76% and 84% of the cases, with
+mean relative gaps of 5.3% and 2.9% there, and 0.22% and
+0.14% over all instances. Event triggering and the knapsack
+thus interact favourably; a scheduler that sends only what is
+worth its price rarely saturates its budget, and whenever it does
+not, the decoupled rule is optimal. These statements concern
+the per-slot surrogate (5), not mission optimality.
+E. How Accurate Must the Value Be?
+Values such as (4) rest on a model of the teammates and
+are necessarily approximate. Let the scheduler use estimates
+ˆ𝑉𝑖𝑜= 𝜉𝑖𝑉𝑖𝑜, where the error factor 𝜉𝑖∈[𝑒−𝛿, 𝑒𝛿] of message 𝑖
+is common to its options, and let the threshold ratio of message
+𝑖be 𝜃𝑖= min𝑜𝜆𝑠𝑖𝑜/𝑣𝑖𝑜(the message is sent under the true
+values iff 𝜃𝑖< 1).
+Proposition 2 (Robustness to value errors). For a fixed price
+𝜆≥𝜂, let 𝑜★
+𝑖and ˆ𝑜𝑖be the decoupled choices under the true
+and the estimated values (“no transmission” being an option
+with 𝑠= 𝑣= 0). Then
+(a) the decision to send message 𝑖can differ only if 𝑒−𝛿<
+𝜃𝑖< 𝑒𝛿;
+(b) 0 ≤𝑢𝑖𝑜★
+𝑖(𝜆) −𝑢𝑖ˆ𝑜𝑖(𝜆) ≤(𝑒𝛿−1) 𝜆|𝑠𝑖𝑜★
+𝑖−𝑠𝑖ˆ𝑜𝑖| ≤(𝑒𝛿−
+1)𝜆𝑊.
+Proof. (a) Message 𝑖is sent under the estimates iff 𝜉𝑖𝑣𝑖𝑜>
+𝜆𝑠𝑖𝑜for some 𝑜, i.e., iff 𝜉𝑖> 𝜃𝑖. (b) The estimated choice
+maximizes 𝜉𝑖(𝑣𝑖𝑜−𝜆′𝑠𝑖𝑜) with 𝜆′ = 𝜆/𝜉𝑖, i.e., it is the true
+choice at price 𝜆′. The function 𝑔(ℓ) = max𝑜(𝑣𝑖𝑜−ℓ𝑠𝑖𝑜) is
+convex with subgradient −𝑠𝑖𝑜(ℓ), so 𝑔(𝜆)−𝑔(𝜆′) ≤(𝜆′−𝜆)𝑠𝑖𝑜★,
+and the loss 𝑔(𝜆) −[𝑔(𝜆′) −(𝜆−𝜆′)𝑠𝑖ˆ𝑜] ≤(𝜆′ −𝜆)(𝑠𝑖𝑜★−𝑠𝑖ˆ𝑜);
+finally |𝜆′ −𝜆| = 𝜆|1/𝜉𝑖−1| ≤𝜆(𝑒𝛿−1).
+Value errors are therefore cheap in two respects. They affect
+only marginal messages, whose value is within a factor 𝑒𝛿of
+the price of their delivery, and the loss on such a message
+is bounded by the price of the channel uses it gains or loses,
+independently of how large its value is. Messages that are
+clearly valuable (confirmations, contested claims) or clearly
+irrelevant keep their decisions. In the logged instances, 38%
+of the candidate intent and evidence messages had zero ToM
+value, which no multiplicative error changes, and only 21%
+had a threshold ratio within a factor 𝑒of one (35% within
+𝑒2); every other decision is unchanged by any error up to
+that factor. Proposition 2 concerns one slot at a fixed price;
+Section V-D measures the effect of value errors on whole
+missions, including errors that are not bounded by any 𝛿.
+F. Price Coordination on a Shared Uplink
+When all agents share 𝐵channel uses per slot, the knapsack
+(5) couples all agents’ groups through one budget, and its
+multiplier becomes a network shadow price [51]. GOSC
+therefore needs no central solver. The BS broadcasts a price
+𝜇𝑡(8 bits per slot); each agent applies the decoupled rule
+at 𝜆= 𝜂+ 𝜇𝑡and requests the channel uses of its selection
+together with its value density (a 16-bit request); the BS grants
+the requests in decreasing value density while they fit and
+updates 𝜇𝑡+1 = 𝜇𝑡exp(𝜅(𝐷𝑡/𝐵−1)), where 𝐷𝑡is the requested
+total (𝜅= 1; 𝜇is reset to zero below 10−7 and restarted
+from 10−7 when demand exceeds 𝐵). Each agent’s rule is the
+decoupled rule at a common price, so Theorem 1 continues
+to hold with 𝜆= 𝜂+ 𝜇𝑡. The periodic baselines send an 8-bit
+buffer status report [52], and the BS divides 𝐵among them
+by max-min fair water-filling; every grant costs 32 downlink
+bits. A central alternative in which each agent reports all its
+Lagrangian-relevant options, so that the BS solves the network-
+wide knapsack exactly, used more control signalling than it
+saved in our tests, and we do not pursue it.
+Complexity: Evaluating (4) costs one box filter (via integral
+images) and one softmax per teammate over the 𝑁2 cells,
+so building the groups costs O(|R|𝐾𝑁2) per agent and slot,
+and the bisection O(𝐼𝐺|R|) for 𝐼iterations and 𝐺groups.
+With 𝑁= 32, 𝐾= 6 and |R| = 9, our single-threaded
+Python implementation needs 2.0 ms per decision (median;
+95th percentile 6.8 ms) on an Apple M1 CPU; the throughput
+and AoI values are cheaper still.
+V. PERFORMANCE EVALUATION
+We first establish the main result, resource eﬀiciency against
+tuned semantic periodic schedules (Section V-B), and then ex-
+amine each of the three decisions, namely what (Section V-C),
+when, including how accurate the value must be (Section V-D),
+and how reliably (Section V-E). We then test the result under
+more realistic radio resources (Section V-F) and with LLM
+agents (Section V-G).
+A. Setup, Baselines and Statistics
+Table III lists the default parameters (𝑇max = 400 slots).
+GOSC’s hyper-parameters (𝜂= 10−5, 𝜀= 0.02, 𝜗= 0.1) and
+the rescue deadlines were fixed on calibration seeds 1000–
+1079; all results use the disjoint evaluation seeds 0–99, with
+common random numbers across schemes.
+Baselines. All schemes share the agents, the planner and the
+edge fusion, and serve confirmations with strict priority. The
+
+
+---PAGE 7---
+TABLE III
+Default parameters
+Parameter
+Value
+Grid, cell size, slot
+32 × 32, 10 m, 1 s
+Agents 𝐾, survivors 𝑉
+6, 8 (uniform; clustered in Sec. V-B)
+Footprint radius 𝑟; 𝑝𝑑, 𝑝𝑓𝑎; 𝜏
+2 (5 × 5); 0.85, 0.05; 0.99
+Planner 𝛽, 𝜍, ℎ
+0.1, 5 cells, 1.2
+Channel uses per agent and slot 𝑊
+100
+¯𝛾ref at 100 m; path-loss exponent 𝛼
+5 dB; 3
+Rate set R (bit/channel use)
+{0.25, 0.5, 1, 1.5, 2, 3, 4, 5, 6}
+Conventional link adaptation; data lifetime
+block error rate ≤10%; 20 slots
+Per-packet overhead 𝐻
+0 (16, 32, 64 in Sec. V-F1)
+Rescue deadlines; service time
+U[60, 180]; 8 slots
+GOSC 𝜂, 𝜀, 𝜗, 𝑣𝐶
+10−5, 0.02, 0.1, 5
+strongest baselines form a family of tuned semantic periodic
+schedules. Rate-aware periodic sends every 𝑘slots one packet
+with the last 𝑘records in GOSC’s aggregated encoding plus
+the intention, at the rate that maximizes the expected goodput
+𝑅𝑃𝑠(𝑅), with fragmentation; we sweep 𝑘∈{1, 2, 4, 8, 16},
+with
+and
+without
+GOSC’s
+relevance
+filter.
+Information-
+suppressing periodic retains only records whose belief change
+exceeds a threshold 𝜃∈{0.02, 0.05, 0.1, 0.2, 0.4, 1, 2} (ex-
+pected survivors, the same measure as GOSC’s filter), sends
+a short intent-only packet when only the intention changed,
+and otherwise stays silent, for 𝑘∈{1, 2, 4, 8}. We always use
+the best of these 38 configurations. Conventional baselines
+send every slot with conventional link adaptation. Semantic
+periodic sends a structured update, raw sends the position
+and an 8-bit score per footprint cell, and natural language
+sends an English status report; report only sends confirmations
+only. The genie delivers every update instantly and error-free;
+it is an ideal-communication reference, not a performance
+bound, because more information can also change the heuristic
+planner’s behaviour unfavourably.
+Statistics. We compare schemes by paired differences over
+seeds with 95% percentile-bootstrap confidence intervals (CIs;
+4,000 resamples), written Δ [lower, upper]; an interval contain-
+ing zero means that no significant difference was detected, not
+equivalence. Our main comparisons are at matched outcomes;
+targets are set relative to the completion time 𝑇g (search)
+or the saved fraction 𝑆g (rescue) of the ideal-communication
+reference, and each method’s operating point with the fewest
+uplink channel uses whose mean outcome meets the target is
+selected on the evaluation seeds, frozen, and re-run on fresh
+seeds 3000–3099 (frozen points in Appendix A, Table XIII).
+This avoids interpolation and selection bias.
+B. Main Result on Resource Eﬀiciency Against Tuned Seman-
+tic Schedules
+Table IV is our main result. In all six settings, GOSC
+reached the common target with 1.2–8.5 times fewer uplink
+channel uses than the most frugal configuration of the tuned
+periodic family on the fresh seeds, and every ratio interval lies
+above one. The advantage grows as resources become scarce,
+reaching 1.8, 2.6 and 8.5 times in the rescue task at 𝑊= 100,
+𝑊= 50 and −5 dB, and 5.9 times with 𝐾= 10 agents,
+whose periodic updates compete for the same knowledge.
+The savings are not bought with outcomes. In the rescue
+task, GOSC met the target with a significant margin in all
+100
+101
+Channel uses (×103, log)
+75
+80
+85
+90
+95
+Survivors saved (%)
+W = 100
+GOSC, theory-of-mind value
+GOSC transport, throughput value
+GOSC transport, AoI value
+Periodic, rate-aware (k swept)
+Periodic, suppressing (best envelope)
+Periodic, rate-aware + filter (k swept)
+Semantic, periodic
+Raw sensor data
+Report only
+Ideal-communication reference (genie)
+100
+101
+Channel uses (×103, log)
+W = 50
+101
+Channel uses (×103, log)̄
+γref = −5 dB
+Fig. 2.
+Rescue task with deadlines, showing survivors saved versus uplink
+channel uses for 𝑊= 100, 𝑊= 50 and ¯𝛾ref = −5 dB (100 missions per point).
+Value-priced rules sweep 𝜂; squares and diamonds are rate-aware periodic
+configurations without and with the relevance filter (𝑘swept); the violet curve
+is the best envelope of the information-suppressing periodic variant; single
+markers are conventional baselines; the dashed line is the ideal-communication
+reference.
+three settings and saved significantly more survivors than the
+periodic configuration at 𝑊= 100 (+3.6 [1.2, 6.1] percentage
+points) and 𝑊= 50 (+7.2 [4.6, 10.0]); at −5 dB, no outcome
+difference was detected. In the search task, both methods meet
+or narrowly miss the targets on the fresh seeds, and neither
+the margins nor the outcome differences are significant. The
+selected periodic configurations are those with filtering or
+suppression, so the savings do not come merely from allowing
+GOSC to withhold updates; they come from deciding which
+update to send when, and how robustly.
+Figure 2 shows the same picture across operating points; the
+GOSC frontiers extend to fewer channel uses than any periodic
+configuration and dominate there, and the curves converge
+as the channel use grows. Where resources are abundant,
+periodic reporting is as good or better (Section V-F); GOSC’s
+contribution is eﬀiciency under constrained resources.
+C. Semantic Representation for What to Send
+Table V compares representations in the search task at
+the default operating point. GOSC completes the mission
+faster than raw-data sharing (Δ = 60.9 [48.1, 74.2] slots),
+natural-language messaging (77.7 [67.7, 88.3]) and report-only
+operation (115.7 [98.5, 133.7]). Against semantic periodic
+updates, no significant difference in completion time was
+detected (5.8 [−2.4, 13.8]), while GOSC used 3.4 times fewer
+channel uses. The natural-language comparison is illustrative
+rather than a central claim; an English report of about 1,480
+bits against a typed message of a few tens of bits is bound to
+lose, and its reports occupy at least eight slots each, so that
+even confirmations wait 32.8 slots on average. The informative
+comparison is the one against tuned semantic schedules in
+Section V-B. Every scheme completed all 100 missions within
+𝑇max, and false declarations stayed below 0.2 per mission.
+D. When to Send, and How Accurate Must the Value Be?
+GOSC’s trigger compares a message’s value with the price
+of its delivery (Theorem 1). We therefore ask how accurate
+this value needs to be for resource-eﬀicient communication.
+Three experiments answer it.
+
+
+---PAGE 8---
+TABLE IV
+Main result. Fresh-seed validation (seeds 3000–3099) of frozen operating points, with the target and mean outcome (completion time in slots, or survivors
+saved in %), the margin to the target (positive when met with room) and uplink channel uses (×103), for GOSC and for the most frugal of the 38 tuned
+periodic configurations meeting the target on the evaluation seeds; paired outcome difference (GOSC minus periodic) and channel-use ratio (periodic over
+GOSC). Brackets show 95% bootstrap CIs over the fresh seeds
+GOSC
+Best tuned periodic
+Setting
+Target
+Outcome
+Margin
+Ch. uses
+Outcome
+Margin
+Ch. uses
+Outcome diff.
+Ratio
+Search
+76.2
+70.9
++5.3 [-2.1, +11.8]
+11.8
+76.2
+-0.0 [-6.5, +6.1]
+14.0
+-5.3 [-14.8, +4.6]
+1.19 [1.11, 1.27]
+Search, 𝐾=10
+57.8
+54.9
++2.8 [-2.3, +7.6]
+2.4
+57.8
+-0.1 [-4.5, +4.1]
+14.5
+-2.9 [-8.8, +3.5]
+5.91 [5.57, 6.29]
+Search, clustered
+59.0
+57.8
++1.2 [-4.1, +6.0]
+6.1
+55.1
++3.9 [-2.2, +9.5]
+7.8
++2.7 [-4.5, +10.0]
+1.28 [1.14, 1.43]
+Rescue
+85.8
+93.6
++7.8 [+6.0, +9.4]
+4.1
+90.0
++4.2 [+2.0, +6.3]
+7.4
++3.6 [+1.2, +6.1]
+1.78 [1.63, 1.93]
+Rescue, 𝑊=50
+85.8
+95.1
++9.3 [+7.8, +10.7]
+3.1
+87.9
++2.0 [-0.5, +4.4]
+8.0
++7.2 [+4.6, +10.0]
+2.60 [2.42, 2.77]
+Rescue, −5 dB
+85.8
+89.2
++3.4 [+1.2, +5.5]
+5.2
+89.0
++3.2 [+0.7, +5.4]
+43.9
++0.2 [-2.6, +3.1]
+8.52 [7.89, 9.19]
+TABLE V
+What to send, comparing representations in the search task at the default operating point (100 missions; ± gives the 95% CI of the mean; Δ is the paired
+difference in completion time to GOSC with 95% bootstrap CI; false declarations are survivors declared at a wrong cell, per mission)
+Scheme
+Completion
+Δ vs. GOSC
+Payload
+Channel uses
+Confirm. latency
+False
+time (slots)
+(slots)
+(kbit)
+(×103)
+(slots)
+declarations
+Report only
+188.6 ± 16.9
++115.7 [+98.5, +133.7]
+0.19
+0.66
+0.17
+0.12
+Raw sensor data
+133.7 ± 11.6
++60.9 [+48.1, +74.2]
+29.63
+79.33
+0.22
+0.07
+Natural language (LLM-style)
+150.6 ± 9.9
++77.7 [+67.7, +88.3]
+41.02
+90.35
+32.82
+0.09
+Semantic, periodic
+78.7 ± 6.4
++5.8 [-2.4, +13.8]
+15.71
+41.30
+0.21
+0.02
+GOSC (proposed)
+72.9 ± 6.0
+–
+12.05
+12.06
+0.21
+0.06
+Ideal-comm. reference (genie)
+61.0 ± 3.5
+-11.9 [-19.0, -5.1]
+17.68
+0.00
+0.00
+0.02
+TABLE VI
+Valuation rules at matched radio budgets, showing the completion time of
+GOSC (slots) and the paired difference of each rule to GOSC, Δ [95%
+bootstrap CI] (positive means GOSC is faster; – means the budget is outside
+the rule’s frontier). The Bonferroni correction covers the fifteen comparisons
+with the simpler values
+Setting
+Budget GOSC Belief div.
+Throughput
+AoI
+𝑊= 100
+5k
+86.4 +13.4 [+5.4, +23.4] -0.3 [-8.0, +8.1]
+–
+𝑊= 100
+10k
+74.8 +12.0 [+4.2, +21.3] +1.3 [-5.6, +7.7]
++2.6 [-4.5, +19.6]
+𝑊= 100
+20k
+66.4 +6.9 [+1.9, +12.0]
++3.4 [-2.7, +8.1]
++1.7 [-3.8, +6.0]
+𝑊= 50
+5k
+87.0 +16.5 [+6.3, +27.5] -1.6 [-9.9, +8.4]
+–
+𝑊= 50
+10k
+78.4 +13.4 [-0.5, +26.2]
++2.0 [-4.8, +11.4] +2.9 [-6.2, +14.8]
+𝐾= 10
+5k
+52.1 +15.3 [+7.9, +21.6] +1.7 [-3.5, +6.7]
+–
+𝐾= 10
+10k
+51.5 +11.3 [+4.5, +18.4] +1.6 [-3.2, +6.3]
+–
+𝐾= 10
+20k
+46.7 +9.8 [+4.6, +16.6]
++5.0 [+0.9, +7.6]
++0.1 [-3.2, +3.2]
+Clustered
+5k
+61.9 +1.9 [-6.8, +10.7]
+-5.5 [-11.5, +1.7]
+–
+Clustered
+10k
+49.1 +1.9 [-4.6, +8.3]
+-0.5 [-6.9, +5.5]
+-0.2 [-5.8, +4.9]
+Value functions at matched resources: Table VI compares
+the four value functions on GOSC’s transport at matched
+channel uses of 5k, 10k and 20k. The decision-aware ToM
+value is significantly better than belief divergence, by 6.9–16.5
+slots in seven of ten comparisons, but against the throughput
+or AoI values, which encode no model of the teammates,
+it is significantly better in only one of fifteen comparisons
+(𝐾= 10 at 20k, 5.0 [0.9, 7.6] slots), which does not survive a
+Bonferroni correction, and significantly worse in none. In the
+rescue task, the throughput value is as eﬀicient as the ToM
+value or more (Figure 2).
+Imperfect values: We then degraded GOSC’s ToM value
+deliberately (Appendix A), using a log-normal error 𝑒𝜎𝑧per
+message with 𝜎= 0.5, 1 and 2 (typical errors of a factor 1.6,
+2.7 and 7.4), values known only to their order of magnitude,
+and content-independent values that keep the distribution of
+the true values but none of their information, with and without
+the relevance filter. Their Spearman correlations with the exact
+value are 𝜌= 0.99, 0.95, 0.89, 0.95 and 0.14. For every
+estimate and setting, we re-selected the price with the rule of
+Section V-B, froze it and re-ran it on the fresh seeds against
+the frozen periodic configuration of Table IV; in the rescue
+task, the price grid was extended to 10−3 for all estimates,
+including the exact one. Table VII and Figure 3 show three
+results.
+Precise values are not necessary. With the four estimates
+whose rank correlation is at least 0.89, GOSC met the target
+with significantly fewer channel uses than the tuned periodic
+schedules in 20 of 24 combinations of setting and estimate;
+even errors of a typical factor of seven (𝜎= 2) left 1.3–9.6-
+fold reductions. Of the four exceptions, two show no significant
+difference (clustered search with 𝜎= 1 and with orders of
+magnitude), one misses the target (orders of magnitude with
+𝐾= 10), and one reverses, namely 𝜎= 1 in the default search
+setting, where both families meet the target only narrowly and
+the frozen price is fragile (𝜎= 0.5 and 𝜎= 2 gave 1.75 and
+1.27 there).
+Coarse relevance is necessary. Content-independent values
+still gave 2.0–7.2-fold reductions in the rescue task, where the
+fixed priority of confirmations and the price-based aggregation
+carry most of the benefit, but they lost the advantage in the
+default search task (0.57), and without the relevance filter also
+with 𝐾= 10 agents (0.81; 1.33 with the filter).
+Degradation is graceful. The reduction shrinks smoothly as
+the accuracy decreases, e.g., from 5.9 to 5.2, 3.7 and 1.8 in
+the rescue task. With the extended price grid, the exact value
+itself reduced channel uses 5.9, 4.4 and 13.0-fold in the three
+rescue settings, so the main result of Table IV is conservative
+(at −5 dB the exact value narrowly missed the target on the
+fresh seeds, by 0.6 [−1.8, 3.2] percentage points, which is not
+significant).
+Why coarse values suﬀice: Proposition 2 explains the first
+result; a value error changes only decisions on messages near
+
+
+---PAGE 9---
+TABLE VII
+How accurate must the value be? Channel-use ratio of the frozen tuned periodic configuration (Table IV) to GOSC with degraded value estimates, each with
+its own frozen price, on the fresh seeds [95% bootstrap CI]; 𝜌is the Spearman correlation of the estimate with the exact ToM value, and † marks that
+GOSC’s mean outcome misses the target on the fresh seeds. Rescue prices extended to 10−3 for every estimate
+Value estimate
+𝜌Search
+Search, 𝐾=10
+Search, clustered Rescue
+Rescue, 𝑊=50 Rescue, −5 dB
+Exact ToM value
+1.00 1.19 [1.11, 1.27] 5.91 [5.57, 6.29]
+1.28 [1.14, 1.43]
+5.89 [5.44, 6.38] 4.43 [4.12, 4.78]
+13.02 [11.86, 14.22]†
+Log-normal error, 𝜎=0.5
+0.99 1.75 [1.62, 1.89] 4.77 [4.50, 5.08]
+1.22 [1.08, 1.37]
+5.17 [4.73, 5.64] 6.84 [6.31, 7.40]
+12.73 [11.66, 13.84]
+Log-normal error, 𝜎=1
+0.95 0.61 [0.57, 0.65] 3.29 [3.06, 3.53]
+1.06 [0.94, 1.18]
+3.67 [3.38, 3.96] 5.26 [4.89, 5.63]
+12.23 [11.16, 13.34]
+Order of magnitude only
+0.95 1.15 [1.08, 1.22] 9.79 [9.19, 10.44]†
+1.04 [0.94, 1.15]
+5.18 [4.69, 5.71] 4.40 [4.09, 4.73]
+12.53 [11.42, 13.67]
+Log-normal error, 𝜎=2
+0.89 1.27 [1.19, 1.35] 3.32 [3.08, 3.58]
+1.26 [1.12, 1.41]
+1.84 [1.70, 1.97] 3.02 [2.85, 3.22]
+9.59 [8.86, 10.32]
+Content-independent (permuted) 0.14 0.57 [0.54, 0.60] 1.33 [1.23, 1.43]
+1.27 [1.13, 1.44]†
+2.11 [1.95, 2.27] 3.22 [3.02, 3.43]
+7.11 [6.60, 7.63]
+Permuted, no relevance filter
+0.14 0.46 [0.43, 0.49] 0.81 [0.75, 0.88]
+1.32 [1.18, 1.48]
+1.98 [1.84, 2.12] 3.24 [3.06, 3.43]
+7.22 [6.69, 7.77]
+exact
+ρ=1.00
+σ=0.5
+ρ=0.99
+σ=1
+ρ=0.95
+10k
+ρ=0.95
+σ=2
+ρ=0.89
+perm.
+ρ=0.14
+perm.,
+no filt.
+ρ=0.14
+Value estimate (accuracy decreases to the right)
+100
+101
+Channel uses, periodic / GOSC
+Search
+Search, K=10
+Search, clustered
+Rescue
+Rescue, W=50
+Rescue, -5 dB
+Fig. 3.
+How accurate must the value be? Ratio of the uplink channel uses
+of the frozen tuned periodic configuration to those of GOSC with degraded
+value estimates (fresh seeds, each estimate with its own frozen price; log
+scale); above the dashed line GOSC is cheaper. Hollow markers indicate that
+GOSC’s mean outcome misses the target. Estimates are ordered by accuracy;
+𝜌is the rank correlation with the exact value.
+their send threshold, and only 21% of the candidate messages
+were within a factor 𝑒of it. A counterfactual diagnostic
+explains why even exact values add little; a single message
+changed a teammate’s next target in only 6–12% of 914
+sampled decisions, its effect on the completion time had
+both signs, and none of the tested scores, including the ToM
+value, ranked high-impact messages significantly higher. Exact
+valuation of message sets did not help either; an exact set-
+valued scheduler that values the received set with the joint ToM
+value and solves each slot by enumeration did not improve
+the completion time in any of 1,800 paired missions, and
+was significantly slower in one setting (9.8 [1.9, 18.3] slots).
+Our answer to the research question is therefore that semantic
+valuation for resource-eﬀicient agent communication must be
+coarsely right, not precise; it must rank messages roughly
+correctly and encode task relevance, while the precision that
+decision-aware models such as theory of mind aim for is not
+needed once the scheduler is communication-aware.
+E. Value-Aware Rate Selection for How Reliably to Deliver
+Table VIII removes one component at a time at the default
+price. Restricting GOSC to the conventional link-adaptation
+rate, with a fallback to the lowest higher rate at which a
+packet fits into a slot, costs 15.8 [7.7, 24.2] slots at 𝑊= 100,
+while using 8.0k instead of 12.1k channel uses; at 𝑊= 50,
+−10
+−5
+0
+5
+10
+15
+20
+Reference SNR at 100 m (dB)
+0
+100
+200
+300
+400
+Completion time (slots)
+Report only
+Raw sensor data
+Natural language
+Semantic, periodic
+GOSC (proposed)
+Ideal-communication reference (genie)
+−10
+−5
+0
+5
+10
+15
+20
+Reference SNR at 100 m (dB)
+10−1
+100
+101
+102
+Channel uses (×103)
+Fig. 4.
+Mission completion time (left) and uplink channel uses (right, log
+scale) versus the reference SNR (𝑊= 100, 𝐾= 6; outage model; 100
+missions per point). Shaded bands show 95% confidence intervals of the mean.
+Completion times are capped at 𝑇max = 400 slots; the ideal-communication
+reference does not use the channel.
+the difference (10.0 [−0.8, 20.2]) is not significant. The rate
+is where GOSC spends channel uses on protection when a
+message is worth it (Theorem 1); the confirmations, whose
+value is highest, used the most robust feasible rate in 98.4%
+of the cases. The relevance filter has no significant effect
+at the default price, and replacing the ToM value by the
+throughput value changes the completion time insignificantly
+while, at the same price, using two to three times more channel
+uses (at matched channel uses, Table VI). The ablations
+change resource use as well as outcome, so they compare
+configurations rather than equal-cost alternatives.
+Channel quality and short packets: Figure 4 sweeps the
+reference SNR. Against semantic periodic updates, no signifi-
+cant difference in completion time was detected from −10 to
+10 dB, while GOSC used 3.0–4.8 times fewer channel uses;
+at 15 and 20 dB, the periodic scheme was faster by about 10
+slots, because with a good link sending everything is cheap.
+Natural language degrades most as the SNR drops and finished
+only 13% of the missions at −10 dB. Under the FBL model,
+the fading-averaged success probability differs from (2) by at
+most 0.086 for the packets used (median 0.001), the ranking
+of the schemes is unchanged with and without a 2 dB coding
+gap, and GOSC used 1.2–4.9 times fewer channel uses than
+semantic periodic updates over the whole sweep.
+F. Realistic Radio Resources
+Two simplifications could favour short semantic messages.
+So far, every packet was free of overhead, and every agent
+owned its channel uses. We now remove both, and add the
+downlink to the cost.
+
+
+---PAGE 10---
+TABLE VIII
+How reliably, via component ablations at the default price in the search task
+(100 missions; Δ is the paired difference to GOSC in slots). The variants
+differ in channel use as well as outcome
+𝑊
+Variant
+Completion
+Ch. uses
+Δ [95% CI]
+(slots)
+(×103)
+100
+GOSC (ToM VoI
++ filter)
+72.9 ± 6.0
+12.1
+–
+ToM VoI, no filter
+70.6 ± 4.8
+12.3
+-2.3 [-7.8, +3.1]
+Throughput value
++ filter
+68.9 ± 5.8
+26.2
+-4.0 [-11.5, +3.8]
+Throughput value,
+no filter
+70.1 ± 4.4
+33.7
+-2.8 [-9.9, +4.1]
+ToM VoI + filter,
+conventional link
+adaptation
+88.7 ± 8.2
+8.0
++15.8 [+7.7, +24.2]
+50
+GOSC (ToM VoI
++ filter)
+78.4 ± 7.5
+7.2
+–
+ToM VoI, no filter
+86.4 ± 9.8
+7.4
++8.0 [-1.1, +17.7]
+Throughput value
++ filter
+74.6 ± 5.9
+16.8
+-3.8 [-12.3, +4.8]
+Throughput value,
+no filter
+78.6 ± 6.0
+19.8
++0.1 [-8.8, +9.2]
+ToM VoI + filter,
+conventional link
+adaptation
+88.4 ± 9.0
+5.0
++10.0 [-0.8, +20.2]
+1) Per-packet overhead and total uplink–downlink cost:
+GOSC’s messages carry only 18–34 bits of payload, which
+headers, CRC and HARQ signalling could dominate. We
+therefore added a fixed overhead of 𝐻= 16, 32 and 64
+bits to every uplink packet, roughly a 16-bit transport-block
+CRC [53], the CRC plus a medium access control (MAC)
+subheader [52], and a full layer-2 header stack. GOSC pays it
+on every message, whereas the periodic schemes pay it once
+per slot for a transport block that multiplexes their queue; the
+downlink broadcast carries it too, and HARQ feedback costs
+one downlink bit per uplink transmission. For every 𝐻, both
+families were re-selected on the evaluation seeds and re-run
+on the fresh seeds (Table IX).
+The advantage survives the overhead. In five of the six
+settings, GOSC used significantly fewer uplink channel uses
+than the re-tuned periodic family at every overhead (in four of
+these 20 cases, one of the two families narrowly missed the
+target on the fresh seeds, never significantly), and in the rescue
+task the advantage grows with the overhead, from 1.8 to 2.5,
+3.0 and 4.1 times at 𝑊= 100, from 2.6 to 6.0 times at 𝑊= 50,
+and from 8.5 to 16.6 times at −5 dB. Theorem 1 explains why.
+The overhead enters the cost of a delivery, so GOSC’s send
+threshold rises and it sends fewer, fuller packets (at −5 dB,
+95, 89, 82 and 54 transmissions per mission as 𝐻grows),
+whereas the periodic schedules keep their cadence and pay the
+overhead on every fragment (527 to 636 transmissions). The
+exception is the default search setting, where both families only
+narrowly meet the target; the frozen ratio was 0.84 at 𝐻= 16
+(the interpolated frontier ratio, 1.17 [0.82, 2.95], shows no
+significant difference), 1.62 at 𝐻= 32 with GOSC narrowly
+and insignificantly missing the target on the fresh seeds, and
+at 𝐻= 64 only GOSC reached the target at all.
+Total cost. The last block of Table IX adds the downlink
+broadcast, HARQ feedback and the uplink control to the uplink
+data. Because the broadcast relays what the uplink delivered,
+TABLE IX
+Per-packet overhead 𝐻(bits) and the fresh-seed channel-use ratio of the
+re-tuned periodic family to GOSC [95% bootstrap CI], for the uplink and
+for the total uplink and downlink cost (broadcast with its overhead, HARQ
+feedback). † and ‡ mark that GOSC’s or the periodic configuration’s mean
+outcome misses the target on the fresh seeds; “only GOSC” means that no
+periodic configuration met the target on the evaluation seeds
+Setting
+𝐻= 0
+𝐻= 16
+𝐻= 32
+𝐻= 64
+Uplink channel uses, periodic / GOSC
+Search
+1.19 [1.11, 1.27]‡ 0.84 [0.77, 0.91]
+1.62 [1.51, 1.73]† only GOSC
+Search, 𝐾=10
+5.91 [5.57, 6.29]‡ 1.86 [1.74, 1.98]
+3.96 [3.68, 4.26]
+2.49 [2.30, 2.69]
+Search, clustered 1.28 [1.14, 1.43]
+1.46 [1.31, 1.62]†
+1.12 [1.01, 1.24]‡ 1.22 [1.10, 1.35]
+Rescue
+1.78 [1.63, 1.93]
+2.49 [2.18, 2.78]
+3.01 [2.77, 3.28]
+4.14 [3.92, 4.38]
+Rescue, 𝑊=50
+2.60 [2.42, 2.77]
+3.86 [3.59, 4.13]
+4.72 [4.42, 5.02]
+6.04 [5.59, 6.50]
+Rescue, −5 dB
+8.52 [7.89, 9.19]
+10.73 [9.95, 11.59]‡ 8.28 [7.60, 9.00]
+16.61 [15.03, 18.44]
+Uplink + downlink channel uses, periodic / GOSC
+Search
+1.17 [1.09, 1.25]‡ 0.88 [0.81, 0.95]
+1.57 [1.47, 1.68]† only GOSC
+Search, 𝐾=10
+4.61 [4.36, 4.87]‡ 1.76 [1.66, 1.87]
+3.43 [3.20, 3.67]
+2.28 [2.11, 2.46]
+Search, clustered 1.22 [1.10, 1.35]
+1.36 [1.22, 1.50]†
+1.08 [0.98, 1.20]‡ 1.17 [1.06, 1.30]
+Rescue
+1.60 [1.48, 1.73]
+2.18 [1.93, 2.40]
+2.65 [2.45, 2.88]
+3.57 [3.38, 3.78]
+Rescue, 𝑊=50
+2.22 [2.08, 2.36]
+3.22 [3.01, 3.44]
+3.95 [3.72, 4.19]
+4.85 [4.50, 5.20]
+Rescue, −5 dB
+7.73 [7.16, 8.31]
+9.70 [9.04, 10.44]‡
+7.66 [7.06, 8.29]
+13.84 [12.66, 15.15]
+TABLE X
+Total communication cost in the default search setting (fresh seeds; frozen
+operating points re-selected for each 𝐻), listing the completion time (slots),
+uplink channel uses including overhead, overhead bits, downlink broadcast
+of the common knowledge, downlink HARQ feedback, and the total (all
+×103 channel uses unless noted). † marks a mean outcome that misses the
+target (𝑇≤76.2 slots); UL and DL denote uplink and downlink
+Scheme
+𝑇
+UL Overh. DL bcast DL fb.
+Total
+(kbit)
+Overhead 𝐻= 0 bits
+Report only
+187.9
+0.7
+0.0
+0.1
+0.0
+0.8
+Raw sensor data
+152.7
+90.7
+0.0
+5.6
+0.5
+96.7
+Natural language
+142.2
+85.3
+0.0
+7.5
+0.4
+93.3
+Semantic periodic
+78.3
+41.1
+0.0
+6.0
+0.2
+47.4
+Best periodic (rate-aware + filter)
+76.2
+14.0
+0.0
+3.7
+0.1
+17.8
+GOSC
+70.9
+11.8
+0.0
+3.3
+0.1
+15.2
+Overhead 𝐻= 32 bits
+Report only
+187.0
+1.2
+0.4
+0.2
+0.0
+1.5
+Raw sensor data
+165.4
+98.5
+31.8
+4.9
+0.5 103.8
+Natural language
+186.5 111.9
+35.8
+6.6
+0.6 119.1
+Semantic periodic
+89.5
+49.4
+17.2
+4.6
+0.3
+54.2
+Best periodic (rate-aware + filter)
+72.2
+23.9
+9.6
+5.4
+0.2
+29.5
+GOSC†
+79.8
+14.8
+6.4
+3.9
+0.1
+18.8
+it is itself proportional to the useful uplink traﬀic, and the
+ratios of the total cost are only slightly below the uplink ratios
+(e.g., 1.6 instead of 1.8 in the rescue task). Table X breaks the
+total down for the default search setting; the broadcast of the
+common knowledge adds 3.3k channel uses to GOSC’s 11.8k
+(22% of the total) and 3.7k to the periodic family’s 14.0k, and
+HARQ feedback is negligible. Raw data and natural language
+cost about six times more than GOSC in total.
+2) Shared network-wide uplink: All agents now compete
+for a shared budget of 𝐵channel uses per slot, allocated
+by the BS in every slot (Section IV-F), for GOSC by its
+broadcast network price and for the 38 periodic configurations
+by max-min fair grants on buffer status reports. Uplink cost
+now includes the scheduling requests. Table XI repeats the
+fresh-seed validation, and Figure 5 shows the search frontiers.
+The competition does not change the picture. In the rescue
+task (𝐵= 300), GOSC met the target with 4.8 [4.4, 5.2] times
+fewer uplink channel uses (4.6 [4.3, 5.0] times in total uplink
+and downlink cost). In the search task, the results mirror those
+with orthogonal budgets. With 𝐵= 600, the same total as 𝐾
+agents with 𝑊= 100 each, GOSC needed 1.16 [1.10, 1.24]
+
+
+---PAGE 11---
+1
+3
+10
+30
+80
+100
+Completion time (slots)
+B = 600
+1
+3
+10
+30
+Uplink channel uses (×103)
+B = 300
+1
+3
+10
+30
+B = 150
+GOSC (η swept)
+Periodic family, envelope
+Target 1.25 Tg
+Fig. 5.
+Search task with a shared network-wide uplink budget 𝐵, showing
+completion time versus uplink channel uses (including scheduling requests)
+per mission on the evaluation seeds (100 missions per point). GOSC sweeps
+𝜂; the orange line is the best envelope of the 38 periodic configurations with
+max-min fair grants; the dotted line is the target 1.25 𝑇g.
+times fewer channel uses (1.19 with orthogonal budgets); with
+𝐵= 300, as with 𝑊= 50, no significant difference was
+detected (0.95 [0.89, 1.02]); and with 𝐵= 150 neither family
+reached the target, but GOSC reached the best completion time
+of the periodic family (82.4 versus 82.6 slots) with 9.4k instead
+of 14.5k channel uses (Figure 5). The shared price lets GOSC
+coordinate the agents without a central solver; an agent whose
+messages are worth less than the current network price defers
+them to a later slot.
+3) Downlink impairments: We also impaired the broadcast
+of the common knowledge. With a lossy broadcast, GOSC
+is faster than semantic periodic updates at loss probabilities
+0.3 and 0.5 (13.1 [4.9, 21.8] and 10.2 [2.0, 18.2] slots); for
+delays of up to 10 slots, no significant difference was detected,
+and all schemes, including the ideal-communication reference,
+slow down because agents plan on stale common knowledge.
+Ignoring the teammates’ private evidence in the value costs no
+significant time; an oracle ToM model that knows this evidence
+was 3.1 [−4.3, 10.7] slots faster in the default setting. Over the
+team sizes 𝐾∈{2, . . . , 10} and budgets 𝑊∈{25, . . . , 400},
+GOSC is faster than semantic periodic updates for 𝐾= 8 and
+𝐾= 10 (6.9 [1.3, 12.9] and 8.7 [3.7, 14.1] slots) and at 𝑊= 50
+(17.8 [7.0, 28.5]), and slower for 𝐾= 2 (24.9 slots) and for
+𝑊≥200 (7–8 slots); with two agents or abundant resources,
+reporting everything is cheap and helps.
+G. Proof of Concept with Heterogeneous LLM–Planner Teams
+This experiment is a proof of concept, not a study of
+agentic reasoning; it tests whether GOSC’s communication
+layer works unchanged when the cognitive core of some agents
+is an LLM. Agents 0, 2 and 4 are driven by Qwen2.5-3B-
+Instruct, Llama-3.2-3B-Instruct or Qwen2.5-7B-Instruct (4-bit,
+served locally). The LLM receives five pre-processed candi-
+date targets with their survivor mass, distance and distance to
+the nearest teammate, plus the teammates’ announced targets,
+and returns a label constrained by a JSON schema; this
+constrained choice is far from open-ended agentic reasoning.
+Responses are cached, so every mission is reproducible. The
+answers were always valid, but the LLMs chose the planner’s
+candidate in only 24–34% of the deliberations, and the LLM
+teams were weaker searchers than the planner team even
+with ideal communication (12.6 [4.9, 20.8] slots slower with
+Qwen2.5-3B).
+Table XII compares GOSC with semantic periodic updates
+in the search task. Two results must be distinguished. Resource
+use transfers unchanged across cognitive cores; GOSC used
+3.2–3.5 times fewer channel uses with every model, and 3.0
+times fewer in the planner team. Completion time depends on
+the team and is less certain. With Qwen2.5-3B (50 seeds),
+GOSC was faster by 13.8 [0.8, 26.9] slots. With Llama-3.2-
+3B, the difference was not significant on the 30 seeds of our
+first run (17.3 [−0.2, 35.6] slots); on 50 seeds it was 14.2
+[0.8, 28.2] slots, significant but with a lower bound close to
+zero. With the stronger Qwen2.5-7B (30 seeds), the difference
+was 5.2 [−11.2, 21.5] slots, not significant. In the planner
+team, no significant difference was detected (−3.7 [−14.1,
+7.0] slots). Where the difference is significant, the periodic
+scheme degrades more than GOSC when LLM agents join
+(per-seed interaction 17.5 [0.1, 34.6] slots with Qwen2.5-3B).
+In these teams, too, no significant difference between the ToM
+and throughput values was detected. We therefore claim only
+that the communication layer transfers across cognitive cores
+while preserving its resource savings; larger models and richer
+agentic tasks are needed to establish completion-time effects.
+H. Limitations
+The results cover two grid tasks in one simulator with a
+generic channel model; the eﬀiciency claims are relative to
+the periodic policies we tuned and to targets set from an ideal-
+communication reference obtained with the same heuristic
+planner. We did not reimplement the published systems of
+[19], [33], [34], which are trained or not publicly available,
+and evaluated their mechanisms instead. The ablations change
+resource use as well as outcome, so they do not isolate joint
+message and rate selection from an equally tuned sequential
+scheduler at matched cost. The LLM experiment is a proof
+of concept with small models and a constrained decision
+(Section V-G).
+VI. CONCLUSION
+We proposed GOSC, a closed-loop co-design of what an
+agent sends, when it sends it, and how reliably it is delivered,
+with the broadcast of common knowledge closing the loop.
+We proved that a message is sent only if its value exceeds
+the price of its delivery, that more valuable messages receive
+more robust rates, and that the Lagrangian scheduler is exact
+whenever the price keeps the budget slack, which held in
+95–96% of the logged instances. At operating points frozen
+and re-evaluated on fresh seeds, GOSC met common mission
+targets with 1.2–8.5 times fewer uplink channel uses than tuned
+semantic periodic schedules that filter or suppress updates, and
+it saved significantly more survivors in two of three rescue
+settings. The advantage survived 16–64-bit packet overheads in
+five of six settings, held for the total uplink-plus-downlink cost,
+and persisted in the rescue task when all agents shared one
+uplink. Precise semantic valuation was not needed; rough value
+estimates preserved the advantage in most settings, whereas
+content-independent values lost it in the search task. With three
+
+
+---PAGE 12---
+TABLE XI
+Shared network-wide uplink budget 𝐵(all agents compete; 𝐾= 6), with fresh-seed validation of frozen operating points as in Table IV. Uplink channel uses
+include scheduling requests; the last column adds the downlink broadcast, HARQ feedback, grants and the price broadcast. UL and DL denote uplink and
+downlink. Brackets show 95% bootstrap CIs over the fresh seeds
+GOSC (price-coordinated)
+Best tuned periodic (fair grants)
+Ratio periodic/GOSC
+Setting
+Target
+Outcome
+Margin
+UL ch. uses
+Outcome
+Margin
+UL ch. uses
+Outcome diff.
+Uplink
+UL + DL
+Search, 𝐵=600
+76.2
+71.8
++4.4 [-2.5, +10.4]
+13.6
+74.7
++1.5 [-4.4, +6.9]
+15.9
+-2.9 [-11.1, +5.3]
+1.16 [1.10, 1.24]
+1.15 [1.09, 1.22]
+Search, 𝐵=300
+76.2
+76.2
+-0.1 [-6.1, +5.9]
+15.8
+71.3
++4.9 [-3.0, +11.4]
+15.0
++4.9 [-3.7, +12.4]
+0.95 [0.89, 1.02]
+1.03 [0.96, 1.10]
+Search, 𝐵=150
+76.2
+target not reached
+Rescue, 𝐵=300
+85.8
+88.4
++2.5 [+0.4, +4.7]
+2.1
+90.0
++4.2 [+1.9, +6.3]
+10.0
+-1.6 [-4.4, +1.2]
+4.79 [4.43, 5.18]
+4.62 [4.31, 4.95]
+TABLE XII
+Proof of concept with heterogeneous teams, search task (agents 0, 2, 4
+LLM-driven; missions in parentheses). Completion times are means ± 95%
+CI; channel uses (×103) are means; Δ𝑇is the paired difference periodic
+minus GOSC [95% bootstrap CI], positive when GOSC is faster; the ratio is
+channel uses periodic over GOSC
+Team
+Scheme
+Completion Ch. uses Δ𝑇(slots)
+Ratio
+Planner only (50)
+Semantic, periodic
+69.2 ± 7.3
+35.8 -3.7 [-14.1, +7.0]
+2.98
+GOSC
+72.9 ± 8.6
+12.0
+Genie
+63.4 ± 5.2
+–
+Mixed, Qwen2.5-3B (50)
+Semantic, periodic 95.2 ± 10.7
+49.7 +13.8 [+0.8, +26.9]
+3.51
+GOSC
+81.4 ± 8.0
+14.2
+Genie
+76.0 ± 7.0
+–
+Mixed, Llama-3.2-3B (50) Semantic, periodic 93.0 ± 12.6
+49.7 +14.2 [+0.8, +28.2]
+3.51
+GOSC
+78.8 ± 9.2
+14.2
+Genie
+73.6 ± 6.9
+–
+Mixed, Qwen2.5-7B (30)
+Semantic, periodic 99.2 ± 13.0
+51.2 +5.2 [-11.2, +21.5]
+3.24
+GOSC
+94.0 ± 10.8
+15.8
+LLMs, the resource savings carried over, while completion-
+time gains depended on the model. Tasks in which individual
+messages have concentrated, predictable consequences, richer
+agentic reasoning with larger LLMs, and multi-cell radio
+resource management are natural next steps.
+APPENDIX
+IMPLEMENTATION DETAILS
+Rescue policy and claim value. For a known task 𝑠with
+deadline 𝑑𝑠and service progress 𝜋𝑠, agent 𝑘at 𝑝𝑘computes
+the slack 𝑑𝑠−𝑡−∥𝑝𝑘−𝑠∥1 −(𝑆𝑟−𝜋𝑠). It keeps its rescue
+target while the slack is non-negative and no higher-priority
+teammate has announced the same target; otherwise it takes the
+feasible task with the smallest slack that no teammate is known
+to claim and for which no free teammate at a known position
+is closer, and if none exists it searches with (1). Announcing a
+rescue target 𝑠has value 𝑣𝐶= 5 if, applying this policy to the
+shared knowledge, some teammate would choose 𝑠, and 0.05
+otherwise.
+Utility
+in
+(4).
+𝑈𝑗(𝑐)
+=
+𝑀(𝑘) (𝑐) (1 +
+𝛽∥𝑐
+−
+𝑝𝑗∥1)−1 ∏
+𝑞∈D (𝑘)
+𝑗
+𝜌(𝑐, 𝑞),
+where
+𝑀(𝑘)
+is
+the
+footprint
+mass under the sender’s belief ℓ𝐸+ 𝛿𝑘(excluding declared
+cells and the sender’s own confirmed survivors) and D (𝑘)
+𝑗
+is teammate 𝑗’s deconfliction set with the sender’s point
+replaced by its intention 𝑔𝑘. For evidence, K𝐸⊕𝑚adds
+the records’ LLRs to ℓ𝐸and updates the sender’s known
+position; for an intent, it replaces the sender’s point in the
+deconfliction sets of lower-priority teammates.
+Relevance filter and suppression. A record 𝑜is retained
+if ∑
+𝑐∈F(𝑜)\X |𝜎(ℓ𝐸+ 𝑞𝑘+ 𝜆(𝑜))(𝑐) −𝜎(ℓ𝐸+ 𝑞𝑘)(𝑐)| ≥𝜀,
+where 𝑞𝑘is the LLR of the records already queued and X
+the declared cells; GOSC uses 𝜀= 0.02, and the suppressing
+periodic baseline the swept 𝜃.
+Finite blocklength. An 𝑛-symbol packet at rate 𝑅and SNR
+𝛾fails with 𝜖= 𝑄((𝑛[𝐶(𝛾) −𝑅] + 1
+2 log2 𝑛)/
+√
+𝑛𝑉(𝛾)), 𝐶=
+log2(1+𝛾), 𝑉= (1−(1+𝛾)−2) log2
+2 𝑒; a coding gap Δ scales 𝛾
+by 10−Δ/10, and the transmitter uses the fading average Eℎ[1−
+𝜖].
+Overhead and cost accounting. Every GOSC packet and
+every per-slot transport block of a periodic scheme (which
+multiplexes its queue) carries 𝐻extra bits, so GOSC pays one
+overhead per message and the periodic schemes one per slot,
+which favours the latter; an option whose packet and overhead
+do not fit into the slot is unavailable at that rate, and the
+periodic schemes use the goodput-optimal rate for (𝑊𝑅−𝐻)+
+payload bits. Every non-empty broadcast carries 𝐻as well.
+Imperfect values. For a log-normal error, the value of each
+intent and evidence message is multiplied by 𝑒𝜎𝑧, 𝑧∼N (0, 1),
+drawn per message and slot and common to its options (the set-
+ting of Proposition 2); the order-of-magnitude estimate rounds
+each value to the nearest power of ten; the content-independent
+value replaces the magnitude by that of a randomly drawn
+earlier message of the same type in the mission (keeping its
+distribution but not its information). Confirmations keep their
+fixed value; 𝜌is the Spearman correlation between estimated
+and true values, pooled over missions.
+Frozen operating points. Table XIII lists the operating points
+behind Table IV; all other parameters are as in Table III.
+TABLE XIII
+Frozen operating points of the fresh-seed validation (Table IV)
+Setting
+GOSC price
+Periodic configuration
+Search
+𝜂= 10−5
+rate-aware + filter, 𝑘=4
+Search, 𝐾=10
+𝜂= 3 · 10−4
+suppressing, 𝑘=4, 𝜃=0.05
+Search, clustered
+𝜂= 3 · 10−5
+suppressing, 𝑘=4, 𝜃=0.2
+Rescue
+𝜂= 10−4
+suppressing, 𝑘=2, 𝜃=1.0
+Rescue, 𝑊=50
+𝜂= 10−4
+suppressing, 𝑘=2, 𝜃=1.0
+Rescue, −5 dB
+𝜂= 10−4
+suppressing, 𝑘=2, 𝜃=1.0
+REFERENCES
+[1] W. Saad, M. Bennis, and M. Chen, “A vision of 6G wireless systems:
+Applications, trends, technologies, and open research problems,” IEEE
+Netw., vol. 34, no. 3, pp. 134–142, 2020.
+[2] K. B. Letaief, W. Chen, Y. Shi, J. Zhang, and Y.-J. A. Zhang, “The
+roadmap to 6G: AI empowered wireless networks,” IEEE Commun.
+Mag., vol. 57, no. 8, pp. 84–90, 2019.
+[3] J. S. Park, J. O’Brien, C. J. Cai, M. R. Morris, P. Liang, and M. S.
+Bernstein, “Generative agents: Interactive simulacra of human behavior,”
+in Proc. ACM Symp. User Interface Softw. Technol. (UIST), 2023.
+[4] H. Zhang, W. Du, J. Shan, Q. Zhou, Y. Du, J. B. Tenenbaum, T. Shu,
+and C. Gan, “Building cooperative embodied agents modularly with large
+language models,” in Proc. Int. Conf. Learn. Represent. (ICLR), 2024.
+
+
+---PAGE 13---
+[5] F. Rezazadeh, A. A. Gargari, S. Lagén, J. Mangues-Bafalluy, D. Niyato,
+and L. Liu, “GenOnet: Generative open xG network simulation with
+multi-agent LLM and ns-3,” in 2024 3rd International Conference on
+6G Networking (6GNet).
+IEEE, 2024.
+[6] C. E. Shannon and W. Weaver, The Mathematical Theory of Communi-
+cation.
+Urbana, IL: University of Illinois Press, 1949.
+[7] E. C. Strinati and S. Barbarossa, “6G networks: Beyond Shannon towards
+semantic and goal-oriented communications,” Comput. Netw., vol. 190,
+p. 107930, 2021.
+[8] D. Gündüz, Z. Qin, I. E. Aguerri, H. S. Dhillon, Z. Yang, A. Yener,
+K. K. Wong, and C.-B. Chae, “Beyond transmitting bits: Context, seman-
+tics, and task-oriented communications,” IEEE J. Sel. Areas Commun.,
+vol. 41, no. 1, pp. 5–41, 2023.
+[9] M. Kountouris and N. Pappas, “Semantics-empowered communication
+for networked intelligent systems,” IEEE Commun. Mag., vol. 59, no. 6,
+pp. 96–102, 2021.
+[10] C. Chaccour, W. Saad, M. Debbah, Z. Han, and H. V. Poor, “Less data,
+more knowledge: Building next-generation semantic communication
+networks,” IEEE Commun. Surveys Tuts., vol. 27, no. 1, 2025.
+[11] Q. Wu, G. Bansal, J. Zhang, Y. Wu, B. Li, E. Zhu, L. Jiang, X. Zhang,
+S. Zhang, J. Liu, A. H. Awadallah, R. W. White, D. Burger, and
+C. Wang, “AutoGen: Enabling next-gen LLM applications via multi-
+agent conversation,” arXiv preprint arXiv:2308.08155, 2023.
+[12] G. Li, H. A. A. K. Hammoud, H. Itani, D. Khizbullin, and B. Ghanem,
+“CAMEL: Communicative agents for “mind” exploration of large lan-
+guage model society,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS),
+2023.
+[13] S. Hong, M. Zhuge, J. Chen, X. Zheng, Y. Cheng, C. Zhang, J. Wang,
+Z. Wang, S. K. S. Yau, Z. Lin, L. Zhou, C. Ran, L. Xiao, C. Wu,
+and J. Schmidhuber, “MetaGPT: Meta programming for a multi-agent
+collaborative framework,” in Proc. Int. Conf. Learn. Represent. (ICLR),
+2024.
+[14] H. Xie, Z. Qin, G. Y. Li, and B.-H. Juang, “Deep learning enabled
+semantic communication systems,” IEEE Trans. Signal Process., vol. 69,
+pp. 2663–2675, 2021.
+[15] J. Shao, Y. Mao, and J. Zhang, “Learning task-oriented communication
+for edge inference: An information bottleneck approach,” IEEE J. Sel.
+Areas Commun., vol. 40, no. 1, pp. 197–211, 2022.
+[16] Z. Sun, S. Ma, and S. Li, “Task-oriented semantic communication with
+importance-aware rate control,” IEEE Commun. Lett., vol. 29, no. 7, pp.
+1520–1524, 2025.
+[17] S. Kaul, R. Yates, and M. Gruteser, “Real-time status: How often should
+one update?” in Proc. IEEE INFOCOM, 2012, pp. 2731–2735.
+[18] J. Holm, F. Chiariotti, A. E. Kalør, B. Soret, T. B. Pedersen, and
+P. Popovski, “Goal-oriented scheduling in sensor networks with appli-
+cation timing awareness,” IEEE Trans. Commun., 2023.
+[19] W. Wu, Y. Yang, Y. Deng, and A. H. Aghvami, “Goal-oriented semantic
+communications for robotic waypoint transmission: The value and age
+of information approach,” IEEE Trans. Wireless Commun., 2024.
+[20] Y. Cao, Y. Wu, L. Lian, and M. Tao, “Importance-aware resource
+allocations for MIMO semantic communication,” Entropy, vol. 27, no. 6,
+p. 605, 2025.
+[21] S. Kim, Y. Oh, Y. Kim, N. Lee, and Y.-S. Jeon, “Unequal error protection
+for digital semantic communication with channel coding,” arXiv preprint
+arXiv:2508.03381, 2025.
+[22] E. Bourtsoulatze, D. Burth Kurka, and D. Gündüz, “Deep joint source-
+channel coding for wireless image transmission,” IEEE Trans. Cogn.
+Commun. Netw., vol. 5, no. 3, pp. 567–579, 2019.
+[23] H. Xie, Z. Qin, X. Tao, and K. B. Letaief, “Task-oriented multi-user
+semantic communications,” IEEE J. Sel. Areas Commun., vol. 40, no. 9,
+pp. 2584–2597, 2022.
+[24] E. Uysal, O. Kaya, A. Ephremides, J. Gross, M. Codreanu, P. Popovski,
+M. Assaad, G. Liva, A. Munari, B. Soret, T. Soleymani, and K. H.
+Johansson, “Semantic communications in networked systems: A data
+significance perspective,” IEEE Netw., vol. 36, no. 4, pp. 233–240, 2022.
+[25] K. Lei, Y. Peng, L. Zhang, and J. Xu, “Importance-aware resource al-
+location for collaborative task-oriented semantic communication,” arXiv
+preprint arXiv:2606.29052, 2026.
+[26] I. Kadota, A. Sinha, E. Uysal-Biyikoglu, R. Singh, and E. Modiano,
+“Scheduling policies for minimizing age of information in broadcast
+wireless networks,” IEEE/ACM Trans. Netw., vol. 26, no. 6, pp. 2637–
+2650, 2018.
+[27] A. Maatouk, S. Kriouile, M. Assaad, and A. Ephremides, “The age of
+incorrect information: A new performance metric for status updates,”
+IEEE/ACM Trans. Netw., vol. 28, no. 5, pp. 2215–2228, 2020.
+[28] F. Chiariotti, J. Holm, A. E. Kalør, B. Soret, S. K. Jensen, T. B. Pedersen,
+and P. Popovski, “Query age of information: Freshness in pull-based
+communication,” IEEE Trans. Commun., vol. 70, no. 3, 2022.
+[29] K. J. Åström and B. Bernhardsson, “Comparison of Riemann and
+Lebesgue sampling for first order stochastic systems,” in Proc. IEEE
+Conf. Decis. Control (CDC), 2002, pp. 2011–2016.
+[30] T. Soleymani, J. S. Baras, and S. Hirche, “Value of information in
+feedback control: Quantification,” IEEE Trans. Autom. Control, vol. 67,
+no. 7, pp. 3730–3737, 2022.
+[31] D. Premack and G. Woodruff, “Does the chimpanzee have a theory of
+mind?” Behav. Brain Sci., vol. 1, no. 4, pp. 515–526, 1978.
+[32] C. L. Baker, J. Jara-Ettinger, R. Saxe, and J. B. Tenenbaum, “Rational
+quantitative attribution of beliefs, desires and percepts in human men-
+talizing,” Nat. Hum. Behav., vol. 1, p. 0064, 2017.
+[33] Y. Wang, F. Zhong, J. Xu, and Y. Wang, “ToM2C: Target-oriented multi-
+agent communication and cooperation with theory of mind,” in Proc. Int.
+Conf. Learn. Represent. (ICLR), 2022.
+[34] C. K. Thomas, E. C. Strinati, and W. Saad, “Reasoning with the
+theory of mind for pragmatic semantic communication,” arXiv preprint
+arXiv:2311.18224, 2023.
+[35] J. Foerster, I. A. Assael, N. de Freitas, and S. Whiteson, “Learning to
+communicate with deep multi-agent reinforcement learning,” in Proc.
+Adv. Neural Inf. Process. Syst. (NeurIPS), 2016, pp. 2137–2145.
+[36] S. Sukhbaatar, A. Szlam, and R. Fergus, “Learning multiagent commu-
+nication with backpropagation,” in Proc. Adv. Neural Inf. Process. Syst.
+(NeurIPS), 2016, pp. 2244–2252.
+[37] A. Das, T. Gervet, J. Romoff, D. Batra, D. Parikh, M. Rabbat, and
+J. Pineau, “TarMAC: Targeted multi-agent communication,” in Proc. Int.
+Conf. Mach. Learn. (ICML), 2019, pp. 1538–1546.
+[38] D. Kim, S. Moon, D. Hostallero, W. J. Kang, T. Lee, K. Son, and Y. Yi,
+“Learning to schedule communication in multi-agent reinforcement
+learning,” in Proc. Int. Conf. Learn. Represent. (ICLR), 2019.
+[39] T.-Y. Tung, S. Kobus, J. P. Roig, and D. Gündüz, “Effective commu-
+nications: A joint learning and communication framework for multi-
+agent reinforcement learning over noisy channels,” IEEE J. Sel. Areas
+Commun., vol. 39, no. 8, pp. 2590–2603, 2021.
+[40] P. A. Chou and Z. Miao, “Rate-distortion optimized streaming of
+packetized media,” IEEE Trans. Multimedia, vol. 8, no. 2, pp. 390–404,
+2006.
+[41] A. S. Rao and M. P. Georgeff, “BDI agents: From theory to practice,”
+in Proc. 1st Int. Conf. Multi-Agent Syst. (ICMAS), 1995, pp. 312–319.
+[42] 3GPP, “NR; physical channels and modulation,” 3rd Generation Partner-
+ship Project (3GPP), Technical Specification (TS) 38.211.
+[43] D. Tse and P. Viswanath, Fundamentals of Wireless Communication.
+Cambridge University Press, 2005.
+[44] Y. Polyanskiy, H. V. Poor, and S. Verdú, “Channel coding rate in the
+finite blocklength regime,” IEEE Trans. Inf. Theory, vol. 56, no. 5, pp.
+2307–2359, 2010.
+[45] G. Durisi, T. Koch, and P. Popovski, “Toward massive, ultrareliable, and
+low-latency wireless communication with short packets,” Proc. IEEE,
+vol. 104, no. 9, pp. 1711–1726, 2016.
+[46] D. S. Bernstein, R. Givan, N. Immerman, and S. Zilberstein, “The
+complexity of decentralized control of Markov decision processes,”
+Math. Oper. Res., vol. 27, no. 4, pp. 819–840, 2002.
+[47] H. Kellerer, U. Pferschy, and D. Pisinger, Knapsack Problems. Springer,
+2004.
+[48] S. Boyd and L. Vandenberghe, Convex Optimization.
+Cambridge
+University Press, 2004.
+[49] D. M. Topkis, Supermodularity and Complementarity.
+Princeton Univ.
+Press, 1998.
+[50] H. Everett, “Generalized Lagrange multiplier method for solving prob-
+lems of optimum allocation of resources,” Oper. Res., vol. 11, no. 3, pp.
+399–417, 1963.
+[51] F. P. Kelly, A. K. Maulloo, and D. K. H. Tan, “Rate control for
+communication networks: Shadow prices, proportional fairness and
+stability,” J. Oper. Res. Soc., vol. 49, no. 3, pp. 237–252, 1998.
+[52] 3GPP, “NR; medium access control (MAC) protocol specification,” 3rd
+Generation Partnership Project (3GPP), Technical Specification (TS)
+38.321.
+[53] ——, “NR; multiplexing and channel coding,” 3rd Generation Partner-
+ship Project (3GPP), Technical Specification (TS) 38.212.

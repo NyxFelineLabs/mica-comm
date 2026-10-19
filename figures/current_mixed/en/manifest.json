@@ -1,0 +1,86 @@
+{
+  "input": "E:\\Project\\NyxFelineLabs\\real_research\\mica-comm\\results\\current_mixed_20261019",
+  "source_sha256": "d70d0aaefc2562f8cfa9a56439da1fa2ec9ccd281fdf1d724df114a02dc39e24",
+  "missions": 1380,
+  "language": "en",
+  "figures": [
+    {
+      "name": "01_primary",
+      "title": "Three planners + three different LLMs"
+    },
+    {
+      "name": "02_progress",
+      "title": "Search progress"
+    },
+    {
+      "name": "15_trajectory",
+      "title": "MICA trajectory, seed 9000"
+    },
+    {
+      "name": "17_agent_behavior",
+      "title": "Model behavior within the mixed team"
+    },
+    {
+      "name": "03_team_size",
+      "title": "Team size"
+    },
+    {
+      "name": "04_budget",
+      "title": "Static shared uplink budget"
+    },
+    {
+      "name": "05_snr_time",
+      "title": "SNR and mission time"
+    },
+    {
+      "name": "06_snr_cost",
+      "title": "SNR and communication cost"
+    },
+    {
+      "name": "08_broadcast_loss",
+      "title": "Broadcast loss"
+    },
+    {
+      "name": "09_broadcast_delay",
+      "title": "Broadcast delay"
+    },
+    {
+      "name": "10_shared_budget",
+      "title": "Price-coordinated shared uplink"
+    },
+    {
+      "name": "11_finite_blocklength",
+      "title": "Finite-blocklength channel"
+    },
+    {
+      "name": "12_rescue",
+      "title": "Rescue before deadlines"
+    },
+    {
+      "name": "18_value_noise",
+      "title": "Semantic value noise"
+    },
+    {
+      "name": "07_paired_snr",
+      "title": "Paired time differences; positive favors MICA"
+    },
+    {
+      "name": "14_components",
+      "title": "Scheduler ablations"
+    },
+    {
+      "name": "19_coordinator",
+      "title": "Uplink coordination modes"
+    },
+    {
+      "name": "16_table_xii",
+      "title": "Table XII extension: three models in one team"
+    },
+    {
+      "name": "13_budget_tradeoff",
+      "title": "Budget means; labels are per-agent symbol shares"
+    }
+  ],
+  "records_sha256": "27c6744c58766aaee23ff02c6d8829c067c0a303a0361fa6b477ecddf0e696b6",
+  "plot_source_sha256": "2b3f5816765330b8a21a87804fd7be8f50835087b791d604bab3ad4b11077279"
+}

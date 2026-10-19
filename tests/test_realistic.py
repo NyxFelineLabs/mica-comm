@@ -41,7 +41,7 @@ def test_reproduces_base_rescue_w50(scheme):
 
 def test_base_regression_episode():
     o = run_realistic(Config(), "mica", 0)
-    assert (o["completion_time"], o["symbols"], o["bits"]) == (122, 13304, 17186)
+    assert (o["completion_time"], o["symbols"], o["bits"]) == (75, 14192, 16631)
 
 
 def test_overhead_is_charged():
@@ -66,11 +66,15 @@ def test_noise_changes_decisions_and_is_logged():
     assert p["completed"]
 
 
-@pytest.mark.parametrize("scheme", ("mica", "sem_ra"))
-def test_shared_budget_respected(scheme):
+@pytest.mark.parametrize(
+    "scheme,mode",
+    (("mica", "static"), ("mica", "price"), ("mica", "central"),
+     ("sem_ra", "static"), ("sem_ra", "price")),
+)
+def test_shared_budget_respected(scheme, mode):
     from mica_comm.simulation.realistic import RealisticSimulation
 
-    cfg = Config(shared_budget=150, symbols_per_slot=150)
+    cfg = Config(shared_budget=150, symbols_per_slot=150, shared_mode=mode)
     sim = RealisticSimulation(cfg, scheme, 0)
     sim._start()
     last = 0
@@ -82,7 +86,55 @@ def test_shared_budget_respected(scheme):
         if done:
             break
     r = sim.result()
-    assert r["ul_ctrl_symbols"] > 0 and r["dl_ctrl_symbols"] > 0
+    if mode == "static":
+        assert r["ul_ctrl_symbols"] == 0
+    else:
+        assert r["ul_ctrl_symbols"] > 0
+    assert r["dl_ctrl_symbols"] > 0
+
+
+def test_current_campaign_enables_shared_uplink():
+    from experiments.run_current import design
+
+    cells = design()
+    assert all(cfg.shared_budget > 0 for _, _, _, cfg in cells)
+    mica = next(cfg for experiment, _, scheme, cfg in cells if experiment == "default" and scheme == "mica")
+    assert mica.shared_budget == 300 and mica.shared_mode == "static"
+    rescue = next(
+        cfg for experiment, _, scheme, cfg in cells if experiment == "rescue" and scheme == "mica"
+    )
+    assert rescue.shared_budget == 300 and rescue.shared_mode == "price"
+    coordinator = {
+        parameter: cfg.shared_mode
+        for experiment, parameter, _, cfg in cells
+        if experiment == "coordinator"
+    }
+    assert coordinator == {
+        "search_static": "static",
+        "search_price": "price",
+        "search_central": "central",
+        "rescue_static": "static",
+        "rescue_price": "price",
+        "rescue_central": "central",
+    }
+    budgets = [
+        (parameter, cfg)
+        for experiment, parameter, scheme, cfg in cells
+        if experiment == "budget" and scheme == "mica"
+    ]
+    assert all(cfg.shared_budget // cfg.n_agents == parameter for parameter, cfg in budgets)
+    assert all(
+        cfg.shared_mode == "price"
+        for experiment, _, _, cfg in cells
+        if experiment == "shared"
+    )
+
+
+def test_static_share_matches_orthogonal_cap():
+    static = run_realistic(Config(shared_budget=300, shared_mode="static"), "mica", 0)
+    orthogonal = run_realistic(Config(symbols_per_slot=50), "mica", 0)
+    assert {key: static[key] for key in KEYS} == {key: orthogonal[key] for key in KEYS}
+    assert static["ul_ctrl_symbols"] == 0
 
 
 def test_waterfill():

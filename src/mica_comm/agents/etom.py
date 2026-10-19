@@ -1,9 +1,9 @@
-"""Decision-theoretic value of information via a theory-of-mind team model.
+﻿"""Decision-theoretic value of information via a theory-of-mind team model.
 
 The sender models every teammate as a Boltzmann-rational planner that acts on the
 common (coordinator-broadcast) belief.  This is an approximation: each teammate also holds
 private, not yet delivered evidence that the sender cannot observe.  With
-Config.tom_oracle (analysis only) the model instead uses the teammates' true
+Config.etom_oracle (analysis only) the model instead uses the teammates' true
 private evidence and positions, which quantifies the cost of the approximation.  A message is worth the increase in the teammates'
 expected search utility, evaluated under the sender's own, better-informed belief:
 
@@ -27,11 +27,11 @@ def repulsion(points, X, Y, sigma):
     return f
 
 
-class TeamModel:
+class EToMModel:
     def __init__(self, sim, sender, temperature: float):
         cfg = sim.cfg
         self.cfg, self.sim, self.sender, self.temp = cfg, sim, sender, temperature
-        for name in ("tom_temperatures", "tom_persistence"):
+        for name in ("etom_receiver_temperatures", "etom_intent_persistences"):
             values = getattr(cfg, name)
             if values and len(values) != cfg.n_agents:
                 raise ValueError(f"{name} must be empty or contain one value per agent")
@@ -39,8 +39,8 @@ class TeamModel:
                 raise ValueError(f"{name} must contain finite values")
         if not np.isfinite(temperature) or temperature <= 0:
             raise ValueError("temperature must be finite and positive")
-        if any(v <= 0 for v in cfg.tom_temperatures):
-            raise ValueError("tom_temperatures must be positive")
+        if any(v <= 0 for v in cfg.etom_receiver_temperatures):
+            raise ValueError("etom_receiver_temperatures must be positive")
         self.X, self.Y = sender._X, sender._Y
         n = cfg.grid
         self.live = ~sim.declared.reshape(sim.Lc.shape)
@@ -52,7 +52,7 @@ class TeamModel:
         k = sender.idx
         self.true_k = divmod(sender.target, n) if sender.target is not None else sender.pos
         self.mates = [j for j in range(cfg.n_agents) if j != k and j in sim.team_pos]
-        self.oracle = cfg.tom_oracle
+        self.oracle = cfg.etom_oracle
         self.dist, self.rep_known, self.rep_true, self.others = {}, {}, {}, {}
         self.priv, self.mass_mate = {}, {}
         for j in self.mates:
@@ -114,9 +114,17 @@ class TeamModel:
         m = s.max()
         if m <= 0:
             return 0.0
-        temperature = self.cfg.tom_temperatures[j] if self.cfg.tom_temperatures else self.temp
+        temperature = (
+            self.cfg.etom_receiver_temperatures[j]
+            if self.cfg.etom_receiver_temperatures
+            else self.cfg.etom_temperature
+        )
         logits = (s - m) / (temperature * m)
-        persistence = self.cfg.tom_persistence[j] if self.cfg.tom_persistence else 0.0
+        persistence = (
+            self.cfg.etom_intent_persistences[j]
+            if self.cfg.etom_intent_persistences
+            else self.cfg.etom_intent_persistence
+        )
         target = self.sim.team_intent.get(j)
         if persistence and target is not None:
             # The receiver's private target is never available to this prediction.
@@ -173,3 +181,4 @@ class TeamModel:
             rep = self.others[j] * self._rep_point(tgt if j > k else pos)
             v += self._expected_utility(self._belief_mass(j, delta), j, rep) - base
         return v
+

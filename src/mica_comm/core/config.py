@@ -3,6 +3,8 @@
 from dataclasses import dataclass, replace
 from typing import Tuple
 
+MIXED_TEAM_MODELS = ("qwen3:8b", "llama3.1:8b", "gemma3:12b")
+
 
 @dataclass(frozen=True)
 class Config:
@@ -56,12 +58,15 @@ class Config:
     energy_price: float = 1e-5  # eta: value units per channel use
     confirm_value: float = 5.0  # value of a survivor confirmation
     intent_value: float = 0.5  # value of a fully changed intent
-    tom_temperature: float = 0.1  # softmax temperature of the teammate model
+    etom_temperature: float = 0.2  # EToM teammate-policy softmax temperature
+    etom_intent_persistence: float = 2.0  # public-intent logit bonus
     # Optional receiver-specific behavior calibration; empty tuples keep the baseline.
-    tom_temperatures: Tuple[float, ...] = ()
-    tom_persistence: Tuple[float, ...] = ()  # logit bonus for the publicly announced target
+    etom_receiver_temperatures: Tuple[float, ...] = ()
+    etom_intent_persistences: Tuple[
+        float, ...
+    ] = ()  # logit bonus for the publicly announced target
     filter_eps: float = 0.02  # semantic source filter threshold (expected survivors)
-    tom_oracle: bool = False  # (analysis) teammate model sees teammates' private evidence
+    etom_oracle: bool = False  # (analysis) teammate model sees teammates' private evidence
     log_private: bool = False  # (analysis) log the size of agents' private evidence
     sem_interval: int = 1  # reporting interval of the aggregated periodic baseline
 
@@ -70,6 +75,7 @@ class Config:
     # A stable project alias.  The Ollama tag is selected through environment
     # variables in ``mica_comm.llm_agent`` so experiments stay portable.
     llm_model: str = "small_reasoner"
+    llm_models: Tuple[str, ...] = ()  # optional model per entry of llm_agents
     llm_replan_every: int = 5  # slots between LLM deliberations
     llm_candidates: int = 5  # candidate targets shown to the LLM
 
@@ -93,7 +99,7 @@ class Config:
     req_header_bits: int = 8  # scheduling request header (per slot)
     req_option_bits: int = 16  # (value, size) pair per reported option
     grant_bits: int = 32  # downlink grant per scheduled agent and slot
-    shared_mode: str = "price"  # "price" (broadcast network price) or "central"
+    shared_mode: str = "price"  # "price", "central", or "static" (equal reserved shares)
     price_bits: int = 8  # broadcast network price (per slot)
     price_gain: float = 1.0  # multiplicative price update gain
 

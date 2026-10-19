@@ -29,7 +29,7 @@ def main():
     missions = sorted({r["seed"] for r in rows})
     rng = np.random.default_rng(0)
     out = {"missions": len(missions), "samples": len(rows)}
-    ests = ("tom", "tv", "bits", "aoi")
+    ests = ("etom", "tv", "bits", "aoi")
     # --- cluster (mission) bootstrap of rank correlations
     corr = {}
     for kind in ("E", "I", "EI"):

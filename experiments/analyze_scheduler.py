@@ -17,7 +17,7 @@ from multiprocessing import Pool
 import numpy as np
 
 from mica_comm import Config, Simulation
-from mica_comm.agents.voi import TeamModel
+from mica_comm.agents.etom import EToMModel
 from mica_comm.communication.schemes import MicaScheduler
 from mica_comm.core.paths import RESULTS_DIR
 
@@ -51,7 +51,7 @@ def run(args):
             delta = np.zeros_like(view.Lc)
             for r in recs:
                 view.sensor.apply(delta, r)
-            team = TeamModel(view, agent, cfg.tom_temperature)
+            team = EToMModel(view, agent, cfg.etom_temperature)
             ve = team.evidence_voi([delta], [recs[-1].pos])[0]
             vi = team.intent_voi(agent.target)
             vj = team.joint_voi(delta, recs[-1].pos, agent.target)

@@ -25,7 +25,7 @@ from multiprocessing import Pool
 import numpy as np
 
 from mica_comm import Config, Simulation
-from mica_comm.agents.voi import TeamModel
+from mica_comm.agents.etom import EToMModel
 from mica_comm.communication.messages import Packet, evidence_sizes, intent_bits
 from mica_comm.core.paths import RESULTS_DIR
 from mica_comm.world.belief import sigmoid
@@ -45,29 +45,29 @@ def estimates(sim, a):
     c, t = sim.cfg, sim.t
     recs = list(a.pending_records)
     est = {}
-    team = TeamModel(sim, a, c.tom_temperature)
+    team = EToMModel(sim, a, c.etom_temperature)
     if recs:
         delta = np.zeros_like(sim.Lc)
         for r in recs:
             sim.sensor.apply(delta, r)
         live = ~sim.declared.reshape(sim.Lc.shape)
         est["E"] = {
-            "tom": team.evidence_voi([delta], [recs[-1].pos])[0],
+            "etom": team.evidence_voi([delta], [recs[-1].pos])[0],
             "tv": float(np.abs(sigmoid(sim.Lc + delta) - sigmoid(sim.Lc))[live].sum()),
             "bits": float(evidence_sizes(recs, c)[-1]),
             "aoi": float(sum(t - r.t + 1 for r in recs)),
         }
     if has_intent(a):
         est["I"] = {
-            "tom": team.intent_voi(a.target),
+            "etom": team.intent_voi(a.target),
             "tv": 0.0,
             "bits": float(intent_bits(c)),
             "aoi": float(t - getattr(a, "_intent_t", t) + 1),
         }
     if "E" in est and "I" in est:
         est["EI"] = {
-            "tom": team.joint_voi(delta, recs[-1].pos, a.target),
-            "tom_add": est["E"]["tom"] + est["I"]["tom"],
+            "etom": team.joint_voi(delta, recs[-1].pos, a.target),
+            "etom_add": est["E"]["etom"] + est["I"]["etom"],
             "tv": est["E"]["tv"],
             "bits": est["E"]["bits"] + est["I"]["bits"],
             "aoi": est["E"]["aoi"] + est["I"]["aoi"],
