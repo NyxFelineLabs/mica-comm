@@ -27,3 +27,6 @@ figures/*
 !figures/current/en/
 figures/current/**/png/
 figures/current/**/audit/
+
+# Private plotting implementation; published figures and reports are tracked.
+experiments/plot_current.py

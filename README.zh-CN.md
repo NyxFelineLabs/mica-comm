@@ -127,24 +127,13 @@ result = run_episode(config, "mica", seed=9000)
 
 [18 个图表主题的中英文目录](reports/current/README.md)涵盖任务时长与开销、目标进度、团队规模、预算、信噪比、广播可靠性、共享预算、有限码长、限时救援、资源权衡、模块分析、搜索轨迹、模型差异与价值扰动。中文文件按内容命名，例如 `15_多智能体搜索轨迹.pdf`。
 
-从仓库结果快照直接重建图表：
-
-```bash
-python -m experiments.plot_current \
-  --input reports/current --llm-input reports/current/llm \
-  --language both
-```
-
-重新运行完整经典规划实验再绘图：
+仓库提供已核验的结果快照和最终矢量图表。绘图实现作为内部工具保留，不纳入公开源码。若要为后续研究重新运行经典规划实验：
 
 ```bash
 python -m experiments.run_current --seeds 12 --workers 6 --output results/current_new
-python -m experiments.plot_current \
-  --input results/current_new --llm-input reports/current/llm \
-  --language both
 ```
 
-绘图入口验证种子、配置与记录完整性。阴影与误差线为按任务种子重采样的探索性 95% bootstrap 区间，未校正多重比较；未完成任务保留上限时长，不从统计删除。图 13 为预算点的均值权衡，不宣称全局 Pareto 最优；轨迹图固定使用首个种子。
+发布图表由带代码指纹的配置和完整任务队列生成。阴影与误差线为按任务种子重采样的探索性 95% bootstrap 区间，未校正多重比较；未完成任务保留上限时长，不从统计删除。图 13 为预算点的均值权衡，不宣称全局 Pareto 最优；轨迹图固定使用首个种子。
 
 PDF 和 SVG 纳入 Git；600 dpi PNG 与排版审计留在本地，README 使用轻量预览。WSL 中文绘图可读取 Windows 微软雅黑，也支持 Noto Sans CJK SC。旧本地图表保存在 `results/figure_archive_20261019/`。
 

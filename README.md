@@ -127,24 +127,13 @@ Time means **simulation slots**, not inference seconds. Gemma has 12B parameters
 
 The [bilingual catalog of 18 figure topics](reports/current/README.md) covers time/cost, progress, team size, budgets, SNR, broadcasts, shared resources, finite blocklength, rescue deadlines, tradeoffs, components, trajectories, models, and valuation noise. Chinese filenames describe their contents, e.g. `15_多智能体搜索轨迹.pdf`.
 
-Rebuild figures directly from published outcome snapshots:
-
-```bash
-python -m experiments.plot_current \
-  --input reports/current --llm-input reports/current/llm \
-  --language both
-```
-
-Run the full classical-planner campaign again, then plot:
+The repository publishes the checked result snapshot and final vector figures. The private plotting implementation is intentionally kept out of the public source tree. To rerun the classical-planner campaign for a new study:
 
 ```bash
 python -m experiments.run_current --seeds 12 --workers 6 --output results/current_new
-python -m experiments.plot_current \
-  --input results/current_new --llm-input reports/current/llm \
-  --language both
 ```
 
-The plotting entry validates seeds, configurations, and cohort completeness. Bands/error bars show exploratory mission-seed bootstrap 95% intervals without multiplicity adjustment. Unfinished missions retain the horizon time. Figure 13 shows mean budget tradeoffs without claiming global Pareto optimality; trajectories use the first seed.
+The published figures were generated from the validated manifests and complete mission cohorts. Bands/error bars show exploratory mission-seed bootstrap 95% intervals without multiplicity adjustment. Unfinished missions retain the horizon time. Figure 13 shows mean budget tradeoffs without claiming global Pareto optimality; trajectories use the first seed.
 
 PDF/SVG files are tracked; local exports include 600 dpi PNGs and layout audits. README previews are compact. Chinese rendering supports Windows Microsoft YaHei from WSL or installed Noto Sans CJK SC. Earlier local figures are preserved in `results/figure_archive_20261019/`.
 
