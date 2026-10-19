@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from mica_comm import Config, Simulation, run_episode
-from mica_comm.channel import Channel, fbl_error
+from mica_comm.communication.channel import Channel, fbl_error
 
 
 def test_fbl_error_behaves():

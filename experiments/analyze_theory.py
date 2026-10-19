@@ -24,7 +24,7 @@ from multiprocessing import Pool
 import numpy as np
 
 from mica_comm import Config, Simulation
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "theory.json"
 

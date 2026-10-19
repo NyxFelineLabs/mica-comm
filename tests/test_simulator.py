@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 
 from mica_comm import Config, Simulation, run_episode
-from mica_comm.belief import Obs, SensorModel, box_sum, logit
-from mica_comm.channel import Channel
-from mica_comm.messages import evidence_bits, evidence_sizes
-from mica_comm.schemes import SCHEMES, Group, Option, lagrangian_select
+from mica_comm.communication.channel import Channel
+from mica_comm.communication.messages import evidence_bits, evidence_sizes
+from mica_comm.communication.schemes import SCHEMES, Group, Option, lagrangian_select
+from mica_comm.world.belief import Obs, SensorModel, box_sum, logit
 
 
 def test_unknown_scheme_error_lists_available_choices():

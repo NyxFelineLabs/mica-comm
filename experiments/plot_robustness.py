@@ -12,10 +12,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from experiments.figure_style import STYLE, W1, W2, export_figure, publication_style  # noqa: E402
 from experiments.plot import fmt  # noqa: E402
-from mica_comm.paths import FIGURES_DIR as FIG  # noqa: E402
-from mica_comm.paths import RESULTS_DIR as RES  # noqa: E402
+from mica_comm.core.paths import FIGURES_DIR as FIG  # noqa: E402
+from mica_comm.core.paths import RESULTS_DIR as RES  # noqa: E402
+from mica_comm.visualization.style import (
+    STYLE,
+    W1,
+    W2,
+    export_figure,
+    publication_style,
+)  # noqa: E402
 
 TABLES = FIG / "tables"
 RNG = np.random.default_rng(0)

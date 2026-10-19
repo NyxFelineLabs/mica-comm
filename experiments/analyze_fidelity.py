@@ -8,7 +8,7 @@ import os
 
 import numpy as np
 
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import RESULTS_DIR
 
 RES = RESULTS_DIR
 

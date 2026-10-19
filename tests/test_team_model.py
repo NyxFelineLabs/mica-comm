@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from mica_comm import Config, Simulation
-from mica_comm.voi import TeamModel
+from mica_comm.agents.voi import TeamModel
 
 
 def model(cfg):

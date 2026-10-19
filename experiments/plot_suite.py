@@ -10,6 +10,8 @@ import hashlib
 import html
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 FIGURES = {
@@ -112,7 +114,28 @@ def main():
     parser.add_argument("--input", type=Path, default=root / "results/restored_suite")
     parser.add_argument("--output", type=Path, default=root / "figures")
     parser.add_argument("--only", nargs="+", choices=FIGURES)
+    parser.add_argument("--language", choices=("en", "zh", "both"), default="en")
     args = parser.parse_args()
+    if args.language == "both":
+        for language in ("en", "zh"):
+            command = [
+                sys.executable,
+                "-m",
+                "experiments.plot_suite",
+                "--input",
+                str(args.input),
+                "--output",
+                str(args.output),
+                "--language",
+                language,
+            ]
+            if args.only:
+                command += ["--only", *args.only]
+            subprocess.run(command, check=True)
+        return
+    os.environ["MICA_FIGURE_LANGUAGE"] = args.language
+    if args.language == "zh":
+        args.output = args.output / "zh"
     selected = args.only or list(FIGURES)
     needed = sorted({name for figure in selected for name in FIGURES[figure][1]})
     missing = [name for name in needed if not (args.input / name).is_file()]
@@ -122,8 +145,8 @@ def main():
     os.environ["MICA_RESULTS_DIR"] = str(args.input.resolve())
     os.environ["MICA_FIGURES_DIR"] = str(args.output.resolve())
     from experiments import plot, plot_realistic, plot_robustness
-    from experiments.figure_style import publication_style
     from experiments.validate_realistic import load_jsonl
+    from mica_comm.visualization.style import publication_style
 
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "tables").mkdir(exist_ok=True)
@@ -173,6 +196,7 @@ def main():
         else None
     )
     report = {
+        "language": args.language,
         "input_provenance": provenance,
         "inputs": {
             name: hashlib.sha256((args.input / name).read_bytes()).hexdigest() for name in needed

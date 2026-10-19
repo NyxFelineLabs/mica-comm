@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -16,15 +19,6 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
-from experiments.figure_style import (  # noqa: E402
-    STYLE as POLICY_STYLE,
-)
-from experiments.figure_style import (  # noqa: E402
-    W2,
-    export_figure,
-    panel_label,
-    publication_style,
-)
 from experiments.run_team_benchmark import POLICIES  # noqa: E402
 from experiments.team_analysis import (  # noqa: E402
     MODEL_LABELS,
@@ -32,11 +26,30 @@ from experiments.team_analysis import (  # noqa: E402
     load_campaign,
     write_source_csv,
 )
-from mica_comm.paths import FIGURES_DIR, RESULTS_DIR  # noqa: E402
+from mica_comm.core.paths import FIGURES_DIR, RESULTS_DIR  # noqa: E402
+from mica_comm.visualization.language import chinese  # noqa: E402
+from mica_comm.visualization.style import (  # noqa: E402
+    STYLE as POLICY_STYLE,
+)
+from mica_comm.visualization.style import (  # noqa: E402
+    W2,
+    export_figure,
+    panel_label,
+    publication_style,
+)
 
 # Ideal delivery needs a marker in these categorical plots, while line sweeps
 # retain the reference suite's neutral dashed line without repeated markers.
-STYLE = {**POLICY_STYLE, "genie": {**POLICY_STYLE["genie"], "marker": "^"}}
+STYLE = {
+    **POLICY_STYLE,
+    "sem": {**POLICY_STYLE["sem"], "label": "Fixed-cycle sharing (SYNC)"},
+    "mica": {**POLICY_STYLE["mica"], "label": "MICA"},
+    "genie": {
+        **POLICY_STYLE["genie"],
+        "label": "Instant, reliable sharing reference (IDEAL)",
+        "marker": "^",
+    },
+}
 
 
 def _legend(fig):
@@ -67,7 +80,7 @@ def outcomes(rows, report, output):
     fig.subplots_adjust(left=0.085, right=0.98, bottom=0.24, top=0.79, wspace=0.36)
     models = list(report["absolute"])
     for ax, metric, scale, title, ylabel, letter in (
-        (axes[0], "completion_time", 1, "Task performance", "Completion time (slots)", "a"),
+        (axes[0], "completion_time", 1, "Task progress", "Completion time (slots)", "a"),
         (axes[1], "symbols", 1000, "Communication cost", "Uplink symbols (thousands)", "b"),
     ):
         policies = POLICIES if metric == "completion_time" else ("sem", "mica")
@@ -122,11 +135,17 @@ def outcomes(rows, report, output):
         ax.yaxis.grid(True, color="#E8E8E8", linewidth=0.4, zorder=0)
         panel_label(ax, letter)
     _legend(fig)
+    caption = (
+        f"点：逐任务观测；大标记：均值；误差线：95% bootstrap 区间；n = {len(report['seeds'])} 个种子。\n"
+        "IDEAL 为零时延、无误差参考，不计物理链路成本。所有任务均纳入统计。"
+        if chinese()
+        else f"Points: individual missions; large markers: means; bars: 95% bootstrap CIs; n = {len(report['seeds'])} seeds.\n"
+        "IDEAL is a zero-delay, error-free reference without a physical link cost. All missions are included."
+    )
     fig.text(
         0.5,
         0.045,
-        f"Points: individual missions; large markers: means; bars: 95% bootstrap CIs; n = {len(report['seeds'])} seeds.\n"
-        "Ideal delivery has no comparable wireless cost. All scheduled missions are included.",
+        caption,
         ha="center",
         va="bottom",
         fontsize=6.5,
@@ -163,17 +182,24 @@ def contrasts(report, output):
             )
     ax.axvline(0, color="#A0A0A0", linestyle="--", linewidth=0.7, zorder=0)
     ax.set_yticks(range(len(pairs)))
-    ax.set_yticklabels(
-        [f"{MODEL_LABELS[a]}\nminus {MODEL_LABELS[b]}" for a, b in pairs], linespacing=1.6
-    )
+    pair_labels = [
+        f"{MODEL_LABELS[a]}\n{'减去' if chinese() else 'minus'} {MODEL_LABELS[b]}" for a, b in pairs
+    ]
+    ax.set_yticklabels(pair_labels, linespacing=1.6)
     ax.set_ylim(len(pairs) - 0.5, -0.5)
     ax.set_xlabel("Paired completion-time difference (slots; first minus second)")
     _legend(fig)
+    caption = (
+        f"均值与 95% 配对 bootstrap 区间；n = {len(report['seeds'])} 对种子。\n"
+        "负值表示前者更快。区间为探索性估计，未经多重比较校正。"
+        if chinese()
+        else f"Means and 95% paired bootstrap CIs; n = {len(report['seeds'])} seed pairs.\n"
+        "Negative: first model faster. Intervals are exploratory and unadjusted."
+    )
     fig.text(
         0.63,
         0.04,
-        f"Means and 95% paired bootstrap CIs; n = {len(report['seeds'])} seed pairs.\n"
-        "Negative: first model faster. Intervals are exploratory and unadjusted.",
+        caption,
         ha="center",
         va="bottom",
         fontsize=6.5,
@@ -183,13 +209,35 @@ def contrasts(report, output):
     plt.close(fig)
 
 
-@publication_style()
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=RESULTS_DIR / "team_benchmark")
     parser.add_argument("--output", type=Path, default=FIGURES_DIR / "supplemental/team_benchmark")
     parser.add_argument("--scenario", default="default")
+    parser.add_argument("--language", choices=("en", "zh", "both"), default="en")
     args = parser.parse_args()
+    if args.language == "both":
+        for language in ("en", "zh"):
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "experiments.plot_team_benchmark",
+                    "--input",
+                    str(args.input),
+                    "--output",
+                    str(args.output),
+                    "--scenario",
+                    args.scenario,
+                    "--language",
+                    language,
+                ],
+                check=True,
+            )
+        return
+    os.environ["MICA_FIGURE_LANGUAGE"] = args.language
+    if args.language == "zh":
+        args.output = args.output / "zh"
     rows, manifests = load_campaign(args.input)
     report = analyze(rows, manifests, args.scenario)
     args.output.mkdir(parents=True, exist_ok=True)
@@ -198,8 +246,9 @@ def main():
     write_source_csv(rows, analysis / "source_data.csv")
     report["manifests"] = manifests
     (analysis / "statistics.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    outcomes(rows, report, args.output)
-    contrasts(report, args.output)
+    with publication_style():
+        outcomes(rows, report, args.output)
+        contrasts(report, args.output)
     print(f"Rendered {report['rows_selected']}/{report['rows_total']} missions to {args.output}")
 
 

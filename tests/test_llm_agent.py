@@ -3,7 +3,7 @@ import json
 import pytest
 
 from mica_comm import Config, Simulation, llm_agent
-from mica_comm.llm_agent import LLMAgent, LLMClient
+from mica_comm.agents.llm_agent import LLMAgent, LLMClient
 
 
 def fake_transport(answer):

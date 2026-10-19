@@ -15,11 +15,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from experiments.figure_style import W1, W2, export_figure, publication_style  # noqa: E402
 from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT  # noqa: E402
 from experiments.validate_realistic import load_jsonl, main_frozen, reference  # noqa: E402
-from mica_comm.paths import FIGURES_DIR as FIG
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import FIGURES_DIR as FIG
+from mica_comm.core.paths import RESULTS_DIR
+from mica_comm.visualization.style import W1, W2, export_figure, publication_style  # noqa: E402
 
 RES = RESULTS_DIR
 TABLES = FIG / "tables"

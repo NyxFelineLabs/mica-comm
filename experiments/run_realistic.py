@@ -21,7 +21,7 @@ import time
 from multiprocessing import Pool
 
 from mica_comm import Config, run_realistic
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR
 

@@ -20,8 +20,8 @@ from experiments.run_llm_calibration import (
     read_rows,
 )
 from mica_comm import Config, llm_agent
-from mica_comm.llm_agent import LLMClient
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.agents.llm_agent import LLMClient
+from mica_comm.core.paths import RESULTS_DIR
 
 MODELS = ("qwen3:8b", "llama3.1:8b", "gemma3:12b")
 POLICIES = ("sem", "mica", "genie")
@@ -71,7 +71,7 @@ def campaign(args, model, digest, transport):
     output = args.output / model.replace(":", "_")
     seeds = list(range(args.seed_start, args.seed_start + args.seeds))
     root = Path(__file__).resolve().parents[1]
-    files = sorted((root / "src/mica_comm").glob("*.py")) + [
+    files = sorted((root / "src/mica_comm").rglob("*.py")) + [
         Path(__file__).resolve(),
         root / "experiments/run_llm_calibration.py",
         root / "experiments/run_behavior_calibration.py",

@@ -26,8 +26,8 @@ from experiments.run_behavior_calibration import (
     save,
 )
 from mica_comm import Config, Simulation, llm_agent
-from mica_comm.llm_agent import LLMClient
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.agents.llm_agent import LLMClient
+from mica_comm.core.paths import RESULTS_DIR
 
 # A persistent Windows subprocess lets WSL reach an Ollama server bound to
 # Windows localhost without changing the server or exposing a network port.
@@ -213,7 +213,7 @@ def campaign(args, model, digest, transport):
     train_seeds = list(range(args.train_start, args.train_start + args.train_seeds))
     eval_seeds = list(range(args.eval_start, args.eval_start + args.eval_seeds))
     root = Path(__file__).resolve().parents[1]
-    source_files = sorted((root / "src/mica_comm").glob("*.py")) + [
+    source_files = sorted((root / "src/mica_comm").rglob("*.py")) + [
         Path(__file__).resolve(),
         root / "experiments/run_behavior_calibration.py",
     ]

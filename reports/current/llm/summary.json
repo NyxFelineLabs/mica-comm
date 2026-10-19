@@ -1,0 +1,350 @@
+{
+  "scenario": "default",
+  "seeds": [
+    8000,
+    8001,
+    8002,
+    8003,
+    8004,
+    8005,
+    8006,
+    8007,
+    8008,
+    8009,
+    8010,
+    8011
+  ],
+  "rows_total": 108,
+  "rows_selected": 108,
+  "selection": "All models and policies; only the explicitly selected scenario is plotted",
+  "statistics": {
+    "unit": "mission seed",
+    "interval": "95% percentile bootstrap",
+    "resamples": 10000,
+    "seed": 5821,
+    "multiplicity": "Unadjusted, exploratory"
+  },
+  "input_records_sha256": "a4b4ebd1b8c7ac55877df47a816fcb473464ea4f4c8969c8b765114f04f0c485",
+  "absolute": {
+    "qwen3:8b": {
+      "sem": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 80.58333333333333,
+          "low": 63.75,
+          "high": 98.75
+        },
+        "symbols": {
+          "mean": 41115.25,
+          "low": 31807.952083333334,
+          "high": 51320.25833333333
+        }
+      },
+      "mica": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 89.83333333333333,
+          "low": 73.41666666666667,
+          "high": 106.66666666666667
+        },
+        "symbols": {
+          "mean": 15687.0,
+          "low": 13491.077083333334,
+          "high": 17979.6
+        }
+      },
+      "genie": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 73.91666666666667,
+          "low": 61.583333333333336,
+          "high": 86.91666666666667
+        },
+        "symbols": null
+      }
+    },
+    "llama3.1:8b": {
+      "sem": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 93.83333333333333,
+          "low": 75.83333333333333,
+          "high": 114.83333333333333
+        },
+        "symbols": {
+          "mean": 48761.833333333336,
+          "low": 38215.512500000004,
+          "high": 61234.120833333334
+        }
+      },
+      "mica": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 90.75,
+          "low": 69.33333333333333,
+          "high": 115.58333333333333
+        },
+        "symbols": {
+          "mean": 15094.083333333334,
+          "low": 12912.44375,
+          "high": 17503.420833333334
+        }
+      },
+      "genie": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 88.58333333333333,
+          "low": 74.83333333333333,
+          "high": 108.75
+        },
+        "symbols": null
+      }
+    },
+    "gemma3:12b": {
+      "sem": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 120.91666666666667,
+          "low": 95.66666666666667,
+          "high": 145.0
+        },
+        "symbols": {
+          "mean": 64759.166666666664,
+          "low": 50286.60625,
+          "high": 78674.06458333334
+        }
+      },
+      "mica": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 85.0,
+          "low": 68.41666666666667,
+          "high": 101.66666666666667
+        },
+        "symbols": {
+          "mean": 13837.666666666666,
+          "low": 11596.404166666667,
+          "high": 16081.591666666667
+        }
+      },
+      "genie": {
+        "n": 12,
+        "completion_rate": 1.0,
+        "completion_time": {
+          "mean": 62.25,
+          "low": 55.333333333333336,
+          "high": 69.08541666666663
+        },
+        "symbols": null
+      }
+    }
+  },
+  "contrasts": [
+    {
+      "first": "qwen3:8b",
+      "second": "llama3.1:8b",
+      "policy": "sem",
+      "differences": [
+        -24,
+        -17,
+        -31,
+        -7,
+        0,
+        -18,
+        -9,
+        29,
+        -27,
+        -3,
+        -38,
+        -14
+      ],
+      "mean": -13.25,
+      "low": -21.916666666666668,
+      "high": -3.0833333333333335
+    },
+    {
+      "first": "qwen3:8b",
+      "second": "llama3.1:8b",
+      "policy": "mica",
+      "differences": [
+        83,
+        10,
+        -20,
+        19,
+        61,
+        -8,
+        -69,
+        36,
+        -2,
+        -15,
+        -88,
+        -18
+      ],
+      "mean": -0.9166666666666666,
+      "low": -27.833333333333332,
+      "high": 25.416666666666668
+    },
+    {
+      "first": "qwen3:8b",
+      "second": "llama3.1:8b",
+      "policy": "genie",
+      "differences": [
+        -9,
+        -4,
+        -104,
+        -27,
+        -13,
+        -41,
+        -42,
+        32,
+        24,
+        32,
+        -5,
+        -19
+      ],
+      "mean": -14.666666666666666,
+      "low": -36.25,
+      "high": 4.333333333333333
+    },
+    {
+      "first": "qwen3:8b",
+      "second": "gemma3:12b",
+      "policy": "sem",
+      "differences": [
+        -93,
+        6,
+        4,
+        -98,
+        -105,
+        -91,
+        23,
+        16,
+        -30,
+        -130,
+        -4,
+        18
+      ],
+      "mean": -40.333333333333336,
+      "low": -71.75208333333333,
+      "high": -9.833333333333334
+    },
+    {
+      "first": "qwen3:8b",
+      "second": "gemma3:12b",
+      "policy": "mica",
+      "differences": [
+        58,
+        -25,
+        -8,
+        46,
+        23,
+        -10,
+        -39,
+        -2,
+        -10,
+        4,
+        -2,
+        23
+      ],
+      "mean": 4.833333333333333,
+      "low": -10.168749999999998,
+      "high": 20.5
+    },
+    {
+      "first": "qwen3:8b",
+      "second": "gemma3:12b",
+      "policy": "genie",
+      "differences": [
+        31,
+        -5,
+        -1,
+        0,
+        22,
+        -16,
+        -7,
+        41,
+        20,
+        44,
+        19,
+        -8
+      ],
+      "mean": 11.666666666666666,
+      "low": 0.6666666666666666,
+      "high": 22.833333333333332
+    },
+    {
+      "first": "llama3.1:8b",
+      "second": "gemma3:12b",
+      "policy": "sem",
+      "differences": [
+        -69,
+        23,
+        35,
+        -91,
+        -105,
+        -73,
+        32,
+        -13,
+        -3,
+        -127,
+        34,
+        32
+      ],
+      "mean": -27.083333333333332,
+      "low": -60.918749999999996,
+      "high": 5.333333333333333
+    },
+    {
+      "first": "llama3.1:8b",
+      "second": "gemma3:12b",
+      "policy": "mica",
+      "differences": [
+        -25,
+        -35,
+        12,
+        27,
+        -38,
+        -2,
+        30,
+        -38,
+        -8,
+        19,
+        86,
+        41
+      ],
+      "mean": 5.75,
+      "low": -13.5,
+      "high": 26.835416666666635
+    },
+    {
+      "first": "llama3.1:8b",
+      "second": "gemma3:12b",
+      "policy": "genie",
+      "differences": [
+        40,
+        -1,
+        103,
+        27,
+        35,
+        25,
+        35,
+        9,
+        -4,
+        12,
+        24,
+        11
+      ],
+      "mean": 26.333333333333332,
+      "low": 13.166666666666666,
+      "high": 43.0
+    }
+  ]
+}

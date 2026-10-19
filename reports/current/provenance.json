@@ -1,0 +1,7 @@
+{
+  "standard_source_sha256": "9d0d969106e7628296d355bb123fc999a19604a32907d1851210e4b235451aad",
+  "standard_missions": 1272,
+  "llm_missions": 108,
+  "llm_execution": "offline replay of our own measured responses",
+  "records_sha256": "e2edcfee7066534a625f17e30ea31435c215c085de8d0b17fc8c6dcc2eefb0f9"
+}

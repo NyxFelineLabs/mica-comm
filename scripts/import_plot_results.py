@@ -1,7 +1,7 @@
-"""Import historical experiment data for figure restoration, preserving provenance.
+"""Import experiment records for plotting while preserving their provenance.
 
-This translates method IDs and filenames only. It does not run experiments,
-change observations, import response caches or claim fresh MICA measurements.
+Method IDs are preserved unless an explicit mapping is supplied. Importing
+records does not run experiments or generate new measurements.
 """
 
 from __future__ import annotations
@@ -11,26 +11,37 @@ import hashlib
 import json
 import re
 from pathlib import Path
+from typing import Dict, Optional
 
 BASELINE = ("agents", "budget", "default", "pareto", "pareto_tv", "snr", "trajectories")
 REALISTIC = ("theory", "validate_noise", "validate_overhead", "validate_shared")
 
 
-def translate(value):
-    """Translate a historical method token while preserving every numeric value."""
+def translate(value, aliases: Optional[Dict[str, str]] = None):
+    """Rename configured method tokens while preserving values and other text."""
+    aliases = aliases or {}
     if isinstance(value, str):
-        return re.sub(r"(?<![A-Za-z0-9])gosc(?=$|[^A-Za-z0-9])", "mica", value)
+        if not aliases:
+            return value
+        tokens = "|".join(re.escape(token) for token in sorted(aliases, key=len, reverse=True))
+        # A single pass prevents mappings from being reapplied to their own output.
+        return re.sub(
+            rf"(?<![A-Za-z0-9])(?:{tokens})(?=$|[^A-Za-z0-9])",
+            lambda match: aliases[match.group(0)],
+            value,
+        )
     if isinstance(value, list):
-        return [translate(item) for item in value]
+        return [translate(item, aliases) for item in value]
     if isinstance(value, dict):
-        result = {translate(key): translate(item) for key, item in value.items()}
+        result = {translate(key, aliases): translate(item, aliases) for key, item in value.items()}
         if len(result) != len(value):
             raise ValueError("Method translation would merge source keys")
         return result
     return value
 
 
-def import_results(source, output):
+def import_results(source, output, aliases=None):
+    """Import a complete figure dataset with optional, recorded method aliases."""
     source, output = Path(source).resolve(), Path(output).resolve()
     if source == output or source in output.parents:
         raise ValueError("Import output must be outside the source data directory")
@@ -47,9 +58,10 @@ def import_results(source, output):
     output.mkdir(parents=True, exist_ok=True)
     manifest = {
         "kind": "historical-figure-restoration",
-        "origin": "Existing experiment records accompanying the reference figure suite",
+        "origin": "Existing archived experiment records supplied for figure restoration",
         "fresh_inference": False,
-        "changes": "rev_ filenames become robustness_; method token translated to mica; numeric observations unchanged",
+        "method_aliases": aliases or {},
+        "changes": "rev_ filenames become robustness_; configured method aliases are applied; numeric observations unchanged",
         "files": [],
     }
     for path, target in zip(selected, targets):
@@ -63,11 +75,11 @@ def import_results(source, output):
                 for line in incoming:
                     if not line.strip():
                         continue
-                    outgoing.write(json.dumps(translate(json.loads(line))) + "\n")
+                    outgoing.write(json.dumps(translate(json.loads(line), aliases)) + "\n")
                     count += 1
         else:
             original = json.loads(path.read_text(encoding="utf-8"))
-            target.write_text(json.dumps(translate(original)) + "\n", encoding="utf-8")
+            target.write_text(json.dumps(translate(original, aliases)) + "\n", encoding="utf-8")
             if isinstance(original, dict) and "rows" in original:
                 count = len(original["rows"])
         manifest["files"].append(
@@ -87,8 +99,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--rename-method",
+        action="append",
+        default=[],
+        metavar="SOURCE=TARGET",
+        help="Rename a method token; may be provided more than once.",
+    )
     args = parser.parse_args()
-    import_results(args.source, args.output)
+    aliases = {}
+    for entry in args.rename_method:
+        source, separator, target = entry.partition("=")
+        if not separator or not source or not target:
+            parser.error(f"invalid method mapping {entry!r}; expected SOURCE=TARGET")
+        aliases[source] = target
+    import_results(args.source, args.output, aliases)
 
 
 if __name__ == "__main__":

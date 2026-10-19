@@ -18,3 +18,12 @@ models/
 build/
 dist/
 *.egg-info/
+
+# Publish the current vector figures; raster exports and audits stay local.
+!figures/
+figures/*
+!figures/current/
+!figures/current/zh/
+!figures/current/en/
+figures/current/**/png/
+figures/current/**/audit/

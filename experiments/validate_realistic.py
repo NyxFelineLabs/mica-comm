@@ -25,7 +25,7 @@ import numpy as np
 
 from experiments.run_realistic import ARMS, EVALUATION_SETTINGS, OUT, SETTINGS, SHARED
 from mica_comm import run_realistic
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import RESULTS_DIR
 
 RES = RESULTS_DIR
 FRESH = range(3000, 3100)

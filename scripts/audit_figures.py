@@ -16,13 +16,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--nature-scripts", required=True, type=Path)
     parser.add_argument("--source", type=Path, nargs="+")
-    parser.add_argument("--figures", type=Path, default=ROOT / "figures")
+    parser.add_argument("--figures", type=Path, default=ROOT / "figures/current/zh")
     args = parser.parse_args()
     audit = args.figures / "audit"
     audit.mkdir(parents=True, exist_ok=True)
-    sources = [ROOT / "experiments/figure_style.py"] + (
-        args.source or [ROOT / "experiments" / name for name in
-                        ("plot.py", "plot_robustness.py", "plot_realistic.py")]
+    sources = [ROOT / "src/mica_comm/visualization/style.py"] + (
+        args.source or [ROOT / "experiments/plot_current.py"]
     )
     combined = audit / "source-preflight.py"
     combined.write_text(

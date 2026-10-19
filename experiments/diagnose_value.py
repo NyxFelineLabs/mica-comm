@@ -25,10 +25,10 @@ from multiprocessing import Pool
 import numpy as np
 
 from mica_comm import Config, Simulation
-from mica_comm.belief import sigmoid
-from mica_comm.messages import Packet, evidence_sizes, intent_bits
-from mica_comm.paths import RESULTS_DIR
-from mica_comm.voi import TeamModel
+from mica_comm.agents.voi import TeamModel
+from mica_comm.communication.messages import Packet, evidence_sizes, intent_bits
+from mica_comm.core.paths import RESULTS_DIR
+from mica_comm.world.belief import sigmoid
 
 OUT = RESULTS_DIR / "robustness_value_fidelity.json"
 

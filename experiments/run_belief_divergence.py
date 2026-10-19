@@ -14,7 +14,7 @@ import os
 from multiprocessing import Pool
 
 from mica_comm import Config, run_episode
-from mica_comm.paths import FIGURES_DIR, RESULTS_DIR
+from mica_comm.core.paths import FIGURES_DIR, RESULTS_DIR
 
 OUT = RESULTS_DIR / "belief_divergence.jsonl"
 RES = RESULTS_DIR

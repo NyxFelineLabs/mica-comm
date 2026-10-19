@@ -1,0 +1,54 @@
+{
+  "verified": [
+    {
+      "model": "gemma3:12b",
+      "missions": 36,
+      "cache_hits": 2908,
+      "http_requests": 0
+    },
+    {
+      "model": "llama3.1:8b",
+      "missions": 36,
+      "cache_hits": 2840,
+      "http_requests": 0
+    },
+    {
+      "model": "qwen3:8b",
+      "missions": 36,
+      "cache_hits": 2488,
+      "http_requests": 0
+    }
+  ],
+  "source_sha256": "9c0526dfab8a73dcb9a71c35584484447a2de01f4f4164244c6c4eb41fc2dd76",
+  "source_files": {
+    "src/mica_comm/__init__.py": "93ead6a14a7820304cea7dfbf327c30ad48c2602bad05ed43f2bbdb38902e19d",
+    "src/mica_comm/agents/__init__.py": "7cf7373d58a406e5275ba77cee34dba046994955e980b92fc11d6cee09a43c6f",
+    "src/mica_comm/agents/agent.py": "f8c66192e9e2ad27a0eb424e346c0eeda5cfcac09da78790da9903cb37c6fc73",
+    "src/mica_comm/agents/llm_agent.py": "74497cc143744aadc30188c8187225bd764fef5f897aa01c981e5cf834b3ce69",
+    "src/mica_comm/agents/voi.py": "9b3824eb36c1e900ddf99a5ca29cd6beb0f361b8939a16a7b03a20d676ab4dfe",
+    "src/mica_comm/communication/__init__.py": "3c662ef623ca7e9c39f5d29690a938f0a385e29f40673a4d8f71b87d5c985ff3",
+    "src/mica_comm/communication/channel.py": "876409a843c0d8d82b703a7d91e6b92bb7336cd9a9235b4ce8532ec2966c81fe",
+    "src/mica_comm/communication/joint.py": "09c815323368b92421bd308b007053785c436ccd823376769fe59fb40ae4662f",
+    "src/mica_comm/communication/messages.py": "0e92762e71185742f406699463de4c5aa61c82207590d2c8e3f269e5dba7ddf2",
+    "src/mica_comm/communication/schemes.py": "d57888679275deab5c1dce94b3728b9097082fbf4005bfcced9e51fa8f8f8810",
+    "src/mica_comm/core/__init__.py": "fc221b4b33219d973c40965135ea07c237b1c388420a0941b54d02e5ad069670",
+    "src/mica_comm/core/config.py": "a3705f134b19a114e82eec6d77696418b5c4e755377e5fa945374251ae86dbc4",
+    "src/mica_comm/core/paths.py": "63e85ad4cef2067c0e2ed06d90abb9efa02aa0b374c3e09aeac9ea8c7f3441ee",
+    "src/mica_comm/core/provenance.py": "68f9481fcd0947ad36d8bc4868951bd10ef1c8320dc926d33d38b207733ea7c2",
+    "src/mica_comm/demand/__init__.py": "595ae1b3b41ef93c573b2897347081446833b561a71dd3c6415d6a388db52aae",
+    "src/mica_comm/demand/engine.py": "ad66a2e324a398d0463ee299dc9c2dc26777b2d4edca6792e8fe14051f899107",
+    "src/mica_comm/demand/protocol.py": "497dca0808b5e28559ab7d6cf61aeea7d7b08049ae1ed8d7cf04b51eec7fcf7c",
+    "src/mica_comm/evaluation/__init__.py": "a9b829518b18c2b53474a75539bd848e56b1aa65d7f82e7bd72eaf78f17a0f67",
+    "src/mica_comm/evaluation/campaign.py": "3fec7c44f21dda10d595d1243fa73ffc43c63787c4e7d7a9d60c4a6e523f6683",
+    "src/mica_comm/simulation/__init__.py": "c77b4b3946d8c09e415e088642ceadcdabfcce0815eecd0c48ec07fc93ba0504",
+    "src/mica_comm/simulation/realistic.py": "ef20e3b106885b290296677b5a2215747367e786bc7fcbb6ac7d100b5c65b070",
+    "src/mica_comm/simulation/simulator.py": "8f725c8e30d3dd93486029b90b395a15878c1641cd1413c953f0973873c632cf",
+    "src/mica_comm/visualization/__init__.py": "f81efba368e3e6c8508a533699ce0b845cf9a344092948e4caadd4d1269fc721",
+    "src/mica_comm/visualization/language.py": "f0321e5a3a94404ef584e3d4165715b7441b06d89ce1705464a1a58f79d462d5",
+    "src/mica_comm/visualization/style.py": "0888936965cf21369552537ec29ecacd874195c8ae7d7153c80c6f6f48124379",
+    "src/mica_comm/world/__init__.py": "76579c06f1e422f9df6aa5312fee0767b81f9c7ce020a1c287c436ef85756e43",
+    "src/mica_comm/world/belief.py": "e2c9c8c226812f921cf499eb78e2c758d5a3ff28b11e7095a21beb6f7eed91ae",
+    "src/mica_comm/world/environment.py": "b9e75a334bb82b63d6dd807b4d0e5b0fd935309ba2211534113034d296140f26",
+    "src/mica_comm/world/rescue.py": "5d5b54afd3982dbadb8190934c1116f9a096901d5f2668e4abdb9a7dabcd9340"
+  }
+}

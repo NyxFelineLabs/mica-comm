@@ -17,7 +17,7 @@ import numpy as np
 
 from experiments.plot_robustness import arr, load, table
 from mica_comm import Config, run_episode
-from mica_comm.paths import RESULTS_DIR
+from mica_comm.core.paths import RESULTS_DIR
 
 OUT = RESULTS_DIR / "robustness_validation.json"
 B = Config()
