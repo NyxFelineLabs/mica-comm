@@ -129,4 +129,3 @@ class TaskRelevanceModel(InformationGainModel):
             )
             for d in delta_llrs
         ]
-

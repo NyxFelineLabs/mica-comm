@@ -66,4 +66,3 @@ def test_public_task_relevance_uses_footprint_mass():
     delta = np.zeros_like(sim.Lc)
     delta[sim.cfg.grid // 2, sim.cfg.grid // 2] = 4.0
     assert model.evidence_voi([delta], [sim.agents[0].pos])[0] > 0
-

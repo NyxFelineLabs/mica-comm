@@ -417,9 +417,7 @@ class RealisticSimulation(Simulation):
         static = cfg.shared_budget > 0 and cfg.shared_mode == "static"
         if static and cfg.shared_budget < cfg.n_agents:
             raise ValueError("shared_budget must give each agent at least one channel use")
-        radio_cfg = (
-            cfg.with_(symbols_per_slot=cfg.shared_budget // cfg.n_agents) if static else cfg
-        )
+        radio_cfg = cfg.with_(symbols_per_slot=cfg.shared_budget // cfg.n_agents) if static else cfg
         self.scheme = REALISTIC_SCHEMES[scheme](radio_cfg, self.channel)
         if hasattr(self.scheme, "rng"):
             self.scheme.rng = np.random.default_rng([seed, 7])

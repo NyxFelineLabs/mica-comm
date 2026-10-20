@@ -281,8 +281,12 @@ def campaign(args, model, digest, transport):
                     overrides = dict(SCENARIOS[scenario])
                     if variant == "calibrated":
                         overrides.update(
-                            etom_receiver_temperatures=tuple(PARAMETERS[i][0] for i in selected[variant]),
-                            etom_intent_persistences=tuple(PARAMETERS[i][1] for i in selected[variant]),
+                            etom_receiver_temperatures=tuple(
+                                PARAMETERS[i][0] for i in selected[variant]
+                            ),
+                            etom_intent_persistences=tuple(
+                                PARAMETERS[i][1] for i in selected[variant]
+                            ),
                         )
                     row = mission(
                         cfg.with_(**overrides),

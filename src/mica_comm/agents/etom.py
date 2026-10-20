@@ -181,4 +181,3 @@ class EToMModel:
             rep = self.others[j] * self._rep_point(tgt if j > k else pos)
             v += self._expected_utility(self._belief_mass(j, delta), j, rep) - base
         return v
-

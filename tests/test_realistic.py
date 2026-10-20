@@ -68,8 +68,13 @@ def test_noise_changes_decisions_and_is_logged():
 
 @pytest.mark.parametrize(
     "scheme,mode",
-    (("mica", "static"), ("mica", "price"), ("mica", "central"),
-     ("sem_ra", "static"), ("sem_ra", "price")),
+    (
+        ("mica", "static"),
+        ("mica", "price"),
+        ("mica", "central"),
+        ("sem_ra", "static"),
+        ("sem_ra", "price"),
+    ),
 )
 def test_shared_budget_respected(scheme, mode):
     from mica_comm.simulation.realistic import RealisticSimulation
@@ -98,7 +103,9 @@ def test_current_campaign_enables_shared_uplink():
 
     cells = design()
     assert all(cfg.shared_budget > 0 for _, _, _, cfg in cells)
-    mica = next(cfg for experiment, _, scheme, cfg in cells if experiment == "default" and scheme == "mica")
+    mica = next(
+        cfg for experiment, _, scheme, cfg in cells if experiment == "default" and scheme == "mica"
+    )
     assert mica.shared_budget == 300 and mica.shared_mode == "static"
     rescue = next(
         cfg for experiment, _, scheme, cfg in cells if experiment == "rescue" and scheme == "mica"
@@ -124,9 +131,7 @@ def test_current_campaign_enables_shared_uplink():
     ]
     assert all(cfg.shared_budget // cfg.n_agents == parameter for parameter, cfg in budgets)
     assert all(
-        cfg.shared_mode == "price"
-        for experiment, _, _, cfg in cells
-        if experiment == "shared"
+        cfg.shared_mode == "price" for experiment, _, _, cfg in cells if experiment == "shared"
     )
 
 

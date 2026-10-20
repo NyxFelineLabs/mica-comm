@@ -50,4 +50,3 @@ def test_persistence_uses_public_target_and_not_private_target():
 def test_invalid_calibration_is_rejected(kwargs):
     with pytest.raises(ValueError):
         model(Config(n_agents=3, **kwargs))
-
